@@ -1,0 +1,42 @@
+[
+  {
+    "imageId": "mario.jpg",
+    "name": "Mario Rossi",
+    "role": "Consulente energetico",
+    "description": "Esperto in ottimizzazione energetica per aziende.",
+    "badges": [
+      "+300 clienti seguiti",
+      "Specialista B2B"
+    ]
+  },
+  {
+    "imageId": "giulia.jpg",
+    "name": "Giulia Bianchi",
+    "role": "Consulente energetico",
+    "description": "Consulente per famiglie e risparmio domestico.",
+    "badges": [
+      "+500 clienti aiutati",
+      "Specialista residenziale"
+    ]
+  },
+  {
+    "imageId": "luca.jpg",
+    "name": "Luca Verdi",
+    "role": "Consulente energetico",
+    "description": "Esperto negoziazione contratti energia.",
+    "badges": [
+      "+20 fornitori partner",
+      "Esperto contrattualistica"
+    ]
+  },
+  {
+    "imageId": "andrea.jpg",
+    "name": "Andrea Mezza",
+    "role": "CEO & Fondatore",
+    "description": "Guida strategica dell’azienda e sviluppo partnership energetiche.",
+    "badges": [
+      "+80 fornitori partner",
+      "Esperto crescita e sviluppo business"
+    ]
+  }
+]

@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Riduci la tua bolletta luce e gas con M&M Consulting. Confrontiamo oltre 20 fornitori per trovare la tariffa migliore per te.">
+    <meta name="keywords"
+        content="broker energia Messina, risparmio bolletta luce gas, confronto fornitori energia Italia">
+
+    <meta name="robots" content="index, follow">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@700&family=Inter:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <title>Broker Energia Messina | Risparmia su Luce e Gas - M&M Consulting</title>
+    <link rel="icon" type="image/png" href="./assets/images/logo-energy.jpg">
+    <link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+
+<body>
+
+    <section class="hero-section">
+        <div class="banner">
+            <div class="banner-left">
+                <img src="./assets/images/banner-logo.jpg" alt="Company Logo">
+            </div>
+            <div class="banner-center">
+                <a id="banner|highlight">Risparmio</a>
+                <a id="banner|team">Il Team</a>
+                <a id="Banner|find-us">Dove siamo</a>
+                <a id="Banner|simulator">Analisi</a>
+            </div>
+
+            <div class="banner-right">
+                <a id="banner|contact" class="banner-cta"><i class="fa fa-phone"></i>Richiamami</a>
+            </div>
+        </div>
+        <div class="hero-content">
+            <!-- Left: Catchy slogan -->
+            <div class="left-slogan">
+                <h1>Riduci la tua bolletta luce e gas fino al 30%</h1>
+                <p>Scopri in pochi minuti se stai pagando troppo. Confrontiamo oltre 20 fornitori per trovare la
+                    soluzione più
+                    conveniente per te.</p>
+                <div style="margin-top:15px; font-size:0.9rem;">
+                    ✔ Analisi gratuita &nbsp; • &nbsp;
+                    ✔ Nessun impegno &nbsp; • &nbsp;
+                    ✔ Risposta entro 24h
+                </div>
+            </div>
+
+            <!-- Right: CTA box -->
+            <div class="cta-box">
+                <div class="cta-slogan">Scopri quanto puoi risparmiare oggi</div>
+                <button id="ctaBtn|simulator" class="cta-button">Richiedi analisi gratuita</button>
+                <p>
+                    🔒 Nessun impegno • 100% gratuito • Dati protetti
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Second Hero Section: Logo Carousel -->
+    <section class="logo-carousel-section">
+
+        <div class="carousel-title">
+            Oltre 20 fornitori di energia partner
+        </div>
+        <button class="carousel-btn left">&#10094;</button>
+
+        <div class="carousel-wrapper">
+            <div class="carousel-track" id="carouselTrack"></div>
+        </div>
+
+        <button class="carousel-btn right">&#10095;</button>
+
+    </section>
+    <!-- business section -->
+    <section class="business-section">
+        <div class="business-container">
+            <h2>Stai pagando troppo per luce e gas?</h2>
+            <p class="business-text">
+                Molte aziende e famiglie pagano bollette più alte del necessario senza saperlo.
+                Tariffe poco trasparenti, contratti non ottimizzati e continue variazioni di prezzo rendono difficile
+                risparmiare.
+            </p>
+            <p class="business-text">
+                Con M&M Consulting analizziamo gratuitamente la tua situazione e troviamo la tariffa più conveniente tra
+                oltre
+                20 fornitori affidabili.
+            </p>
+            <div class="cards-container">
+
+                <div class="card">
+                    <div class="card-image">
+                        <!--
+              <img src="tailored.jpg" alt="Service 2">
+              -->
+                        <i class="fa-solid fa-magnifying-glass-chart fa-2xl" style="color: #0050d7;"></i>
+
+                    </div>
+                    <h3>Soluzioni su misura</h3>
+                    <p>Analizziamo le tue esigenze e ti proponiamo offerte energetiche personalizzate.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-image">
+                        <i class="fa-solid fa-money-bill-1-wave fa-2xl" style="color: #1f8f32;"></i>
+                        <!--
+              <img src="cost.jpg" alt="Service 2">
+              -->
+                    </div>
+                    <h3>Ottimizzazione dei costi</h3>
+                    <p>Riduci la bolletta energetica con le migliori tariffe di mercato.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-image">
+                        <!--
+              <img src="trusted.jpg" alt="Service 3">
+            -->
+                        <i class="fa-solid fa-handshake fa-2xl" style="color: rgb(241, 19, 19);"></i>
+                    </div>
+                    <h3>Partner affidabili</h3>
+                    <p>Accedi a una rete di oltre 20 fornitori di energia affidabili.</p>
+                </div>
+
+            </div>
+        </div>
+        <!-- Cards zone -->
+
+
+    </section>
+
+    <section id="simulator" class="simulator-section">
+        <h2>Calcola il tuo risparmio energetico</h2>
+
+        <div class="simulator-container">
+
+
+            <!-- Carousel -->
+            <div class="simulator-carousel">
+
+                <!-- Step 1 -->
+                <div class="simulator-step">
+                    <h3>Tipo di energia?</h3>
+
+                    <div class="energy-options">
+                        <div class="simulator-card" data-value="electricity">
+                            <div class="icon"><i class="fa-solid fa-bolt"></i></div>
+                            <span>Elettricità</span>
+                        </div>
+
+                        <div class="simulator-card" data-value="gas">
+                            <div class="icon"><i class="fa-solid fa-fire-burner"></i></div>
+                            <span>Gas</span>
+                        </div>
+
+                        <div class="simulator-card" data-value="both">
+                            <div class="icon">
+                                <i class="fa-solid fa-bolt"></i>
+                                <i class="fa-solid fa-fire-burner"></i>
+                            </div>
+                            <span>Entrambi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="simulator-step">
+                    <h3>Tipo di casa?</h3>
+
+                    <div class="energy-options">
+                        <div class="simulator-card" data-value="house">
+                            <div class="icon"><i class="fa-solid fa-house"></i></div>
+                            <span>casa</span>
+                        </div>
+
+                        <div class="simulator-card" data-value="flat">
+                            <div class="icon"><i class="fa-solid fa-building"></i></div>
+                            <span>appartamento</span>
+                        </div>
+                    </div>
+                    <div class="location-input-wrapper">
+                        <div class="location-field">
+                            <span class="location-icon">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </span>
+                            <input type="text" id="locationInput" placeholder=" " autocomplete="postal-code">
+                            <label for="locationInput">CAP o città</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- Step 3 -->
+                <div class="simulator-step">
+                    <h3>Persone in casa</h3>
+
+                    <div class="household-content">
+
+                        <div class="people-options">
+                            <div class="simulator-card" data-people="1">1</div>
+                            <div class="simulator-card" data-people="2">2</div>
+                            <div class="simulator-card" data-people="3">3</div>
+                            <div class="simulator-card" data-people="4+">4+</div>
+                        </div>
+                        <h3>Superficie</h3>
+                        <div class="bill-slider-container">
+                            <input type="range" min="0" max="200" value="80" class="bill-slider" id="surfaceSlider">
+                            <div class="slider-value" id="surfaceValue">80 m²</div>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- Step 4 -->
+                <div class="simulator-step">
+                    <h3>Il tuo consumo di energia</h3>
+
+                    <!-- Toggle -->
+                    <div class="consumption-toggle">
+                        <div class="toggle-option active" data-mode="estimate">Stimare</div>
+                        <div class="toggle-option" data-mode="know">Lo so</div>
+                    </div>
+
+                    <!-- ✅ Helper text HERE -->
+                    <p class="helper-text">
+                        Non sei sicuro? Scegli la stima — la calcoleremo per te in base alla tua abitazione.
+                    </p>
+
+                    <!-- Dynamic content -->
+                    <div class="consumption-inputs" id="consumptionInputs"></div>
+
+                </div>
+                <!-- Step 5 -->
+                <div class="simulator-step">
+                    <h3>Scegli il tuo fornitore</h3>
+
+                    <!-- TOP: Popular providers -->
+                    <div class="provider-grid" id="providerGrid"></div>
+
+                    <!-- SELECT -->
+                    <div class="provider-fields">
+
+                        <div class="custom-select-wrapper">
+                            <select class="provider-select" required>
+                                <option value="" disabled selected hidden>Scegli il tuo fornitore</option>
+                                <option>EDF</option>
+                                <option>Engie</option>
+                                <option>Total Energies</option>
+                                <option>ENI</option>
+                                <option>Ohm Energie</option>
+                                <option>Mint Energie</option>
+                                <option>Altro</option>
+                            </select>
+                            <span class="select-icon">
+                                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                                    <path d="M5 8L10 13L15 8" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" />
+                                </svg>
+                            </span>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <input type="text" class="provider-input" placeholder="O inserisci il tuo fornitore">
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Step 6 -->
+                <div class="simulator-step">
+                    <h3>La tua bolletta mensile (€)</h3>
+
+                    <div class="bill-slider-container">
+                        <input type="range" min="0" max="500" value="120" class="bill-slider" id="billSlider">
+                        <div class="slider-value" id="sliderValue">€120</div>
+                    </div>
+                </div>
+
+
+                <!-- Step 7 -->
+                <div class="simulator-step result-step">
+                    <h3>I tuoi risparmi stimati</h3>
+                    <p class="result">“Fino a 25 € al mese 🎉</p>
+                </div>
+
+            </div>
+            <!-- Navigation -->
+            <div class="simulator-nav">
+                <button id="prevBtn">Indietro</button>
+                <button id="nextBtn">Avanti</button>
+            </div>
+            <!-- Progress bar -->
+            <div class="simulator-progress">
+                <div class="step active"></div>
+                <div class="step"></div>
+                <div class="step"></div>
+                <div class="step"></div>
+                <div class="step"></div>
+                <div class="step"></div>
+                <div class="step"></div>
+            </div>
+
+        </div>
+    </section>
+    <section class="results-section">
+        <div class="results-overlay">
+
+            <div class="results-box">
+                <h2>I nostri risultati</h2>
+                <p class="results-subtitle">Numeri reali basati sui clienti che abbiamo aiutato</p>
+                <div class="results-list">
+                    <div class="result-item">
+                        <div class="result-icon"><i class="fas fa-users"></i></div>
+                        <div class="result-text">
+                            <h3>+1000</h3>
+                            <p>Clienti soddisfatti</p>
+                        </div>
+                    </div>
+
+                    <div class="result-item">
+                        <div class="result-icon"><i class="fas fa-handshake"></i></div>
+                        <div class="result-text">
+                            <h3>+20</h3>
+                            <p>Fornitori partner</p>
+                        </div>
+                    </div>
+
+                    <div class="result-item">
+                        <div class="result-icon"><i class="fas fa-bolt"></i></div>
+                        <div class="result-text">
+                            <h3>Fino al 30%</h3>
+                            <p>Risparmio medio</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+    <section id="highlight" class="highlight-section">
+
+        <div class="container highlight-container">
+
+            <div class="highlight-cards">
+
+                <!-- WITHOUT US -->
+                <div class="highlight-card negative">
+                    <div class="card-header">
+                        <h3>Senza di noi</h3>
+                    </div>
+
+                    <div class="card-price">
+                        <span class="price">€1200</span>
+                        <span class="period">/anno</span>
+                    </div>
+
+                    <ul class="card-features">
+                        <li>❌ Nessuna ottimizzazione dei contratti</li>
+                        <li>❌ Tariffe energetiche elevate</li>
+                        <li>❌ Nessun potere di negoziazione</li>
+                        <li>❌ Costi nascosti</li>
+                    </ul>
+                </div>
+
+                <!-- WITH US -->
+                <div class="highlight-card positive">
+                    <div class="card-header">
+                        <h3>Con noi</h3>
+                    </div>
+
+                    <div class="card-price">
+                        <span class="price">€850</span>
+                        <span class="period">/anno</span>
+                    </div>
+
+                    <div class="card-saving">
+                        Risparmia fino a 350€ all’anno
+                    </div>
+
+                    <ul class="card-features">
+                        <li>✅ Contratti ottimizzati</li>
+                        <li>✅ Migliori tariffe di mercato</li>
+                        <li>✅ Esperti in negoziazione</li>
+                        <li>✅ Prezzi trasparenti</li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+    <section id="team" class="team-section">
+        <div class="container team-container">
+
+            <h2>Il tuo team di consulenti</h2>
+
+            <div class="team-carousel">
+
+                <button class="team-btn left" id="teamPrev">&#10094;</button>
+
+                <div class="team-wrapper">
+                    <div class="team-track" id="teamTrack"></div>
+                </div>
+
+                <button class="team-btn right" id="teamNext">&#10095;</button>
+
+            </div>
+
+        </div>
+    </section>
+
+    <section class="approach-section">
+
+        <div class="container approach-container">
+
+            <div class="approach-text">
+                <h2>La nostra metodologia</h2>
+                <p>
+                    Analizziamo le tue esigenze energetiche per offrirti soluzioni personalizzate, tariffe competitive e
+                    un
+                    processo di cambio fornitore semplice e senza stress.
+                    Ti aiutiamo a confrontare le migliori opzioni sul mercato e a prendere decisioni consapevoli, così
+                    puoi
+                    concentrarti sullo sviluppo della tua attività.
+                    La nostra esperienza e rete di fornitori affidabili garantiscono un percorso chiaro, veloce e
+                    vantaggioso per
+                    ogni cliente.
+                </p>
+            </div>
+            <div class="approach-image">
+                <img src="./assets/images/approach.png" alt="approach">
+            </div>
+
+        </div>
+    </section>
+    </div>
+    <section class="faq-section">
+        <div class="container faq-container">
+
+            <h2>Domande frequenti</h2>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Il servizio è gratuito?
+                    <span>+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Sì, l’analisi è completamente gratuita e senza impegno.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Quanto posso risparmiare?
+                    <span>+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>In media i nostri clienti risparmiano fino al 30% sulla bolletta.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Devo cambiare fornitore subito?
+                    <span>+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>No, decidi tu se accettare o meno la proposta.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Quanto tempo richiede?
+                    <span>+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Bastano pochi minuti per compilare il modulo.</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+    <section id="find-us" class="find-us-section">
+        <div class="container find-us-container">
+
+            <h2>Dove trovarci</h2>
+
+            <div class="map-wrapper">
+                <iframe src="https://www.google.com/maps?q=Via Industriale, 120, 98120 Messina ME, Italy&output=embed"
+                    allowfullscreen="" loading="lazy">
+                </iframe>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="reviews-section">
+        <div class="reviews-overlay">
+
+            <h2>Cosa dicono i nostri clienti</h2>
+
+            <div class="reviews-carousel">
+                <button class="carousel-btn left" onclick="prevReview()">&#10094;</button>
+
+                <div class="reviews-wrapper">
+                    <div class="reviews-track">
+
+                        <div class="review-card">
+                            <p>"Servizio eccellente, abbiamo risparmiato molto sulla bolletta energetica!"</p>
+                            <h4>- Franco D.</h4>
+                        </div>
+
+                        <div class="review-card">
+                            <p>"Processo semplice e molto professionale. Lo consiglio vivamente."</p>
+                            <h4>- Giulia M.</h4>
+                        </div>
+
+                        <div class="review-card">
+                            <p>"Ottimo supporto e offerte trasparenti."</p>
+                            <h4>- Fabio R.</h4>
+                        </div>
+
+                    </div>
+                </div>
+
+                <button class="carousel-btn right" onclick="nextReview()">&#10095;</button>
+            </div>
+        </div>
+    </section>
+    <section id="contact" class="contact-section">
+        <h2>Contattaci</h2>
+
+        <form class="contact-form" id="contactForm">
+            <div class="form-row">
+                <input type="text" name="firstname" placeholder="Nome" required>
+                <input type="text" name="lastname" placeholder="Cognome" required>
+            </div>
+
+            <div class="form-row">
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="tel" name="phone" id="phoneInput" placeholder="Numero di telefono" pattern="^\+?\d{7,15}$"
+                    title="Inserisci un numero di telefono valido, es. +39123456789">
+            </div>
+
+            <div class="form-row single-row">
+                <select name="energyType" required>
+                    <option value="" disabled selected>Seleziona il tipo di energia</option>
+                    <option value="Gas">Gas</option>
+                    <option value="Electricity">Elettricità</option>
+                    <option value="Both">Entrambi</option>
+                </select>
+            </div>
+
+            <!-- Toggle switch -->
+            <div class="form-row single-row phone-toggle-row switch-row">
+                <label class="switch">
+                    <input type="checkbox" id="phoneToggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="toggle-label">Desidero essere contattato telefonicamente</span>
+            </div>
+
+            <!-- Preferred contact time: hidden by default -->
+            <div class="form-row single-row" id="contactTimeRow" style="display:none;">
+                <select name="contactTime">
+                    <option value="" disabled selected>Orario preferito per il contatto</option>
+                    <option value="morning">Mattina (8:00 - 12:00)</option>
+                    <option value="afternoon">Pomeriggio (12:00 - 17:00)</option>
+                    <option value="evening">Sera (17:00 - 20:00)</option>
+                </select>
+            </div>
+
+            <!-- Message textarea -->
+            <div class="form-row">
+                <textarea name="message" placeholder="Raccontaci un po’ delle tue esigenze..." rows="4"></textarea>
+            </div>
+            <!-- GDPR BLOCK HERE 👇 -->
+            <div class="consent-block">
+                <label class="consent-item">
+                    <input id="consent-checkbox" type="checkbox">
+                    <span class="checkmark"></span>
+                    <span class="consent-text">
+                        Accetto di essere contattato/a in merito alla mia richiesta e accetto l’
+                        <a href="#" id="privacyLink">informativa sulla privacy</a>.
+                    </span>
+                </label>
+                <p class="consent-error" id="consentError">
+                    Devi accettare l’informativa sulla privacy per continuare.
+                </p>
+
+                <p class="consent-note">
+                    Utilizziamo i tuoi dati solo per rispondere alla tua richiesta. Non li vendiamo mai.
+                </p>
+            </div>
+
+            <button id="contact-btn" type="submit" class="submit-btn">
+                <span class="btn-text">Invia</span>
+                <span class="btn-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </button>
+        </form>
+    </section>
+    <footer class="footer">
+        <div class="footer-container">
+
+            <!-- Top row -->
+            <div class="footer-top">
+
+                <!-- Logo -->
+                <div class="footer-logo">
+
+                    <img src="./assets/images/logo-energy.jpg" style="border-radius: 50%;" alt="Logo Azienda">
+                </div>
+
+                <!-- Contact -->
+                <div class="footer-contact">
+                    <p class="contact-title">Contattaci</p>
+                    <p class="phone-number">+39 090 941 2150</p>
+                    <p class="contact-subtext">Disponibile dal lunedì al venerdì, 9:00–18:00</p>
+                    <p class="contact-address">Via Industriale, 120<br>98123 Messina ME, Italie</p>
+                </div>
+
+                <!-- Newsletter -->
+                <div class="footer-newsletter">
+                    <p class="newsletter-text">
+                        Iscriviti alla nostra newsletter per ricevere aggiornamenti esclusivi e offerte dedicate.
+                    </p>
+                    <form id="newsletterForm" class="newsletter-form">
+                        <input name="email" type="email" placeholder="Inserisci la tua email" required>
+                        <button id="newsletter-btn" type="submit" class="submit-btn"
+                            style="background:#0050d7!important">
+                            <span class="btn-text">Iscriviti</span>
+                            <span class="btn-dots">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </span>
+                        </button>
+                        <p class="newsletter-disclaimer">
+                            MM Consulting tratta il tuo indirizzo email per inviarti newsletter e comunicazioni. Puoi
+                            disiscriverti in
+                            qualsiasi momento tramite il link integrato. <a href="#">Scopri di più</a>
+                        </p>
+                    </form>
+                </div>
+
+            </div>
+
+            <!-- Divider -->
+            <hr class="footer-divider">
+
+            <!-- Bottom row -->
+            <div class="footer-bottom">
+
+                <!-- Social links -->
+                <div class="footer-socials">
+                    <a href="#"><i class="fab fa-linkedin"></i> <span class="social-name">LinkedIn</span></a>
+                    <a href="#"><i class="fab fa-youtube"></i> <span class="social-name">YouTube</span></a>
+                    <a href="https://www.instagram.com/mm.consultingagencymessina">
+                        <i class="fab fa-instagram"></i> <span class="social-name">Instagram</span>
+                    </a>
+                    <a href="https://www.facebook.com/MMconsultingme">
+                        <i class="fab fa-facebook"></i> <span class="social-name">Facebook</span>
+                    </a>
+                </div>
+
+                <!-- Legal links -->
+                <div class="footer-legal">
+                    <a href="#">Note legali</a>
+                    <a href="#">Informativa sulla privacy</a>
+                </div>
+
+            </div>
+
+        </div>
+    </footer>
+
+
+
+    </div>
+    <!-- Floating button -->
+    <div class="whatsapp-float">
+        <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp">
+    </div>
+
+    <!-- Chat box -->
+    <div class="whatsapp-chat" id="whatsappChat">
+
+        <div class="chat-header">
+            <span>Chatta con noi</span>
+            <button class="chat-close-btn" aria-label="Chiudi chat">
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+
+        <div class="chat-body">
+            <p>Ciao 👋 Come possiamo aiutarti?</p>
+        </div>
+
+        <div class="chat-input">
+            <textarea id="userMessage" placeholder="Voglio ridurre la mia bolletta energetica..."></textarea>
+
+            <button onclick="sendToWhatsApp()">Invia</button>
+        </div>
+
+    </div>
+    <!-- Privacy Modal -->
+    <div id="privacyModal" class="modal-overlay">
+        <div class="modal-content">
+
+            <button class="modal-close" id="closePrivacyModal">×</button>
+
+            <h2>Privacy Policy</h2>
+
+            <div class="modal-body">
+                <p>
+                    Raccogliamo e trattiamo i tuoi dati personali esclusivamente per rispondere alle tue richieste e
+                    fornire i nostri servizi.
+                </p>
+
+                <h3>1. Dati raccolti</h3>
+                <p>
+                    Nome, indirizzo email, numero di telefono e dati di utilizzo quando vengono inviati i moduli.
+                </p>
+
+                <h3>2. Finalità</h3>
+                <p>
+                    Per contattarti, fornire un’offerta personalizzata e migliorare i nostri servizi.
+                </p>
+
+                <h3>3. Conservazione dei dati</h3>
+                <p>
+                    I dati vengono conservati per un massimo di 12 mesi, salvo l’instaurazione di un rapporto
+                    contrattuale.
+                </p>
+
+                <h3>4. I tuoi diritti</h3>
+                <p>
+                    Puoi richiedere in qualsiasi momento l’accesso, la rettifica o la cancellazione dei tuoi dati.
+                </p>
+
+                <h3>5. Contatti</h3>
+                <p>
+                    Per qualsiasi richiesta, contattaci tramite il modulo di contatto.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/js/scroll-reset.js"></script>
+    <script src="/js/go-to-section.js"></script>
+    <script src="/js/update-cta-btn.js"></script>
+    <script src="/js/animate-section.js"></script>
+    <script src="/js/carousel-partners-hero.js"></script>
+    <script src="/js/simulator-energy.js"></script>
+    <script src="/js/provider-simulator.js"></script>
+    <script src="/js/carousel-team.js"></script>
+    <script src="/js/faq-animation.js"></script>
+    <script src="/js/submit-form.js"></script>
+    <script src="/js/whatsapp.js"></script>
+    <script src="/js/privacy-modal.js"></script>
+
+
+
+
+
+
+
+</body>
+
+</html>
