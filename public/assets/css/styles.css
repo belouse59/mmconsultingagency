@@ -11,7 +11,7 @@
       4d. Business Section & Cards
       4e. Results Section
       4f. Simulator
-      4g. Approach (image+text sections)
+      4g. Why Us & Approach (image+text sections)
       4h. Highlight (comparison cards)
       4i. Reviews
       4j. Team
@@ -131,7 +131,7 @@ h1, h2, h3, h4,
     transform: translateY(40px);
     transition: var(--anim-scroll);
 }
-/* Applied to: .business-section, .approach-section,
+/* Applied to: .business-section, .why-us-section, .approach-section,
    .team-section, .faq-section, .simulator-section, .contact-form */
 
 /* Focus ring — shared by all text inputs, selects, textareas */
@@ -149,7 +149,7 @@ h1, h2, h3, h4,
 }
 
 /* Sections that use the shared image+text layout
-   (.approach-section) */
+   (.why-us-section and .approach-section) */
 .image-text-section {
     padding: 60px 20px;
     opacity: 0;
@@ -276,7 +276,7 @@ h1, h2, h3, h4,
 .hero-section {
     position: relative;
     height: 80vh;
-    background-image: url('../images/hero.jpg');
+    background-image: url('./../images/hero.jpg');
     background-size: cover;
     background-position: center;
     display: flex;
@@ -1231,10 +1231,47 @@ h1, h2, h3, h4,
 
 
 /* ============================================================
-   4g. APPROACH (image + text sections)
+   4g. WHY US & APPROACH (image + text sections)
    Using the shared .image-text-* utilities above,
    only section-specific overrides live here.
 ============================================================ */
+
+.why-us-section {
+    background: var(--bg-soft);
+    opacity: 0;
+    transform: translateY(40px);
+    transition: var(--anim-scroll);
+    padding: 60px 20px;
+}
+
+.why-us-container {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    border-radius: var(--radius-md);
+}
+
+.why-us-image { flex: 2; }
+
+.why-us-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 25px 0 0 25px;
+    object-fit: cover;
+}
+
+.why-us-text {
+    flex: 2;
+    text-align: justify;
+    padding-right: 40px;
+    color: var(--text-main);
+}
+
+.why-us-text h2  { margin-bottom: 15px; }
+.why-us-text p   { color: var(--navy-text); line-height: 1.6; }
+
+/* --- */
 
 .approach-section {
     background-color: #ffffff;
@@ -2412,6 +2449,7 @@ h1, h2, h3, h4,
 
 /* --- max-width: 860px --- */
 @media (max-width: 860px) {
+    .why-us-text h2,
     .approach-text h2 {
         text-align: center;
     }
@@ -2459,20 +2497,24 @@ h1, h2, h3, h4,
         flex-direction: column;
     }
 
-    /* Approach go vertical */
+    /* Why us / Approach go vertical */
+    .why-us-container,
     .approach-container {
         flex-direction: column;
         background-color: #ffffff;
     }
 
+    .why-us-image img,
     .approach-image img {
         border-radius: var(--radius-lg);
     }
 
+    .why-us-text,
     .approach-text {
         padding: 20px;
     }
 
+    .why-us-text h2,
     .approach-text h2 {
         text-align: center;
     }
@@ -2632,7 +2674,8 @@ h1, h2, h3, h4,
 
 /* --- max-width: 450px --- */
 @media (max-width: 450px) {
-    .approach-container p {
+    .approach-container p,
+    .why-us-container p {
         text-align: justify;
     }
 
