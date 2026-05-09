@@ -1,0 +1,8 @@
+[
+  { "key": "edf",   "name": "EDF",           "file": "edf.png"   },
+  { "key": "engie", "name": "Engie",          "file": "engie.png" },
+  { "key": "total", "name": "TotalEnergies",  "file": "total.png" },
+  { "key": "enel",  "name": "Enel",           "file": "enel.png"  },
+  { "key": "eni",   "name": "Eni",            "file": "eni.png"   },
+  { "key": "a2a",   "name": "A2A",            "file": "a2a.png"   }
+]
