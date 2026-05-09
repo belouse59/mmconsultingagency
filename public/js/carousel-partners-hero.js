@@ -8,7 +8,7 @@ async function loadCarousel() {
   const res = await fetch("/api/partners/images");
   const images = await res.json();
 
-  const track = document.getElementById("carouselTrack");
+  const track = document.getElementById("marqueeTrack");
   if (!track) return;
 
   track.innerHTML = "";
