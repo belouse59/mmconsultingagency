@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    color: #1A1A2E;
+    background: #F9F9F7;
+    margin: 0;
+    padding: 0;
+  }
+
+  .wrap {
+    max-width: 580px;
+    margin: 32px auto;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #E4E4E0;
+    overflow: hidden;
+  }
+
+  .header {
+    background: #0A1628;
+    padding: 28px 32px;
+  }
+
+  .header h1 {
+    color: #D4A017;
+    font-size: 20px;
+    margin: 0;
+  }
+
+  .header p {
+    color: rgba(255,255,255,0.55);
+    font-size: 13px;
+    margin: 6px 0 0;
+  }
+
+  .saving {
+    background: #EAF6EE;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 24px 0;
+    text-align: center;
+  }
+
+  .saving .amount {
+    font-size: 36px;
+    font-weight: 700;
+    color: #0F7A3C;
+    display: block;
+  }
+
+  .saving .label {
+    font-size: 13px;
+    color: #6B7A8D;
+  }
+
+  .body {
+    padding: 12px 32px 28px;
+  }
+
+  .row {
+    display: flex;
+    padding: 10px 0;
+    border-bottom: 1px solid #F0F0ED;
+  }
+
+  .row:last-child {
+    border-bottom: none;
+  }
+
+  .key {
+    width: 170px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #6B7A8D;
+    flex-shrink: 0;
+  }
+
+  .val {
+    font-size: 15px;
+    color: #1A1A2E;
+    word-break: break-word;
+  }
+
+  .footer {
+    background: #F9F9F7;
+    padding: 16px 32px;
+    font-size: 12px;
+    color: #9CA3AF;
+    border-top: 1px solid #E4E4E0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>Nuova simulazione completata</h1>
+    <p>M&amp;M Consulting · {{DATE}}</p>
+  </div>
+
+  <div class="body">
+    <div class="saving">
+      <span class="amount">-{{MONTHLY_SAVINGS}}€/mese</span>
+      <span class="label">risparmio stimato</span>
+    </div>
+
+    <div class="row">
+      <span class="key">Tipo energia</span>
+      <span class="val">{{ENERGY_TYPE}}</span>
+    </div>
+
+    <div class="row">
+      <span class="key">Abitazione</span>
+      <span class="val">{{HOUSE_TYPE}}</span>
+    </div>
+
+    <div class="row">
+      <span class="key">Città / CAP</span>
+      <span class="val">{{LOCATION}}</span>
+    </div>
+
+    <div class="row">
+      <span class="key">Superficie</span>
+      <span class="val">{{SURFACE}} m²</span>
+    </div>
+
+    <div class="row">
+      <span class="key">Persone</span>
+      <span class="val">{{PEOPLE}}</span>
+    </div>
+
+    <div class="row">
+      <span class="key">Fornitore attuale</span>
+      <span class="val">{{PROVIDER}}</span>
+    </div>
+
+    <div class="row">
+      <span class="key">Bolletta mensile</span>
+      <span class="val">{{BILL}}€</span>
+    </div>
+
+    <div class="row">
+      <span class="key">Consumo elettrico</span>
+      <span class="val">{{ELECTRICITY_KWH}} kWh</span>
+    </div>
+
+    <div class="row">
+      <span class="key">Consumo gas</span>
+      <span class="val">{{GAS_KWH}} kWh</span>
+    </div>
+
+    <div class="row">
+      <span class="key">Tipo stima</span>
+      <span class="val">{{ESTIMATION_TYPE}}</span>
+    </div>
+
+    <div class="row">
+      <span class="key">Tipo form</span>
+      <span class="val">{{FORM_TYPE}}</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    M&amp;M Consulting · Via Industriale 120, 98120 Messina ME
+  </div>
+</div>
+</body>
+</html>

@@ -1,25 +1,31 @@
-const fs = require("fs");
+"use strict";
+
+const fs   = require("fs");
 const path = require("path");
 
-const getPartnerImages = (req, res) => {
-  console.log('HERE')
-  const dirPath = path.join(__dirname, "../../public/assets/partners");
+const PARTNERS_DIR = path.join(__dirname, "../../public/assets/partners");
+const IMAGE_EXT    = /\.(png|jpg|jpeg|webp|svg)$/i;
 
-  fs.readdir(dirPath, (err, files) => {
+// Simple in-memory cache — invalidated when server restarts (fine for static assets)
+let _cache = null;
+
+function getPartnerImages(req, res) {
+  if (_cache) return res.json(_cache);
+
+  fs.readdir(PARTNERS_DIR, (err, files) => {
     if (err) {
-      return res.status(500).json({ error: "Cannot read images folder" });
+      console.error("[partnerController] Cannot read partners dir:", err.message);
+      return res.status(500).json({ error: "Cannot read partners folder." });
     }
 
-    // filter only images
-    const images = files.filter(file =>
-      /\.(png|jpg|jpeg|webp|svg)$/i.test(file)
-    );
+    const urls = files
+      .filter((f) => IMAGE_EXT.test(f))
+      .sort()
+      .map((f) => `/assets/partners/${f}`);
 
-    // map to URLs
-    const imageUrls = images.map(file => `/assets/partners/${file}`);
-
-    res.json(imageUrls);
+    _cache = urls;
+    res.json(urls);
   });
-};
+}
 
 module.exports = { getPartnerImages };

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #1A1A2E;
+      background: #F9F9F7;
+      margin: 0;
+      padding: 0;
+    }
+
+    .wrap {
+      max-width: 580px;
+      margin: 32px auto;
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #E4E4E0;
+      overflow: hidden;
+    }
+
+    .header {
+      background: #0A1628;
+      padding: 28px 32px;
+    }
+
+    .header h1 {
+      color: #D4A017;
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .header p {
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 13px;
+      margin: 6px 0 0;
+    }
+
+    .body {
+      padding: 28px 32px;
+    }
+
+    .row {
+      display: flex;
+      padding: 10px 0;
+      border-bottom: 1px solid #F0F0ED;
+    }
+
+    .row:last-child {
+      border-bottom: none;
+    }
+
+    .key {
+      width: 140px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #6B7A8D;
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    .val {
+      font-size: 15px;
+      color: #1A1A2E;
+      word-break: break-word;
+    }
+
+    .cta {
+      margin: 24px 0 0;
+      background: #D4A017;
+      color: #0A1628 !important;
+      padding: 13px 24px;
+      border-radius: 7px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      display: inline-block;
+    }
+
+    .footer {
+      background: #F9F9F7;
+      padding: 16px 32px;
+      font-size: 12px;
+      color: #9CA3AF;
+      border-top: 1px solid #E4E4E0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1>Nuova richiesta di contatto</h1>
+      <p>M&amp;M Consulting · {{DATE}}</p>
+    </div>
+
+    <div class="body">
+      <div class="row">
+        <span class="key">Nome</span>
+        <span class="val">{{FIRSTNAME}} {{LASTNAME}}</span>
+      </div>
+
+      <div class="row">
+        <span class="key">Email</span>
+        <span class="val">{{EMAIL}}</span>
+      </div>
+
+      <div class="row">
+        <span class="key">Telefono</span>
+        <span class="val">{{PHONE}}</span>
+      </div>
+
+      <div class="row">
+        <span class="key">Energia</span>
+        <span class="val">{{ENERGY_TYPE}}</span>
+      </div>
+
+      <div class="row">
+        <span class="key">Orario</span>
+        <span class="val">{{CONTACT_TIME}}</span>
+      </div>
+
+      <div class="row">
+        <span class="key">Messaggio</span>
+        <span class="val">{{MESSAGE}}</span>
+      </div>
+      <div class="row">
+        <span class="key">Tipo form</span>
+        <span class="val">{{FORM_TYPE}}</span>
+      </div>
+
+      <a class="cta" href="mailto:{{EMAIL}}">
+        Rispondi a {{FIRSTNAME}}
+      </a>
+    </div>
+
+    <div class="footer">
+      M&amp;M Consulting · Via Industriale 120, 98120 Messina ME
+    </div>
+  </div>
+</body>
+
+</html>

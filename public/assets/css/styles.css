@@ -1676,7 +1676,7 @@ abbr[title] {
 
 .provider-card {
     aspect-ratio: 1;
-    padding: var(--sp-3);
+    padding: var(--sp-5);
     border-radius: var(--r-md);
     border: 2px solid transparent;
     cursor: pointer;
@@ -2574,6 +2574,13 @@ abbr[title] {
     max-width: 580px;
     margin: 0 auto;
     text-align: left;
+}
+
+.honeypot {
+    position: absolute;
+    left: -9999px;
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* Floating label field */
@@ -3859,4 +3866,394 @@ abbr[title] {
     .modal-box {
         padding: var(--sp-6);
     }
+}
+
+
+
+/* ============================================================
+   APPENDIX A — ACCESSIBILITY & ENVIRONMENT ADDITIONS
+   Append these rules at the end of styles.css
+============================================================ */
+
+
+/* ── Skip to content (keyboard accessibility) ── */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: var(--sp-4);
+  background: var(--gold);
+  color: var(--navy);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.875rem;
+  padding: var(--sp-3) var(--sp-5);
+  border-radius: var(--r-md);
+  z-index: 9999;
+  text-decoration: none;
+  transition: top 0.15s;
+}
+
+.skip-to-content:focus {
+  top: var(--sp-4);
+}
+
+
+/* ── Touch target enforcement (WCAG 2.5.5 — 44×44px min) ── */
+.btn,
+.nav-link,
+.nav-cta-btn,
+.faq-question,
+.team-btn,
+.carousel-btn,
+.wa-float,
+.wa-send-btn,
+.modal-close,
+.wa-chat-close,
+.sim-card,
+.provider-card {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Nav links need padding to reach 44px tap area without growing visually */
+.nav-link {
+  padding: 12px 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mobile-link {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+
+/* ── iOS Safari safe-area (notch / home bar) ── */
+.site-header {
+  padding-left:  max(var(--sp-6), env(safe-area-inset-left));
+  padding-right: max(var(--sp-6), env(safe-area-inset-right));
+}
+
+.site-footer .footer-inner {
+  padding-left:  max(var(--sp-6), env(safe-area-inset-left));
+  padding-right: max(var(--sp-6), env(safe-area-inset-right));
+  padding-bottom: max(var(--sp-10), env(safe-area-inset-bottom));
+}
+
+.wa-float {
+  bottom: max(28px, calc(env(safe-area-inset-bottom) + 12px));
+  right:  max(28px, env(safe-area-inset-right));
+}
+
+.wa-chat {
+  bottom: max(100px, calc(env(safe-area-inset-bottom) + 84px));
+  right:  max(28px, env(safe-area-inset-right));
+}
+
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration:   0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration:  0.01ms !important;
+    scroll-behavior:      auto !important;
+  }
+
+  .reveal {
+    opacity:   1;
+    transform: none;
+    transition: none;
+  }
+
+  .marquee-track {
+    animation: none;
+  }
+
+  .wa-float {
+    animation: none;
+  }
+
+  .hero-scroll-hint {
+    animation: none;
+  }
+}
+
+
+/* ── Dark mode ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --navy:          #0E1E3A;
+    --navy-mid:      #172844;
+    --navy-light:    #243F6A;
+
+    --text-primary:   #F0F2F5;
+    --text-secondary: #9EB0C5;
+    --text-muted:     #6B7E95;
+
+    --bg:            #0E1420;
+    --bg-soft:       #131C2C;
+    --bg-surface:    #172030;
+    --border:        rgba(255,255,255,0.08);
+    --border-focus:  var(--gold);
+
+    --err-bg:        rgba(229,72,77,0.12);
+    --err-border:    rgba(229,72,77,0.35);
+  }
+
+  /* Nav already dark — just adjust border */
+  .site-header {
+    background: rgba(14, 20, 32, 0.97);
+    border-bottom-color: rgba(212,160,23,0.18);
+  }
+
+  /* Cards */
+  .service-card,
+  .h-card,
+  .team-card,
+  .result-card,
+  .faq-item,
+  .simulator-container {
+    background: var(--bg-surface);
+    border-color: var(--border);
+  }
+
+  /* Form inputs */
+  .field-wrap input,
+  .field-wrap textarea,
+  .field-wrap select,
+  .provider-select,
+  .provider-input,
+  .sim-location-field input,
+  .input-wrapper input {
+    background: var(--bg-soft);
+    color: var(--text-primary);
+    border-color: var(--border);
+  }
+
+  .field-wrap input:focus,
+  .field-wrap textarea:focus,
+  .field-wrap select:focus {
+    background: var(--bg-surface);
+    border-color: var(--gold);
+  }
+
+  /* Consent block */
+  .consent-block {
+    background: var(--bg-soft);
+    border-color: var(--border);
+  }
+
+  .consent-checkbox {
+    background: var(--bg-surface);
+    border-color: var(--border);
+  }
+
+  /* FAQ */
+  .faq-question {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+  }
+
+  .faq-question:hover   { background: var(--bg-soft); }
+  .faq-answer           { background: var(--bg-surface); }
+  .faq-answer p         { color: var(--text-secondary); }
+
+  .faq-icon {
+    background: var(--bg-soft);
+    border-color: var(--border);
+    color: var(--text-secondary);
+  }
+
+  /* WhatsApp chat */
+  .wa-chat {
+    background: var(--bg-surface);
+    border-color: var(--border);
+  }
+
+  .wa-chat-body    { background: var(--bg-soft); }
+  .wa-chat-bubble  { background: var(--bg-surface); color: var(--text-primary); }
+
+  .wa-chat-input   { background: var(--bg-surface); border-top-color: var(--border); }
+
+  .wa-chat-input textarea {
+    background: var(--bg-soft);
+    color: var(--text-primary);
+    border-color: var(--border);
+  }
+
+  /* Modal */
+  .modal-box {
+    background: var(--bg-surface);
+  }
+
+  .modal-box h2,
+  .modal-box h3 { color: var(--gold); }
+  .modal-body p { color: var(--text-secondary); }
+
+  /* Partners strip */
+  .partners-strip {
+    background: var(--bg-soft);
+    border-color: var(--border);
+  }
+
+  .marquee-outer::before {
+    background: linear-gradient(to right, var(--bg-soft), transparent);
+  }
+
+  .marquee-outer::after {
+    background: linear-gradient(to left, var(--bg-soft), transparent);
+  }
+
+  /* Approach section */
+  .approach { background: var(--bg); }
+
+  /* Highlight cards */
+  .h-card--positive { box-shadow: 0 8px 32px rgba(212,160,23,0.15); }
+
+  /* Toast */
+  .toast { background: var(--navy-mid); }
+
+  /* Simulator progress dots */
+  .sim-track-dot { background: rgba(255,255,255,0.12); color: var(--text-muted); }
+
+  /* Slider track */
+  .sim-slider { background: var(--border); }
+
+  /* Result insights */
+  .insight { background: var(--bg-soft); border-color: var(--border); }
+  .insight strong { color: var(--text-primary); }
+
+  /* Consumption toggle */
+  .consumption-toggle {
+    background: var(--bg-soft);
+    border-color: var(--border);
+  }
+
+  /* Provider card */
+  .provider-card { background: var(--bg-soft); }
+
+  /* Sim card */
+  .sim-card { background: var(--bg-soft); }
+  .sim-card:hover { border-color: var(--border); }
+
+  /* Map wrapper */
+  .map-wrap { border-color: var(--border); }
+
+  /* Ghost button on light bg */
+  .btn-ghost--light {
+    color: var(--text-secondary);
+    border-color: var(--border);
+  }
+
+  .btn-ghost--light:hover {
+    background: var(--bg-soft);
+    color: var(--text-primary);
+  }
+}
+
+
+/* ── Print styles ── */
+@media print {
+  /* Hide non-essential UI */
+  .site-header,
+  .wa-float,
+  .wa-chat,
+  .toast,
+  .modal-overlay,
+  .hero-scroll-hint,
+  .sim-nav,
+  .reviews,
+  .find-us,
+  .partners-strip,
+  .how-section,
+  .faq,
+  .contact,
+  .simulator-section,
+  .team,
+  .approach,
+  footer.site-footer { display: none !important; }
+
+  /* Show printable content cleanly */
+  body {
+    font-family: Georgia, serif;
+    font-size: 11pt;
+    color: #000;
+    background: #fff;
+    line-height: 1.6;
+  }
+
+  .hero {
+    display: block;
+    padding: 24pt 0 12pt;
+    min-height: auto;
+  }
+
+  .hero-panel--image { display: none; }
+
+  .hero-panel--dark {
+    background: #fff;
+    padding: 0;
+  }
+
+  .hero-heading { color: #000; font-size: 22pt; }
+  .hero-eyebrow { color: #555; }
+  .hero-sub     { color: #333; }
+  .hero-trust   { display: none; }
+  .hero-actions { display: none; }
+
+  .section-title { color: #000; font-size: 14pt; }
+
+  .section-title-line,
+  .hero-highlight { color: #000; }
+
+  .h-card {
+    border: 1pt solid #ccc;
+    page-break-inside: avoid;
+    margin-bottom: 12pt;
+  }
+
+  .h-price { color: #000; }
+  .h-price--green { color: #1a7a3c; }
+
+  .h-features li { color: #333; }
+
+  .h-icon--green { color: #1a7a3c; }
+  .h-icon--red   { color: #c0392b; }
+
+  .h-saving {
+    background: #f5f5f5;
+    color: #1a7a3c;
+    border: 1pt solid #ccc;
+  }
+
+  .services-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12pt; }
+
+  .service-card {
+    border: 1pt solid #ccc;
+    page-break-inside: avoid;
+  }
+
+  a { color: #000; text-decoration: none; }
+
+  /* Page breaks */
+  .services    { page-break-before: always; }
+  .stats       { page-break-before: always; }
+  .highlight   { page-break-before: always; }
+
+  /* Print URL after links */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #666;
+  }
+
+  a[href^="tel"]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+  }
 }
