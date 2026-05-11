@@ -141,11 +141,11 @@ async function submitForm(req, res) {
   //  console.log(data);
   if (data.company) {
   // Silent discard — don't tell bots they were detected
-  return res.status(200).json(respond("success", "Request processed"));
+  return res.status(200).json(ok("Request processed"));
 }
 
   if (!data || !data.formType || data.consent !== "SI") {
-    return res.status(400).json(respond("error", "Invalid data"));
+    return res.status(400).json(err("Invalid data"));
   }
 
   // Rate limit by email (or IP as fallback)
