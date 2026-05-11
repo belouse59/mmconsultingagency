@@ -63,8 +63,8 @@ async function notifyNewLead(data) {
  * Fails silently.
  */
 async function notifySimulator(data) {
-  if (!process.env.NOTIFY_TO) return;
   console.log('I will send the email');
+  if (!process.env.NOTIFY_TO) return;
   try {
     const html = loadTemplate("simulator-email.html", {
       DATE: getLocalTimestamp() || "",
