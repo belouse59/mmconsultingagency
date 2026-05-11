@@ -63,9 +63,7 @@ async function notifyNewLead(data) {
  * Fails silently.
  */
 async function notifySimulator(data) {
-  console.log("sending to "+process.env.NOTIFY_TO)
   if (!process.env.NOTIFY_TO) return;
-  console.log('I will send the email');
   try {
     const html = loadTemplate("simulator-email.html", {
       DATE: getLocalTimestamp() || "",
@@ -84,7 +82,6 @@ async function notifySimulator(data) {
       ESTIMATION_TYPE: data.estimationType || "unknown",
       FORM_TYPE: data.formType || "simulator",
     });
-    console.log(html);
 
     await resend.emails.send({
       from: `${process.env.BRAND_NAME} <${process.env.RESEND_FROM_EMAIL}>`,
