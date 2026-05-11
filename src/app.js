@@ -27,7 +27,7 @@ app.use(helmet(CSP_CONFIG));
 const allowedOrigins = (process.env.ALLOWED_ORIGIN || "http://localhost:3000")
   .split(",")
   .map((o) => o.trim());
-console.log("before origin");
+
 app.use(
   cors({
     origin: (origin, cb) => {
@@ -52,9 +52,13 @@ app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
    API ROUTES
 ───────────────────────────────────────────────────────────── */
 app.use("/api/partners",  partnerRoutes);
+console.log("/api/partners");
 app.use("/api/providers", providerRoutes);
+console.log("/api/providers");
 app.use("/api/team",      teamRoutes);
+console.log("/api/team");
 app.use("/api/form",      formRoutes);
+console.log("/api/form");
 
 /* ─────────────────────────────────────────────────────────────
    STATIC FILES
