@@ -116,7 +116,8 @@ async function handleSimulator(data) {
   ]);
 
   // Fire-and-forget notification
-  notifySimulator(data);
+  let mail = await notifySimulator(data);
+  console.log(mail);
 
   return ok("Simulazione registrata.");
 }
