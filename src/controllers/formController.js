@@ -127,16 +127,14 @@ async function handleSimulator(data) {
 async function submitForm(req, res) {
   
   const data = req.body;
-console.log(data);
+  
   // Basic shape check
   if (!data || typeof data !== "object" || !data.formType) {
-    console.log("Basic shape check")
     return res.status(400).json(err("Dati non validi."));
   }
 
   const VALID_TYPES = ["contact", "newsletter", "simulator"];
   if (!VALID_TYPES.includes(data.formType)) {
-    console.log("valid types")
     return res.status(400).json(err("Tipo di modulo non riconosciuto."));
   }
 
@@ -145,8 +143,7 @@ console.log(data);
   return res.status(200).json(ok("Request processed"));
 }
 
-  if (!data || !data.formType || data.consent !== "SI") {
-    console.log("consent SI")
+  if (!data || !data.formType || (data.consent !== "SI" && data.formType === "contact")) {
     return res.status(400).json(err("Invalid data"));
   }
 
