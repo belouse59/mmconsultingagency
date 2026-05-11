@@ -45,14 +45,12 @@ app.use(
 /* ─────────────────────────────────────────────────────────────
    GENERAL MIDDLEWARE
 ───────────────────────────────────────────────────────────── */
-console.log("before limit 50kb");
 app.use(express.json({ limit: "50kb" })); // guard against large payloads
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 /* ─────────────────────────────────────────────────────────────
    API ROUTES
 ───────────────────────────────────────────────────────────── */
-console.log("before routes");
 app.use("/api/partners",  partnerRoutes);
 app.use("/api/providers", providerRoutes);
 app.use("/api/team",      teamRoutes);
@@ -61,7 +59,7 @@ app.use("/api/form",      formRoutes);
 /* ─────────────────────────────────────────────────────────────
    STATIC FILES
 ───────────────────────────────────────────────────────────── */
-
+console.log("before static");
 app.use(express.static(path.join(__dirname, "../public"), {
   maxAge: process.env.NODE_ENV === "production" ? "7d" : 0,
   etag:   true,
@@ -89,7 +87,7 @@ app.get("/health", (req, res) => {
 /* ─────────────────────────────────────────────────────────────
    SPA FALLBACK — always serve index.html for unknown GET routes
 ───────────────────────────────────────────────────────────── */
-
+console.log("before spa fallback");
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, "../public/index.html"));
 });
