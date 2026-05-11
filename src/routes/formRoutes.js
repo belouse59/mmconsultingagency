@@ -1,6 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { submitForm } = require("../controllers/formController");
-router.post("/submit", submitForm);
+try {
+  const { submitForm } = require("../controllers/formController");
+  console.log("submitForm =", typeof submitForm);
+
+  router.post("/submit", submitForm);
+} catch (e) {
+  console.error("FORM ROUTE LOAD ERROR:");
+  console.error(e);
+}
 
 module.exports = router;
