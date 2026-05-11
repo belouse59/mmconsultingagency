@@ -27,7 +27,7 @@ app.use(helmet(CSP_CONFIG));
 const allowedOrigins = (process.env.ALLOWED_ORIGIN || "http://localhost:3000")
   .split(",")
   .map((o) => o.trim());
-
+console.log(allowedOrigins)
 app.use(
   cors({
     origin: (origin, cb) => {
