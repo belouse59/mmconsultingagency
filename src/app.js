@@ -51,7 +51,10 @@ app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 /* ─────────────────────────────────────────────────────────────
    API ROUTES
 ───────────────────────────────────────────────────────────── */
-
+console.log("partnerRoutes:", partnerRoutes, typeof partnerRoutes);
+console.log("providerRoutes:", providerRoutes, typeof providerRoutes);
+console.log("teamRoutes:", teamRoutes, typeof teamRoutes);
+console.log("formRoutes:", formRoutes, typeof formRoutes);
 app.use("/api/partners",  partnerRoutes);
 app.use("/api/providers", providerRoutes);
 app.use("/api/team",      teamRoutes);
