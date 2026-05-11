@@ -35,11 +35,11 @@ const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
 function smoothScrollTo(targetId) {
   const el = document.getElementById(targetId);
   if (!el) return;
-  const nav    = $(".site-header") || $(".banner");
+  const nav = $(".site-header") || $(".banner");
   const offset = nav ? nav.offsetHeight + 20 : 20;
-  const top    = el.getBoundingClientRect().top + window.pageYOffset - offset;
-  const start  = window.pageYOffset;
-  const dist   = top - start;
+  const top = el.getBoundingClientRect().top + window.pageYOffset - offset;
+  const start = window.pageYOffset;
+  const dist = top - start;
   let startTime = null;
 
   function step(now) {
@@ -73,9 +73,9 @@ function showToast(html, type = "success", duration = 4500) {
 async function postForm(payload) {
   try {
     const res = await fetch("/api/form/submit", {
-      method:  "POST",
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify(payload),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) return { success: false, message: `Errore ${res.status}` };
     const data = await res.json();
@@ -90,7 +90,7 @@ function setButtonLoading(btn, loading, label = null) {
   if (!btn) return;
   if (loading) {
     if (!btn.dataset.widthLocked) {
-      btn.style.width         = btn.offsetWidth + "px";
+      btn.style.width = btn.offsetWidth + "px";
       btn.dataset.widthLocked = "1";
     }
     btn.classList.add("loading");
@@ -109,10 +109,10 @@ function setButtonLoading(btn, loading, label = null) {
    NAVIGATION
 ───────────────────────────────────────────────────────────── */
 function initNav() {
-  const burger     = $("#navBurger");
+  const burger = $("#navBurger");
   const mobileMenu = $("#mobileMenu");
-  const isMobile   = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const ctaBtn     = $("#navCtaBtn");
+  const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const ctaBtn = $("#navCtaBtn");
 
   /* CTA — phone call on mobile, smooth scroll on desktop */
   if (ctaBtn) {
@@ -166,8 +166,8 @@ function initNav() {
   });
 
   /* Active nav link on scroll */
-  const sections  = $$("section[id], div[id]").filter((s) => s.id);
-  const navLinks  = $$(".nav-link");
+  const sections = $$("section[id], div[id]").filter((s) => s.id);
+  const navLinks = $$(".nav-link");
   const scrollHint = $("#scrollHint");
 
   const onScroll = () => {
@@ -227,7 +227,7 @@ async function initPartners() {
   if (!track) return;
 
   try {
-    const res    = await fetch("/api/partners/images");
+    const res = await fetch("/api/partners/images");
     if (!res.ok) return;
     const images = await res.json();
     if (!images?.length) return;
@@ -237,9 +237,9 @@ async function initPartners() {
       images
         .map((src) => {
           const img = document.createElement("img");
-          img.src    = src;
-          img.alt    = "Partner energetico";
-          img.width  = 110;
+          img.src = src;
+          img.alt = "Partner energetico";
+          img.width = 110;
           img.height = 40;
           img.loading = "lazy";
           return img;
@@ -253,8 +253,8 @@ async function initPartners() {
 
     /* Legacy carousel fallback */
     track.innerHTML = "";
-    const mid   = Math.ceil(images.length / 2);
-    const rows  = [images.slice(0, mid), images.slice(mid)];
+    const mid = Math.ceil(images.length / 2);
+    const rows = [images.slice(0, mid), images.slice(mid)];
 
     rows.forEach((rowImgs) => {
       const slide = document.createElement("div");
@@ -297,7 +297,7 @@ async function initTeam() {
   if (!track) return;
 
   try {
-    const res  = await fetch("/api/team");
+    const res = await fetch("/api/team");
     if (!res.ok) return;
     const team = await res.json();
     if (!team?.length) return;
@@ -330,9 +330,9 @@ async function initTeam() {
       track.appendChild(slide);
     });
 
-    let idx      = 0;
+    let idx = 0;
     const slides = $$(".team-slide", track.parentElement);
-    const total  = slides.length;
+    const total = slides.length;
 
     function goTo(n) {
       slides[idx].classList.remove("active");
@@ -393,9 +393,9 @@ function initReviews() {
 function initFAQ() {
   $$(".faq-question").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const item     = btn.closest(".faq-item");
-      const isOpen   = item.classList.contains("active");
-      const answer   = item.querySelector(".faq-answer");
+      const item = btn.closest(".faq-item");
+      const isOpen = item.classList.contains("active");
+      const answer = item.querySelector(".faq-answer");
 
       /* Close all others */
       $$(".faq-item.active").forEach((open) => {
@@ -427,7 +427,7 @@ function initFAQ() {
    PRIVACY MODAL
 ───────────────────────────────────────────────────────────── */
 function initPrivacyModal() {
-  const modal    = $("#privacyModal");
+  const modal = $("#privacyModal");
   const closeBtn = $("#closePrivacyModal");
   if (!modal) return;
 
@@ -464,11 +464,11 @@ function initPrivacyModal() {
    WHATSAPP WIDGET
 ───────────────────────────────────────────────────────────── */
 function initWhatsApp() {
-  const WA_NUMBER   = "+390909412150"; // ← real Messina number
-  const floatBtn    = $(".wa-float");
-  const chat        = $("#whatsappChat");
-  const closeBtn    = $(".wa-chat-close");
-  const textarea    = $("#userMessage");
+  const WA_NUMBER = "+390909412150"; // ← real Messina number
+  const floatBtn = $(".wa-float");
+  const chat = $("#whatsappChat");
+  const closeBtn = $(".wa-chat-close");
+  const textarea = $("#userMessage");
 
   if (!floatBtn || !chat) return;
 
@@ -528,14 +528,14 @@ function initWhatsApp() {
    CONTACT FORM
 ───────────────────────────────────────────────────────────── */
 function initContactForm() {
-  const form          = $("#contactForm");
-  const submitBtn     = $("#contact-btn");
-  const phoneToggle   = $("#phoneToggle");
+  const form = $("#contactForm");
+  const submitBtn = $("#contact-btn");
+  const phoneToggle = $("#phoneToggle");
   const phoneFieldWrap = $("#phoneFieldWrap");
   const contactTimeRow = $("#contactTimeRow");
-  const consentBlock   = $(".consent-block");
-  const consentChk     = $("#consentCheckbox") || $("#consent-checkbox");
-  const consentError   = $("#consentError");
+  const consentBlock = $(".consent-block");
+  const consentChk = $("#consentCheckbox") || $("#consent-checkbox");
+  const consentError = $("#consentError");
 
   if (!form) return;
 
@@ -578,16 +578,18 @@ function initContactForm() {
       form.reportValidity();
       return;
     }
+    if (form.company.value) return;
 
     const payload = {
-      formType:    "contact",
-      firstname:   form.firstname?.value?.trim(),
-      lastname:    form.lastname?.value?.trim(),
-      email:       form.email?.value?.trim(),
-      phone:       form.phone?.value?.trim() || "",
-      energyType:  form.energyType?.value || "",
+      formType: "contact",
+      firstname: form.firstname?.value?.trim(),
+      lastname: form.lastname?.value?.trim(),
+      email: form.email?.value?.trim(),
+      phone: form.phone?.value?.trim() || "",
+      energyType: form.energyType?.value || "",
       contactTime: form.contactTime?.value || "",
       messageForm: form.message?.value?.trim() || "",
+      consent: consentChk ? "SI" : "NO"
     };
 
     setButtonLoading(submitBtn, true);
@@ -596,12 +598,12 @@ function initContactForm() {
     if (result.success) {
       showToast("✓ Richiesta inviata! Ti risponderemo entro 24 ore.", "success");
       setButtonLoading(submitBtn, false, "✓ Inviato");
-      submitBtn.style.background  = "var(--green)";
-      submitBtn.style.color       = "#fff";
-      submitBtn.disabled          = true;
+      submitBtn.style.background = "var(--green)";
+      submitBtn.style.color = "#fff";
+      submitBtn.disabled = true;
       form.reset();
       if (phoneFieldWrap) phoneFieldWrap.style.display = "none";
-      if (contactTimeRow) contactTimeRow.style.display  = "none";
+      if (contactTimeRow) contactTimeRow.style.display = "none";
     } else {
       showToast(result.message || "Errore durante l'invio. Riprova.", "error");
       setButtonLoading(submitBtn, false, "Invia richiesta gratuita");
@@ -614,7 +616,7 @@ function initContactForm() {
 ───────────────────────────────────────────────────────────── */
 function initNewsletter() {
   const form = $("#newsletterForm");
-  const btn  = $("#newsletter-btn");
+  const btn = $("#newsletter-btn");
   if (!form) return;
 
   form.addEventListener("submit", async (e) => {
@@ -632,7 +634,7 @@ function initNewsletter() {
       showToast("✓ Iscrizione confermata! Grazie.", "success");
       setButtonLoading(btn, false, "✓ Iscritto");
       btn.style.background = "var(--green)";
-      btn.disabled          = true;
+      btn.disabled = true;
       form.reset();
     } else {
       const msg = result.message === "Already subscribed"
@@ -652,46 +654,46 @@ function initSimulator() {
   if (!simContainer) return;
 
   /* ── DOM refs ── */
-  const steps        = $$(".sim-step");
-  const trackSteps   = $$(".sim-track-step");
-  const connectors   = $$(".sim-track-connector");
-  const nextBtn      = $("#nextBtn");
-  const prevBtn      = $("#prevBtn");
-  const simNav       = $(".sim-nav");
+  const steps = $$(".sim-step");
+  const trackSteps = $$(".sim-track-step");
+  const connectors = $$(".sim-track-connector");
+  const nextBtn = $("#nextBtn");
+  const prevBtn = $("#prevBtn");
+  const simNav = $(".sim-nav");
 
   /* Step-specific inputs */
-  const energyCards  = $$('[data-value="electricity"],[data-value="gas"],[data-value="both"]');
-  const houseCards   = $$('[data-value="house"],[data-value="flat"]');
-  const peopleCards  = $$("[data-people]");
-  const locationInp  = $("#locationInput");
+  const energyCards = $$('[data-value="electricity"],[data-value="gas"],[data-value="both"]');
+  const houseCards = $$('[data-value="house"],[data-value="flat"]');
+  const peopleCards = $$("[data-people]");
+  const locationInp = $("#locationInput");
   const surfaceSlider = $("#surfaceSlider");
-  const surfaceDisp   = $("#surfaceValue2");
-  const toggleOpts   = $$(".toggle-option");
-  const consumInps   = $("#consumptionInputs");
-  const helperTxt    = $(".helper-text");
-  const providerSel  = $(".provider-select");
-  const providerInp  = $(".provider-input");
-  const selectWrap   = $(".custom-select-wrap") || $(".custom-select-wrapper");
-  const billSlider   = $("#billSlider");
-  const sliderDisp   = $("#sliderValue");
+  const surfaceDisp = $("#surfaceValue2");
+  const toggleOpts = $$(".toggle-option");
+  const consumInps = $("#consumptionInputs");
+  const helperTxt = $(".helper-text");
+  const providerSel = $(".provider-select");
+  const providerInp = $(".provider-input");
+  const selectWrap = $(".custom-select-wrap") || $(".custom-select-wrapper");
+  const billSlider = $("#billSlider");
+  const sliderDisp = $("#sliderValue");
 
   if (!nextBtn || !prevBtn || !steps.length) return;
 
   /* ── State ── */
-  let currentStep     = 0;
-  let selectedEnergy  = null;
-  let selectedHouse   = null;
-  let selectedPeople  = null;
-  let locationValue   = "";
-  let surface         = 80;
-  let consumptionMode = "estimate";
+  let currentStep = 0;
+  let selectedEnergy = null;
+  let selectedHouse = null;
+  let selectedPeople = null;
+  let locationValue = "";
+  let surface = 80;
+  let consumptionMode = "estimated";
   let selectedProvider = null;
 
   /* ── Step progress track ── */
   function updateTrack() {
     trackSteps.forEach((s, i) => {
       s.classList.toggle("active", i === currentStep);
-      s.classList.toggle("done",   i < currentStep);
+      s.classList.toggle("done", i < currentStep);
       const dot = s.querySelector(".sim-track-dot");
       if (dot) dot.setAttribute("aria-current", i === currentStep ? "step" : "false");
     });
@@ -707,7 +709,7 @@ function initSimulator() {
   function updateSimulator() {
     steps.forEach((step, i) => {
       step.style.transform = `translateX(-${currentStep * 100}%)`;
-      step.style.opacity   = i === currentStep ? "1" : "0.25";
+      step.style.opacity = i === currentStep ? "1" : "0.25";
       step.classList.toggle("active", i === currentStep);
     });
 
@@ -726,12 +728,12 @@ function initSimulator() {
       case 1: return selectedHouse !== null && locationValue !== "";
       case 2: return selectedPeople !== null;
       case 3: {
-        if (consumptionMode === "estimate") return true;
+        if (consumptionMode === "estimated") return true;
         const eSlider = $("#electricitySlider");
         const gSlider = $("#gasSlider");
-        if (selectedEnergy === "both")        return Number(eSlider?.value) > 0 && Number(gSlider?.value) > 0;
+        if (selectedEnergy === "both") return Number(eSlider?.value) > 0 && Number(gSlider?.value) > 0;
         if (selectedEnergy === "electricity") return Number(eSlider?.value) > 0;
-        if (selectedEnergy === "gas")         return Number(gSlider?.value) > 0;
+        if (selectedEnergy === "gas") return Number(gSlider?.value) > 0;
         return true;
       }
       case 4: return !!selectedProvider && selectedProvider !== "" && selectedProvider !== "ALTRO";
@@ -742,9 +744,9 @@ function initSimulator() {
 
   function updateButtons() {
     const ok = canProceed();
-    nextBtn.disabled       = !ok;
-    nextBtn.style.opacity  = ok ? "1" : "0.45";
-    nextBtn.style.cursor   = ok ? "pointer" : "not-allowed";
+    nextBtn.disabled = !ok;
+    nextBtn.style.opacity = ok ? "1" : "0.45";
+    nextBtn.style.cursor = ok ? "pointer" : "not-allowed";
   }
 
   /* ── Slider setup ── */
@@ -752,11 +754,11 @@ function initSimulator() {
     if (!slider || !display) return;
 
     function update() {
-      const val     = parseInt(slider.value);
+      const val = parseInt(slider.value);
       const percent = val / slider.max;
-      const isDesk  = window.innerWidth > 600;
-      const minOff  = isDesk ? 0.06 : 0.10;
-      const maxOff  = isDesk ? 0.94 : 0.90;
+      const isDesk = window.innerWidth > 600;
+      const minOff = isDesk ? 0.06 : 0.10;
+      const maxOff = isDesk ? 0.94 : 0.90;
 
       display.textContent = `${val} ${unit}`;
 
@@ -769,9 +771,9 @@ function initSimulator() {
       )`;
 
       let left;
-      if (val <= minClamp)      left = minOff * 100;
+      if (val <= minClamp) left = minOff * 100;
       else if (val >= maxClamp) left = maxOff * 100;
-      else                      left = percent * 100;
+      else left = percent * 100;
 
       display.style.left = `calc(${left}%)`;
       updateButtons();
@@ -783,7 +785,7 @@ function initSimulator() {
 
   /* Init sliders */
   if (surfaceSlider && surfaceDisp) setupSlider(surfaceSlider, surfaceDisp, "m²", 30, 180);
-  if (billSlider && sliderDisp)     setupSlider(billSlider, sliderDisp, "€", 30, 470);
+  if (billSlider && sliderDisp) setupSlider(billSlider, sliderDisp, "€", 30, 470);
 
   /* ── Option cards (energy, house, people) ── */
   function bindCards(cards, onSelect) {
@@ -802,7 +804,7 @@ function initSimulator() {
   }
 
   bindCards(energyCards, (c) => { selectedEnergy = c.dataset.value; });
-  bindCards(houseCards,  (c) => { selectedHouse  = c.dataset.value; });
+  bindCards(houseCards, (c) => { selectedHouse = c.dataset.value; });
   bindCards(peopleCards, (c) => { selectedPeople = c.dataset.people; });
 
   /* Location */
@@ -834,20 +836,20 @@ function initSimulator() {
   /* Provider select */
   providerSel?.addEventListener("change", (e) => {
     selectedProvider = providerSel.value;
-    if(e.isTrusted) {
-        $$(".provider-card").forEach((c) => {
-            c.classList.remove("active");
-            c.setAttribute("aria-checked", false);
-        });
+    if (e.isTrusted) {
+      $$(".provider-card").forEach((c) => {
+        c.classList.remove("active");
+        c.setAttribute("aria-checked", false);
+      });
     }
     // find matching card
-  const matchingCard = $(`.provider-card[aria-label="${selectedProvider}"]`);
+    const matchingCard = $(`.provider-card[aria-label="${selectedProvider}"]`);
 
-  // activate if found
-  if (matchingCard) {
-    matchingCard.classList.add("active");
-    matchingCard.setAttribute("aria-checked", "true");
-  }
+    // activate if found
+    if (matchingCard) {
+      matchingCard.classList.add("active");
+      matchingCard.setAttribute("aria-checked", "true");
+    }
 
     if (providerInp) {
       providerInp.style.display = selectedProvider === "ALTRO" ? "block" : "none";
@@ -866,8 +868,8 @@ function initSimulator() {
   providerInp?.addEventListener("input", () => {
     selectedProvider = providerInp.value.trim();
     $$(".provider-card").forEach((c) => {
-        c.classList.remove("active");
-        c.setAttribute("aria-checked", false);
+      c.classList.remove("active");
+      c.setAttribute("aria-checked", false);
 
     });
     if (providerSel) providerSel.value = "";
@@ -881,12 +883,12 @@ function initSimulator() {
 
     if (helperTxt) {
       helperTxt.textContent =
-        consumptionMode === "estimate"
+        consumptionMode === "estimated"
           ? "Non sei sicuro? Scegli la stima — la calcoleremo per te in base alla tua abitazione."
           : "Inserisci il tuo consumo reale per una stima più precisa.";
     }
 
-    if (consumptionMode === "estimate") return;
+    if (consumptionMode === "estimated") return;
 
     const blocks = [];
     if (selectedEnergy === "electricity" || selectedEnergy === "both") {
@@ -940,7 +942,7 @@ function initSimulator() {
           o.classList.toggle("active", i === 0);
           o.setAttribute("aria-checked", i === 0 ? "true" : "false");
         });
-        consumptionMode = "estimate";
+        consumptionMode = "estimated";
         if (consumInps) consumInps.innerHTML = "";
       }
       updateSimulator();
@@ -967,30 +969,30 @@ function initSimulator() {
     let base = Number(surface) * 2.5;
     base *= (peopleFactor[selectedPeople] || 1);
     if (selectedHouse === "house") base *= 1.2;
-    if (selectedHouse === "flat")  base *= 0.9;
+    if (selectedHouse === "flat") base *= 0.9;
     if (selectedEnergy === "electricity") base *= 0.9;
-    if (selectedEnergy === "gas")         base *= 1.1;
-    if (selectedEnergy === "both")        base *= 1.25;
+    if (selectedEnergy === "gas") base *= 1.1;
+    if (selectedEnergy === "both") base *= 1.25;
 
-    const bill   = Number(billSlider?.value || 100);
-    let monthly  = (bill * 0.18) + (base * 0.03);
-    monthly      = Math.max(8, Math.min(Math.round(monthly), 180));
+    const bill = Number(billSlider?.value || 100);
+    let monthly = (bill * 0.18) + (base * 0.03);
+    monthly = Math.max(8, Math.min(Math.round(monthly), 180));
 
     /* Read known consumption if provided */
     const eSlider = $("#electricitySlider");
     const gSlider = $("#gasSlider");
-    const eDisp   = $("#electricityValue");
-    const gDisp   = $("#gasValue");
+    const eDisp = $("#electricityValue");
+    const gDisp = $("#gasValue");
 
     const electricityKwh =
       (selectedEnergy === "both" || selectedEnergy === "electricity") &&
-      consumptionMode !== "estimate"
+        consumptionMode !== "estimated"
         ? Number(eDisp?.textContent?.split(" ")[0]) || 0
         : 0;
 
     const gasKwh =
       (selectedEnergy === "both" || selectedEnergy === "gas") &&
-      consumptionMode !== "estimate"
+        consumptionMode !== "estimated"
         ? Number(gDisp?.textContent?.split(" ")[0]) || 0
         : 0;
 
@@ -1006,11 +1008,11 @@ function initSimulator() {
   /* ── Animated counter ── */
   function animateCounter(el, target) {
     if (!el) return;
-    let current  = 0;
-    const steps  = 45;
-    const inc    = target / steps;
-    let i        = 0;
-    const timer  = setInterval(() => {
+    let current = 0;
+    const steps = 45;
+    const inc = target / steps;
+    let i = 0;
+    const timer = setInterval(() => {
       i++;
       current += inc;
       if (i >= steps) { current = target; clearInterval(timer); }
@@ -1020,23 +1022,24 @@ function initSimulator() {
 
   /* ── Results ── */
   async function renderResults() {
-    const savings    = calculateSavings();
+    const savings = calculateSavings();
     const resultStep = $(".result-step");
     if (!resultStep) return;
 
     /* Submit simulation data to backend */
     postForm({
-      formType:           "simulator",
+      formType: "simulator",
       selectedHouse,
       locationValue,
       surface,
       selectedEnergy,
       selectedPeople,
       selectedProvider,
-      bill:               savings.bill,
+      bill: savings.bill,
       electricityValueKwh: savings.electricityKwh,
-      gasValueKwh:        savings.gasKwh,
-      monthlySavings:     savings.monthly,
+      gasValueKwh: savings.gasKwh,
+      monthlySavings: savings.monthly,
+      estimationType: consumptionMode
     });
 
     resultStep.innerHTML = `
@@ -1087,7 +1090,7 @@ function initSimulator() {
     /* Animate counters */
     setTimeout(() => {
       animateCounter($("#monthlyValue"), savings.monthly);
-      animateCounter($("#yearlyValue"),  savings.yearly);
+      animateCounter($("#yearlyValue"), savings.yearly);
     }, 200);
 
     /* CTA — scroll to contact and pre-fill */
@@ -1110,13 +1113,13 @@ function initSimulator() {
 
   /* ── Restart ── */
   function restartSim() {
-    currentStep      = 0;
-    selectedEnergy   = null;
-    selectedHouse    = null;
-    selectedPeople   = null;
-    locationValue    = "";
-    surface          = 80;
-    consumptionMode  = "estimate";
+    currentStep = 0;
+    selectedEnergy = null;
+    selectedHouse = null;
+    selectedPeople = null;
+    locationValue = "";
+    surface = 80;
+    consumptionMode = "estimated";
     selectedProvider = null;
 
     /* Reset cards */
@@ -1133,8 +1136,8 @@ function initSimulator() {
 
     /* Reset provider */
     $$(".provider-card").forEach((c) => {
-        c.classList.remove("active");
-        c.setAttribute("aria-checked", "false");
+      c.classList.remove("active");
+      c.setAttribute("aria-checked", "false");
 
     });
     if (providerSel) providerSel.value = "";
@@ -1146,7 +1149,7 @@ function initSimulator() {
 
     /* Reset sliders */
     if (surfaceSlider) { surfaceSlider.value = 80; surfaceSlider.dispatchEvent(new Event("input")); }
-    if (billSlider)    { billSlider.value = 120;   billSlider.dispatchEvent(new Event("input")); }
+    if (billSlider) { billSlider.value = 120; billSlider.dispatchEvent(new Event("input")); }
 
     /* Clear result */
     const resultStep = $(".result-step");
@@ -1175,7 +1178,7 @@ async function initProviders() {
   if (!grid) return;
 
   try {
-    const res       = await fetch("/api/providers");
+    const res = await fetch("/api/providers");
     if (!res.ok) return;
     const providers = await res.json();
     if (!providers?.length) return;
@@ -1184,7 +1187,7 @@ async function initProviders() {
 
     providers.forEach((p) => {
       const card = document.createElement("div");
-      card.className       = "sim-card provider-card";
+      card.className = "sim-card provider-card";
       card.dataset.provider = p.key;
       card.setAttribute("role", "radio");
       card.setAttribute("aria-checked", "false");

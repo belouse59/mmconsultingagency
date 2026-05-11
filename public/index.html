@@ -27,7 +27,8 @@
   <!-- ═══ TWITTER CARD ═══ -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Broker Energia Messina | M&M Consulting">
-  <meta name="twitter:description" content="Risparmia fino al 30% sulla bolletta luce e gas con M&M Consulting Messina.">
+  <meta name="twitter:description"
+    content="Risparmia fino al 30% sulla bolletta luce e gas con M&M Consulting Messina.">
 
   <!-- ═══ ICONS & PRECONNECT ═══ -->
   <link rel="icon" type="image/png" href="./assets/images/logo-energy.jpg">
@@ -461,7 +462,8 @@
           <div class="sim-step" role="group" aria-labelledby="step2Label">
             <h3 id="step2Label" class="sim-step-title">Tipo di abitazione e città</h3>
             <div class="sim-options" role="radiogroup" aria-labelledby="step2Label">
-              <button class="sim-card" data-value="house" role="radio" aria-checked="false" aria-label="Casa indipendente">
+              <button class="sim-card" data-value="house" role="radio" aria-checked="false"
+                aria-label="Casa indipendente">
                 <span class="sim-card-icon" aria-hidden="true"><i class="fa-solid fa-house"></i></span>
                 <span class="sim-card-label">Casa</span>
               </button>
@@ -513,10 +515,10 @@
           <div class="sim-step" role="group" aria-labelledby="step4Label">
             <h3 id="step4Label" class="sim-step-title">Il tuo consumo di energia</h3>
             <div class="consumption-toggle" role="radiogroup" aria-label="Modalità consumo">
-              <button class="toggle-option active" data-mode="estimate" role="radio" aria-checked="true">
+              <button class="toggle-option active" data-mode="estimated" role="radio" aria-checked="true">
                 Non so — stimate voi
               </button>
-              <button class="toggle-option" data-mode="know" role="radio" aria-checked="false">
+              <button class="toggle-option" data-mode="real" role="radio" aria-checked="false">
                 So i miei consumi
               </button>
             </div>
@@ -881,13 +883,13 @@
 
           <div class="form-row">
             <div class="field-wrap">
-              <input type="text" name="firstname" id="firstname" placeholder=" " required
-                autocomplete="given-name" aria-required="true">
+              <input type="text" name="firstname" id="firstname" placeholder=" " required autocomplete="given-name"
+                aria-required="true">
               <label for="firstname">Nome <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr></label>
             </div>
             <div class="field-wrap">
-              <input type="text" name="lastname" id="lastname" placeholder=" " required
-                autocomplete="family-name" aria-required="true">
+              <input type="text" name="lastname" id="lastname" placeholder=" " required autocomplete="family-name"
+                aria-required="true">
               <label for="lastname">Cognome <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr></label>
             </div>
           </div>
@@ -899,9 +901,8 @@
               <label for="email">Email <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr></label>
             </div>
             <div class="field-wrap" id="phoneFieldWrap" style="display:none;">
-              <input type="tel" name="phone" id="phoneInput" placeholder=" "
-                pattern="^\+?[\d\s\-]{7,15}$" autocomplete="tel"
-                title="Inserisci un numero valido, es. +39 090 941 2150">
+              <input type="tel" name="phone" id="phoneInput" placeholder=" " pattern="^\+?[\d\s\-]{7,15}$"
+                autocomplete="tel" title="Inserisci un numero valido, es. +39 090 941 2150">
               <label for="phoneInput">Telefono</label>
             </div>
           </div>
@@ -914,7 +915,8 @@
                 <option value="Electricity">Elettricità</option>
                 <option value="Both">Entrambi</option>
               </select>
-              <label for="energyType">Tipo di energia <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr></label>
+              <label for="energyType">Tipo di energia <abbr title="Campo obbligatorio"
+                  aria-label="obbligatorio">*</abbr></label>
             </div>
           </div>
 
@@ -945,8 +947,7 @@
           <!-- Message -->
           <div class="form-row">
             <div class="field-wrap field-wrap--full">
-              <textarea name="message" id="message" placeholder=" " rows="4"
-                aria-label="Messaggio"></textarea>
+              <textarea name="message" id="message" placeholder=" " rows="4" aria-label="Messaggio"></textarea>
               <label for="message">Raccontaci le tue esigenze (opzionale)</label>
             </div>
           </div>
@@ -970,6 +971,8 @@
               I tuoi dati sono protetti e non verranno mai venduti a terzi.
             </p>
           </div>
+          <!-- Honeypot: hidden from everyone, including screen readers -->
+          <input type="text" name="company" class="honeypot" aria-hidden="true" tabindex="-1" autocomplete="off">
 
           <button id="contact-btn" type="submit" class="btn btn-gold btn-full btn-submit">
             <span class="btn-text">Invia richiesta gratuita</span>
@@ -994,11 +997,8 @@
           <p class="section-sub">Via Industriale, 120 — 98120 Messina ME, Italia</p>
         </div>
         <div class="map-wrap">
-          <iframe
-            src="https://www.google.com/maps?q=Via+Industriale,+120,+98120+Messina+ME,+Italy&output=embed"
-            title="Mappa della sede M&M Consulting a Messina"
-            allowfullscreen
-            loading="lazy"
+          <iframe src="https://www.google.com/maps?q=Via+Industriale,+120,+98120+Messina+ME,+Italy&output=embed"
+            title="Mappa della sede M&M Consulting a Messina" allowfullscreen loading="lazy"
             referrerpolicy="no-referrer-when-downgrade">
           </iframe>
         </div>
@@ -1041,8 +1041,8 @@
           <p class="footer-nl-sub">Aggiornamenti esclusivi e offerte dedicate direttamente nella tua inbox.</p>
           <form id="newsletterForm" class="nl-form" novalidate aria-label="Iscrizione newsletter">
             <div class="nl-field">
-              <input name="email" type="email" placeholder="La tua email" required
-                autocomplete="email" aria-label="Indirizzo email per newsletter">
+              <input name="email" type="email" placeholder="La tua email" required autocomplete="email"
+                aria-label="Indirizzo email per newsletter">
               <button id="newsletter-btn" type="submit" class="btn btn-gold" aria-label="Iscriviti alla newsletter">
                 <span class="btn-text">Iscriviti</span>
                 <span class="btn-dots" aria-hidden="true">
@@ -1090,10 +1090,12 @@
        WHATSAPP WIDGET
   ═══════════════════════════════════════════ -->
   <div class="wa-float" role="button" tabindex="0" aria-label="Apri chat WhatsApp" aria-haspopup="dialog">
-    <img src="./assets/images/whatsapplogo.png" alt="WhatsApp" width="28" height="28" onerror="this.src='https://cdn-icons-png.flaticon.com/512/733/733585.png'">
+    <img src="./assets/images/whatsapplogo.png" alt="WhatsApp" width="28" height="28"
+      onerror="this.src='https://cdn-icons-png.flaticon.com/512/733/733585.png'">
   </div>
 
-  <div class="wa-chat" id="whatsappChat" role="dialog" aria-modal="true" aria-label="Chat WhatsApp con M&M Consulting" aria-hidden="true">
+  <div class="wa-chat" id="whatsappChat" role="dialog" aria-modal="true" aria-label="Chat WhatsApp con M&M Consulting"
+    aria-hidden="true">
     <div class="wa-chat-header">
       <div class="wa-chat-header-info">
         <span class="wa-chat-title">Chatta con noi</span>
@@ -1151,4 +1153,5 @@
   <script src="/js/app.js" defer></script>
 
 </body>
+
 </html>

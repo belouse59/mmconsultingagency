@@ -1,9 +1,11 @@
 "use strict";
 
-const { appendRow, getSheetValues } = require("../services/sheetsService");
-const { isValidEmail, isValidPhone }  = require("../utils/validators");
-const { clean }                        = require("../utils/sanitizer");
-const { getLocalTimestamp }            = require ("../utils/dateFormat");
+const { appendRow, getSheetValues }      = require("../services/sheetsService");
+const { isValidEmail, isValidPhone }     = require("../utils/validators");
+const { clean }                          = require("../utils/sanitizer");
+const { notifyNewLead, notifySimulator } = require("../services/emailService");
+const { translateFormData }              = require("../utils/translation");
+const { getLocalTimestamp }              = require("../utils/dateFormat");
 
 /* ─────────────────────────────────────────────────────────────
    IN-MEMORY RATE LIMITER
@@ -54,7 +56,7 @@ async function handleContact(data) {
 
   // Write to sheet
   await appendRow("ContactUsForm", [
-    new Date().toISOString(),
+    getLocalTimestamp(),
     clean(data.firstname),
     clean(data.lastname   || ""),
     clean(data.email),
@@ -63,7 +65,11 @@ async function handleContact(data) {
     clean(data.contactTime || ""),
     clean(data.messageForm || ""),
     "contact",
+    clean(data.consent)
   ]);
+
+  // Fire-and-forget — never blocks the API response
+  notifyNewLead(data);
 
   return ok("Richiesta ricevuta con successo.");
 }
@@ -84,7 +90,7 @@ async function handleNewsletter(data) {
   if (already) return err("Already subscribed");
 
   await appendRow("NewsLetters", [
-    new Date().toISOString(),
+    getLocalTimestamp(),
     clean(data.email),
     "newsletter",
   ]);
@@ -109,6 +115,9 @@ async function handleSimulator(data) {
     "simulator",
   ]);
 
+  // Fire-and-forget notification
+  notifySimulator(data);
+
   return ok("Simulazione registrata.");
 }
 
@@ -116,6 +125,7 @@ async function handleSimulator(data) {
    MAIN ROUTE HANDLER
 ───────────────────────────────────────────────────────────── */
 async function submitForm(req, res) {
+  
   const data = req.body;
 
   // Basic shape check
@@ -128,6 +138,16 @@ async function submitForm(req, res) {
     return res.status(400).json(err("Tipo di modulo non riconosciuto."));
   }
 
+  //  console.log(data);
+  if (data.company) {
+  // Silent discard — don't tell bots they were detected
+  return res.status(200).json(respond("success", "Request processed"));
+}
+
+  if (!data || !data.formType || data.consent !== "SI") {
+    return res.status(400).json(respond("error", "Invalid data"));
+  }
+
   // Rate limit by email (or IP as fallback)
   const identity = data.email || req.ip;
   if (isRateLimited(identity)) {
@@ -137,9 +157,9 @@ async function submitForm(req, res) {
   try {
     let result;
     switch (data.formType) {
-      case "contact":    result = await handleContact(data);    break;
-      case "newsletter": result = await handleNewsletter(data); break;
-      case "simulator":  result = await handleSimulator(data);  break;
+      case "contact":    result = await handleContact(translateFormData(data));    break;
+      case "newsletter": result = await handleNewsletter(translateFormData(data)); break;
+      case "simulator":  result = await handleSimulator(translateFormData(data));  break;
     }
     return res.json(result);
   } catch (e) {

@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Block server internals
+Disallow: /api/
+Disallow: /health
+Disallow: /node_modules/
+
+# Sitemap location
+Sitemap: https://www.mmconsulting.it/sitemap.xml
