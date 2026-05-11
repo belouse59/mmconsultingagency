@@ -13,8 +13,6 @@ const partnerRoutes    = require("./routes/partnerRoutes");
 const providerRoutes   = require("./routes/providerRoutes");
 const teamRoutes       = require("./routes/teamRoutes");
 const formRoutes       = require("./routes/formRoutes");
-console.log("formRoutes =", formRoutes);
-console.log("typeof formRoutes =", typeof formRoutes);
 
 const app = express();
 
@@ -53,13 +51,9 @@ app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
    API ROUTES
 ───────────────────────────────────────────────────────────── */
 app.use("/api/partners",  partnerRoutes);
-console.log("/api/partners");
 app.use("/api/providers", providerRoutes);
-console.log("/api/providers");
 app.use("/api/team",      teamRoutes);
-console.log("/api/team");
 app.use("/api/form",      formRoutes);
-console.log("/api/form");
 
 /* ─────────────────────────────────────────────────────────────
    STATIC FILES
