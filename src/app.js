@@ -13,6 +13,8 @@ const partnerRoutes    = require("./routes/partnerRoutes");
 const providerRoutes   = require("./routes/providerRoutes");
 const teamRoutes       = require("./routes/teamRoutes");
 const formRoutes       = require("./routes/formRoutes");
+console.log("formRoutes =", formRoutes);
+console.log("typeof formRoutes =", typeof formRoutes);
 
 const app = express();
 
@@ -31,7 +33,6 @@ const allowedOrigins = (process.env.ALLOWED_ORIGIN || "http://localhost:3000")
 app.use(
   cors({
     origin: (origin, cb) => {
-      console.log(origin);
       // Allow server-to-server calls (no Origin header) and listed origins
       if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
       cb(new Error(`CORS: origin ${origin} not allowed`));
@@ -63,7 +64,6 @@ console.log("/api/form");
 /* ─────────────────────────────────────────────────────────────
    STATIC FILES
 ───────────────────────────────────────────────────────────── */
-console.log("before static");
 app.use(express.static(path.join(__dirname, "../public"), {
   maxAge: process.env.NODE_ENV === "production" ? "7d" : 0,
   etag:   true,
@@ -91,7 +91,6 @@ app.get("/health", (req, res) => {
 /* ─────────────────────────────────────────────────────────────
    SPA FALLBACK — always serve index.html for unknown GET routes
 ───────────────────────────────────────────────────────────── */
-console.log("before spa fallback");
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, "../public/index.html"));
 });
