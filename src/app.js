@@ -27,7 +27,7 @@ app.use(helmet(CSP_CONFIG));
 const allowedOrigins = (process.env.ALLOWED_ORIGIN || "http://localhost:3000")
   .split(",")
   .map((o) => o.trim());
-console.log(allowedOrigins)
+
 app.use(
   cors({
     origin: (origin, cb) => {
@@ -51,10 +51,7 @@ app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 /* ─────────────────────────────────────────────────────────────
    API ROUTES
 ───────────────────────────────────────────────────────────── */
-console.log("partnerRoutes:", partnerRoutes, typeof partnerRoutes);
-console.log("providerRoutes:", providerRoutes, typeof providerRoutes);
-console.log("teamRoutes:", teamRoutes, typeof teamRoutes);
-console.log("formRoutes:", formRoutes, typeof formRoutes);
+
 app.use("/api/partners",  partnerRoutes);
 app.use("/api/providers", providerRoutes);
 app.use("/api/team",      teamRoutes);
