@@ -27,10 +27,11 @@ app.use(helmet(CSP_CONFIG));
 const allowedOrigins = (process.env.ALLOWED_ORIGIN || "http://localhost:3000")
   .split(",")
   .map((o) => o.trim());
-
+console.log("before origin");
 app.use(
   cors({
     origin: (origin, cb) => {
+      console.log(origin);
       // Allow server-to-server calls (no Origin header) and listed origins
       if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
       cb(new Error(`CORS: origin ${origin} not allowed`));
@@ -44,14 +45,14 @@ app.use(
 /* ─────────────────────────────────────────────────────────────
    GENERAL MIDDLEWARE
 ───────────────────────────────────────────────────────────── */
-
+console.log("before limit 50kb");
 app.use(express.json({ limit: "50kb" })); // guard against large payloads
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 /* ─────────────────────────────────────────────────────────────
    API ROUTES
 ───────────────────────────────────────────────────────────── */
-
+console.log("before routes");
 app.use("/api/partners",  partnerRoutes);
 app.use("/api/providers", providerRoutes);
 app.use("/api/team",      teamRoutes);
