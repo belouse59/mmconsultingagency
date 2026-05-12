@@ -30,8 +30,8 @@ module.exports = {
     tagline: "Il broker energetico di fiducia a Messina. Risparmiamo insieme.",
     hours: "Lun–Ven, 9:00–18:00",
     address: "Via Industriale, 120<br>98120 Messina ME, Italia",
-    newsletterText: "Aggiornamenti esclusivi e offerte dedicate direttamente nella tua inbox.",
-    newsletterDisclaimer: "Utilizziamo i tuoi dati solo per la newsletter. Puoi disiscriverti in qualsiasi momento."
+    newsletter_Text: "Aggiornamenti esclusivi e offerte dedicate direttamente nella tua inbox.",
+    newsletter_Disclaimer: "Utilizziamo i tuoi dati solo per la newsletter. Puoi disiscriverti in qualsiasi momento."
   },
 
   social: {
