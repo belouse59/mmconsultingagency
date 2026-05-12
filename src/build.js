@@ -8,7 +8,7 @@ const PUBLIC_DIR = path.join(__dirname, "..", "public");
 const PAGES_DIR = path.join(__dirname, "templates", "pages");
 const LAYOUT_DIR = path.join(__dirname, "templates", "layout");
 
-function buildPage({ mainPage, pageFile, outputFile, headVars, footerVars }) {
+function buildPage({ mainPage, script, pageFile, outputFile, headVars, footerVars }) {
 
   // 1. Load layout
   const base = fs.readFileSync(
@@ -22,9 +22,8 @@ function buildPage({ mainPage, pageFile, outputFile, headVars, footerVars }) {
 
   // 2. Load components
   const head = loadTemplate("layout/head.html", headVars);
-  const whatsAppWidget = loadTemplate("layout/whatsApp.html");
+  const whatsAppWidget = mainPage ? loadTemplate("layout/whatsApp.html"): "";
   const footer = mainPage ? loadTemplate("layout/footer.html", footerVars): "";
-
   // 3. Load page content only
   const content = fs.readFileSync(
     path.join(PAGES_DIR, pageFile),
@@ -35,9 +34,9 @@ function buildPage({ mainPage, pageFile, outputFile, headVars, footerVars }) {
   const html = base
     .replace("{{HEAD}}", head)
     .replace("{{CONTENT}}", content)
-    .concat(mainPage ? whatsAppWidget :"")
-    .concat(mainPage ? '<script src="/js/app.js" defer></script>' :"")
-    .replace("{{FOOTER}}", footer);
+    .replace("{{FOOTER}}", footer)
+    .replace("{{WHATS_APP_WIDGET}}", whatsAppWidget)
+    .replace("{{SCRIPT}}", script)
 
   // 5. Write file
   fs.writeFileSync(
@@ -51,6 +50,7 @@ function buildPage({ mainPage, pageFile, outputFile, headVars, footerVars }) {
 //index.html
 buildPage({
   mainPage:true,
+  script:'<script src="/js/app.js" defer></script>',
   pageFile: "index.html",
   outputFile: "index.html",
   headVars: siteConfig.head,
@@ -63,7 +63,8 @@ buildPage({
 
 //privacy-page.html
 buildPage({
-  mainPage:false,
+  mainPage: false,
+  script: "",
   pageFile: "privacy-policy.html",
   outputFile: "privacy-page.html",
   headVars: {
@@ -82,6 +83,7 @@ buildPage({
 //legal-note-page.html
 buildPage({
   mainPage:false,
+  script: "",
   pageFile: "legal-note.html",
   outputFile: "legal-note.html",
   headVars: {
@@ -99,6 +101,7 @@ buildPage({
 //cookies-policy-page.html
 buildPage({
   mainPage:false,
+  script: "",
   pageFile: "cookies-policy.html",
   outputFile: "cookies-policy.html",
   headVars: {
