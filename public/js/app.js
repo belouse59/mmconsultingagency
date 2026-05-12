@@ -367,6 +367,14 @@ async function initTeam() {
    REVIEWS CAROUSEL
 ───────────────────────────────────────────────────────────── */
 function initReviews() {
+  /* Reviews previous btn */
+  const btnLeft = $(".carousel-btn--left");
+  if (!btnLeft) return;
+
+  /* Reviews next btn */
+  const btnRight = $(".carousel-btn--right");
+  if (!btnRight) return;
+
   const reviewsTrack = $(".reviews-track");
   if (!reviewsTrack) return;
 
@@ -375,14 +383,14 @@ function initReviews() {
 
   let idx = 0;
 
+  btnLeft.addEventListener("click", () => goTo(idx - 1));
+  btnRight.addEventListener("click", () => goTo(idx + 1));
+
   function goTo(n) {
+    console.log("go to");
     idx = (n + cards.length) % cards.length;
     reviewsTrack.style.transform = `translateX(-${idx * 100}%)`;
   }
-
-  /* Global functions for inline onclick handlers */
-  window.nextReview = () => goTo(idx + 1);
-  window.prevReview = () => goTo(idx - 1);
 
   setInterval(() => goTo(idx + 1), 5500);
 }
@@ -423,107 +431,212 @@ function initFAQ() {
   });
 }
 
-/* ─────────────────────────────────────────────────────────────
-   PRIVACY MODAL
-───────────────────────────────────────────────────────────── */
-function initPrivacyModal() {
-  const modal = $("#privacyModal");
-  const closeBtn = $("#closePrivacyModal");
-  if (!modal) return;
 
-  function openModal() {
-    modal.classList.add("active");
-    modal.setAttribute("aria-hidden", "false");
-    closeBtn?.focus();
-    document.body.style.overflow = "hidden";
-  }
 
-  function closeModal() {
-    modal.classList.remove("active");
-    modal.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-  }
-
-  /* All privacy links */
-  $$("[id^='privacyLink']").forEach((link) => {
-    link.addEventListener("click", (e) => { e.preventDefault(); openModal(); });
-  });
-
-  closeBtn?.addEventListener("click", closeModal);
-
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) closeModal();
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal.classList.contains("active")) closeModal();
-  });
-}
-
-/* ─────────────────────────────────────────────────────────────
-   WHATSAPP WIDGET
-───────────────────────────────────────────────────────────── */
+// ==========================
+// WHATSAPP CHAT
+// ==========================
 function initWhatsApp() {
-  const WA_NUMBER = "+390909412150"; // ← real Messina number
-  const floatBtn = $(".wa-float");
-  const chat = $("#whatsappChat");
-  const closeBtn = $(".wa-chat-close");
-  const textarea = $("#userMessage");
+  // Elements
+  const input = document.getElementById("userMessage");
+  const whatsappFloat = $(".wa-float");
+  const whatsappCloseBtn = $(".wa-chat-close");
+  const quickActionsBtns = $$(".wa-quick-actions button");
+  const quickActions = $(".wa-quick-actions");
+  const submitChatBtn = $(".wa-send-btn");
+  const chat = document.getElementById("whatsappChat");
 
-  if (!floatBtn || !chat) return;
-
+  // State
+  let selectedMessage = "";
   let userInteracted = false;
+  let inactivityTimer;
+  let chatAlreadyOpened = false;
+  let hasEngaged = false;
+
+  // ==========================
+  // TEXTAREA BEHAVIOR
+  // ==========================
+
+  // Auto-resize textarea
+  input.addEventListener("input", function () {
+    this.style.height = "auto";
+    this.style.height = this.scrollHeight + "px";
+    if (input.value.trim() === "") quickActions.style.display = "flex";
+  });
+
+  // Enter = send / Shift+Enter = newline
+  input.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      if (event.shiftKey) return;
+
+      event.preventDefault();
+
+      if (input.value.trim() !== "") {
+        sendToWhatsApp();
+      }
+    }
+  });
+
+  // ==========================
+  // CHAT OPEN / CLOSE
+  // ==========================
 
   function openChat() {
     chat.classList.add("active");
-    chat.setAttribute("aria-hidden", "false");
-    textarea?.focus();
-  }
-
-  function closeChat() {
-    chat.classList.remove("active");
-    chat.setAttribute("aria-hidden", "true");
+    userInteracted = true;
   }
 
   function toggleChat() {
     userInteracted = true;
-    chat.classList.contains("active") ? closeChat() : openChat();
+    clearTimeout(inactivityTimer);
+    chat.classList.toggle("active");
   }
 
-  floatBtn.addEventListener("click", toggleChat);
-  floatBtn.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") toggleChat(); });
-  closeBtn?.addEventListener("click", closeChat);
+  // Buttons
+  whatsappFloat.addEventListener("click", toggleChat);
+  whatsappCloseBtn.addEventListener("click", toggleChat);
+  submitChatBtn.addEventListener("click", sendToWhatsApp);
 
-  /* Auto-open after 6 s if user hasn't interacted */
-  setTimeout(() => { if (!userInteracted) openChat(); }, 6000);
+  // ==========================
+  // QUICK ACTIONS
+  // ==========================
 
-  /* Send message */
-  window.sendToWhatsApp = function () {
-    const msg = textarea?.value?.trim();
-    if (!msg) return;
-    const url = `https://wa.me/${WA_NUMBER.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank", "noopener,noreferrer");
-    if (textarea) {
-      textarea.value = "";
-      textarea.style.height = "auto";
+  quickActionsBtns.forEach(button => {
+    console.log(button)
+    button.addEventListener("click", selectPrompt);
+  });
+
+  function selectPrompt(e) {
+    const origin = e.currentTarget.id.split("|")[1];
+
+    switch (origin) {
+      case "QuantoPossoRisparmiare":
+        selectedMessage =
+          "Ciao, vorrei sapere quanto posso risparmiare sulla mia bolletta luce e gas.";
+        break;
+
+      case "InviareBolletta":
+        selectedMessage =
+          "Ciao, vorrei ricevere un'analisi della mia bolletta per capire se posso risparmiare.";
+        break;
+
+      case "ContattoRapido":
+        selectedMessage =
+          "Ciao, vorrei parlare con un consulente per ricevere maggiori informazioni.";
+        break;
+
+      default:
+        selectedMessage = "Ciao, vorrei ricevere maggiori informazioni.";
+        break;
     }
-  };
 
-  /* Enter to send, Shift+Enter for newline */
-  textarea?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (textarea.value.trim()) window.sendToWhatsApp();
+    input.value = selectedMessage;
+    input.focus();
+
+    quickActions.style.display = "none";
+
+    input.style.height = "auto";
+    input.style.height = input.scrollHeight + "px";
+  }
+
+  // ==========================
+  // SEND TO WHATSAPP
+  // ==========================
+
+  function sendToWhatsApp() {
+    const phoneNumber = "393713397393"; // no "+"
+    const finalMessage =
+      input.value.trim() ||
+      selectedMessage ||
+      "Buongiorno, vorrei ricevere informazioni.";
+
+    const url =
+      `https://wa.me/${phoneNumber}?text=${encodeURIComponent(finalMessage)}`;
+
+    window.open(url, "_blank");
+
+    // Reset input
+    input.value = "";
+    input.style.height = "auto";
+    quickActions.style.display = "flex";
+    toggleChat();
+  }
+
+  // ==========================
+  // IDLE POPUP LOGIC
+  // ==========================
+
+  // Detect engagement after scroll
+  window.addEventListener("scroll", () => {
+    const scrollPercent =
+      window.scrollY / (document.body.scrollHeight - window.innerHeight);
+
+    if (scrollPercent > 0.25) {
+      hasEngaged = true;
     }
   });
 
-  /* Auto-resize textarea */
-  textarea?.addEventListener("input", function () {
-    this.style.height = "auto";
-    this.style.height = this.scrollHeight + "px";
-  });
+  // Open chat after inactivity
+  function openChatOnIdle() {
+    if (
+      chatAlreadyOpened ||
+      userInteracted ||
+      !hasEngaged
+    ) return;
+
+    openChat();
+    chatAlreadyOpened = true;
+
+    sessionStorage.setItem("chatShown", "true");
+    removeActivityListeners();
+  }
+
+  // Reset inactivity timer
+  function resetIdleTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(openChatOnIdle, 18000); // 18 sec
+  }
+
+  // Any activity resets timer
+  function handleActivity() {
+    resetIdleTimer();
+  }
+
+  // Register activity listeners
+  function addActivityListeners() {
+    [
+      "mousemove",
+      "scroll",
+      "click",
+      "keydown",
+      "touchstart"
+    ].forEach(eventName => {
+      window.addEventListener(eventName, handleActivity, {
+        passive: true
+      });
+    });
+  }
+
+  // Remove listeners once popup shown
+  function removeActivityListeners() {
+    [
+      "mousemove",
+      "scroll",
+      "click",
+      "keydown",
+      "touchstart"
+    ].forEach(eventName => {
+      window.removeEventListener(eventName, handleActivity);
+    });
+  }
+
+  // Init popup logic only once per session
+  if (!sessionStorage.getItem("chatShown")) {
+    addActivityListeners();
+    resetIdleTimer();
+  }
+
 }
-
 /* ─────────────────────────────────────────────────────────────
    CONTACT FORM
 ───────────────────────────────────────────────────────────── */
@@ -1234,7 +1347,6 @@ async function initProviders() {
 document.addEventListener("DOMContentLoaded", () => {
   initNav();
   initReveal();
-  initPrivacyModal();
   initFAQ();
   initReviews();
   initWhatsApp();

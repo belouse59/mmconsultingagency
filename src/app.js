@@ -85,10 +85,10 @@ app.get("/health", (req, res) => {
 /* ─────────────────────────────────────────────────────────────
    SPA FALLBACK — always serve index.html for unknown GET routes
 ───────────────────────────────────────────────────────────── */
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, "../public/index.html"));
-});
-
+// app.use((req, res) => {
+//   res.sendFile(path.join(__dirname, "../public/index.html"));
+// });
+app.use(express.static(path.join(__dirname, "../public")));
 /* ─────────────────────────────────────────────────────────────
    GLOBAL ERROR HANDLER
 ───────────────────────────────────────────────────────────── */

@@ -1,6 +1,6 @@
-write policy page instead of modal
-write legal note
+
 add button in whatsapp and implement the smart popup function
 redefine backend to deliver front app.js
 think about qr code implementation
-fix issue logo carousel white bg to transparent
+need to add a cancel timeout on click reviews carousel
+remove inline click for sendtowhatsapp

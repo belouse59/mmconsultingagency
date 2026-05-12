@@ -1,0 +1,97 @@
+<!-- FOOTER -->
+<footer id="footer" class="site-footer" role="contentinfo">
+  <div class="footer-inner">
+
+    <div class="footer-grid">
+
+      <!-- Brand -->
+      <div class="footer-brand">
+        <a href="/" aria-label="M&M Consulting homepage">
+          <img src="/assets/images/logo-energy.jpg" alt="Logo M&M Consulting" width="64" height="64">
+        </a>
+        <p class="footer-tagline">
+          {{FOOTER_TAGLINE}}
+        </p>
+      </div>
+
+      <!-- Contact -->
+      <address class="footer-contact" aria-label="Contatti M&M Consulting">
+        <p class="footer-contact-label">Contatti</p>
+
+        <p class="footer-phone">
+          <a href="tel:+390909412150">+39 090 941 2150</a>
+        </p>
+
+        <p class="footer-hours">
+          {{FOOTER_HOURS}}
+        </p>
+
+        <p class="footer-address">
+          {{FOOTER_ADDRESS}}
+        </p>
+      </address>
+
+      <!-- Newsletter -->
+      <div class="footer-newsletter">
+        <p class="footer-contact-label">Newsletter</p>
+
+        <p class="footer-nl-sub">
+          {{NEWSLETTER_TEXT}}
+        </p>
+
+        <form id="newsletterForm" class="nl-form" novalidate>
+          <div class="nl-field">
+            <input name="email" type="email" placeholder="La tua email" required>
+
+            <button type="submit" class="btn btn-gold">
+              <span class="btn-text">Iscriviti</span>
+              <span class="btn-dots" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </span>
+            </button>
+          </div>
+
+          <p class="nl-disclaimer">
+            {{NEWSLETTER_DISCLAIMER}}
+            <a href="/privacy-page.html">Privacy Policy</a>
+          </p>
+        </form>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+
+      <p class="footer-copy">
+        &copy; {{YEAR}} M&M Consulting. Tutti i diritti riservati.
+      </p>
+
+      <nav class="footer-socials" aria-label="Social">
+        <a href="{{LINKEDIN}}" target="_blank" rel="noopener noreferrer">
+          <i class="fab fa-linkedin"></i>
+        </a>
+
+        <a href="{{YOUTUBE}}" target="_blank" rel="noopener noreferrer">
+          <i class="fab fa-youtube"></i>
+        </a>
+
+        <a href="{{INSTAGRAM}}" target="_blank" rel="noopener noreferrer">
+          <i class="fab fa-instagram"></i>
+        </a>
+
+        <a href="{{FACEBOOK}}" target="_blank" rel="noopener noreferrer">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </nav>
+
+      <nav class="footer-legal" aria-label="Legal links">
+        <a href="/legal-note.html">Note legali</a>
+        <a href="/privacy-page.html">Privacy Policy</a>
+        <a href="/cookies-policy.html">Cookies Policy</a>
+        <a href="/blog.html">Blog</a>
+      </nav>
+
+    </div>
+
+  </div>
+</footer>

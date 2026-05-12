@@ -11,7 +11,9 @@ function loadTemplate(filename, variables = {}) {
 
   let html = cache.get(filename);
   Object.entries(variables).forEach(([key, value]) => {
-    html = html.replaceAll(`{{${key}}}`, value);
+    html = html.replace(/\{\{(\w+)\}\}/g, (_, key) => {
+      return variables[key] ?? "";
+    });
   });
 
   return html;
