@@ -9,14 +9,16 @@ function loadTemplate(filename, variables = {}) {
     cache.set(filename, fs.readFileSync(filePath, "utf8"));
   }
 
-  let html = cache.get(filename);
-  Object.entries(variables).forEach(([key, value]) => {
-    html = html.replace(/\{\{(\w+)\}\}/g, (_, key) => {
-      return variables[key] ?? "";
-    });
-  });
+  const template = cache.get(filename);
 
-  return html;
+  const normalized = {};
+  for (const [k, v] of Object.entries(variables)) {
+    normalized[k.toUpperCase()] = v;
+  }
+
+  return template.replace(/\{\{([\w.-]+)\}\}/g, (_, key) => {
+    return normalized[key] ?? "";
+  });
 }
 
 module.exports = { loadTemplate }

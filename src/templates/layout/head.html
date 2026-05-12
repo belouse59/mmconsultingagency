@@ -1,58 +1,134 @@
-<!-- ===== BASE SEO HEAD TEMPLATE ===== -->
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
 
-<!-- Theme / Geo -->
-<meta name="theme-color" content="#F7F6F4">
-<meta name="geo.region" content="IT-ME">
-<meta name="geo.placename" content="Messina">
-<meta name="geo.position" content="38.1938;15.5540">
-<meta name="ICBM" content="38.1938,15.5540">
-
-<!-- Favicon -->
-<link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon.png">
-<link rel="apple-touch-icon" href="/assets/images/favicon.png">
-
-<!-- Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdnjs.cloudflare.com">
-
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
-<!-- Icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-      crossorigin="anonymous" referrerpolicy="no-referrer">
-
-<!-- Default CSS -->
-<link rel="stylesheet" href="/assets/css/styles.css">
-
-<!-- ===== SEO VARIABLES (PER PAGE) ===== -->
-<title>{{TITLE}}</title>
-<meta name="description" content="{{DESCRIPTION}}">
-<meta name="robots" content="{{ROBOTS}}">
-<meta name="author" content="M&M Consulting Messina">
-
-<link rel="canonical" href="{{CANONICAL_URL}}">
-
-<!-- Open Graph -->
-<meta property="og:type" content="{{OG_TYPE}}">
-<meta property="og:url" content="{{CANONICAL_URL}}">
-<meta property="og:title" content="{{TITLE}}">
-<meta property="og:description" content="{{DESCRIPTION}}">
-<meta property="og:image" content="{{OG_IMAGE}}">
-<meta property="og:locale" content="it_IT">
-<meta property="og:site_name" content="M&M Consulting">
-
-<!-- Twitter -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{TITLE}}">
-<meta name="twitter:description" content="{{DESCRIPTION}}">
-<meta name="twitter:image" content="{{OG_IMAGE}}">
-
-<!-- Optional Page-Specific CSS -->
-{{EXTRA_CSS}}
-
-<!-- Optional Structured Data -->
-{{STRUCTURED_DATA}}
+  <!-- ===== BASE SEO HEAD TEMPLATE ===== -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- Theme / Geo -->
+  <meta name="theme-color" content="#F7F6F4">
+  <meta name="geo.region" content="IT-ME">
+  <meta name="geo.placename" content="Messina">
+  <meta name="geo.position" content="38.1938;15.5540">
+  <meta name="ICBM" content="38.1938,15.5540">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="/assets/images/favicon.png">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  crossorigin="anonymous" referrerpolicy="no-referrer">
+  
+  <!-- Default CSS -->
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  
+  <!-- ===== SEO VARIABLES (PER PAGE) ===== -->
+  <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESCRIPTION}}">
+  <meta name="robots" content="{{ROBOTS}}">
+  <meta name="author" content="M&M Consulting Messina">
+  
+  <link rel="canonical" href="{{CANONICAL}}">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="{{OG_TYPE}}">
+  <meta property="og:url" content="{{OG_URL}}">
+  <meta property="og:title" content="{{TITLE}}">
+  <meta property="og:description" content="{{DESCRIPTION}}">
+  <meta property="og:image" content="{{OG_IMAGE}}">
+  <meta property="og:locale" content="it_IT">
+  <meta property="og:site_name" content="M&M Consulting">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{TWITTER_TITLE}}">
+  <meta name="twitter:description" content="{{TWITTER_DESCRIPTION}}">
+  <meta name="twitter:image" content="{{TWITTER_IMAGE}}">
+  
+  <!-- Optional Page-Specific CSS -->
+  {{EXTRA_CSS}}
+  
+  <!-- ═══ STRUCTURED DATA — Local Business ═══ -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "M&M Consulting",
+      "description": "Broker energetico a Messina. Confrontiamo oltre 20 fornitori di luce e gas per trovare la tariffa migliore.",
+      "url": "https://www.mmconsulting.it",
+      "telephone": "+390909412150",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Via Industriale, 120",
+        "addressLocality": "Messina",
+        "addressRegion": "ME",
+        "postalCode": "98120",
+        "addressCountry": "IT"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 38.1938,
+        "longitude": 15.5540
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+        "opens": "09:00",
+        "closes": "18:00"
+      },
+      "areaServed": ["Messina", "Sicilia", "Italia"],
+      "serviceType": "Consulenza energetica e confronto fornitori",
+      "priceRange": "Gratuito"
+    }
+  </script>
+  
+  <!-- ═══ STRUCTURED DATA — FAQ ═══ -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Il servizio di consulenza energetica è gratuito?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sì, l'analisi è completamente gratuita e senza impegno. Non paghiamo nulla per confrontare i fornitori."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Quanto posso risparmiare sulla bolletta?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In media i nostri clienti risparmiano fino al 30% sulla bolletta energetica annuale."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Devo cambiare fornitore subito?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Decidi tu se accettare o meno la proposta. Non c'è nessun obbligo."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Quanto tempo richiede la consulenza?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Bastano pochi minuti per compilare il simulatore o il modulo di contatto. Il nostro team ti ricontatta entro 24 ore."
+        }
+      }
+      ]
+    }
+  </script>
+</head>

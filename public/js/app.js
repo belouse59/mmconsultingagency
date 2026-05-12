@@ -387,7 +387,6 @@ function initReviews() {
   btnRight.addEventListener("click", () => goTo(idx + 1));
 
   function goTo(n) {
-    console.log("go to");
     idx = (n + cards.length) % cards.length;
     reviewsTrack.style.transform = `translateX(-${idx * 100}%)`;
   }
@@ -502,7 +501,6 @@ function initWhatsApp() {
   // ==========================
 
   quickActionsBtns.forEach(button => {
-    console.log(button)
     button.addEventListener("click", selectPrompt);
   });
 

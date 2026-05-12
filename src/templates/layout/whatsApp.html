@@ -1,0 +1,47 @@
+<!-- ═══════════════════════════════════════════
+       WHATSAPP WIDGET
+  ═══════════════════════════════════════════ -->
+  <div class="wa-float" role="button" tabindex="0" aria-label="Apri chat WhatsApp" aria-haspopup="dialog">
+    <img src="./assets/images/whatsapplogo.png" alt="WhatsApp" width="28" height="28"
+      onerror="this.src='https://cdn-icons-png.flaticon.com/512/733/733585.png'">
+  </div>
+
+  <div class="wa-chat" id="whatsappChat" role="dialog" aria-modal="true" aria-label="Chat WhatsApp con M&M Consulting"
+    aria-hidden="true">
+    <div class="wa-chat-header">
+      <div class="wa-chat-header-info">
+        <span class="wa-chat-title">Chatta con noi</span>
+        <span class="wa-chat-status">Online · risposta rapida</span>
+      </div>
+      <button class="wa-chat-close" aria-label="Chiudi chat">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
+    </div>
+    <div class="wa-chat-body">
+      <p class="wa-chat-bubble">
+        Ciao 👋 Come possiamo aiutarti a risparmiare sulla bolletta?
+      </p>
+
+      <div class="wa-quick-actions">
+        <button id="quickActions|SimulazioneRisparmio">
+          Simula il tuo risparmio
+        </button>
+
+        <button id="quickActions|AnalisiBolletta">
+          Analizza la mia bolletta
+        </button>
+
+        <button id="quickActions|ParlareConsulente">
+          Parla con un consulente
+        </button>
+      </div>
+    </div>
+    <div class="wa-chat-input">
+      <textarea id="userMessage" placeholder="Voglio ridurre la mia bolletta..." rows="2"
+        aria-label="Scrivi il tuo messaggio"></textarea>
+      <button class="wa-send-btn" aria-label="Invia messaggio su WhatsApp">
+        <i class="fa fa-paper-plane" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>

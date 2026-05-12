@@ -1,6 +1,3 @@
-
-add button in whatsapp and implement the smart popup function
 redefine backend to deliver front app.js
 think about qr code implementation
 need to add a cancel timeout on click reviews carousel
-remove inline click for sendtowhatsapp

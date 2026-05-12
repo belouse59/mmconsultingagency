@@ -1,33 +1,30 @@
 module.exports = {
   head: {
-    title: "Broker Energia Messina | Risparmia su Luce e Gas",
-    description: "Confrontiamo oltre 20 fornitori di energia...",
-    keywords: "broker energia Messina, luce gas Sicilia",
+    title: "Broker Energia Messina | Risparmia su Luce e Gas – M&M Consulting",
+    description: "Confrontiamo oltre 20 fornitori di energia a Messina per trovare la tariffa più conveniente per luce e gas. Analisi gratuita e senza impegno.",
+    keywords: "broker energia Messina, luce gas Sicilia, risparmio bolletta, consulente energetico Messina, confronto fornitori energia",
+
     canonical: "https://www.mmconsulting.it/",
     robots: "index, follow",
-    ogType: "website",
-    ogImage: "https://www.mmconsulting.it/assets/images/og-image.jpg",
-    themeColor: "#F7F6F4"
+
+    themeColor: "#F7F6F4",
+
+    og_Type: "website",
+    og_Title: "Broker Energia Messina | Risparmia su Luce e Gas – M&M Consulting",
+    og_Description: "Confrontiamo oltre 20 fornitori di energia per farti risparmiare fino al 30% sulla bolletta.",
+    og_IMAGE: "https://www.mmconsulting.it/assets/images/og-image.jpg",
+    og_Url: "",
+
+    twitter_Card: "summary_large_image",
+    twitter_Title: "Broker Energia Messina | M&M Consulting",
+    twitter_Description: "Risparmia fino al 30% sulla bolletta luce e gas con il nostro servizio gratuito.",
+    twitter_Image: "https://www.mmconsulting.it/assets/images/og-image.jpg",
+
+    author: "M&M Consulting Messina",
+
+    locale: "it_IT"
   },
 
-  header: {
-    logo: {
-      src: "/assets/images/banner-logo.jpg",
-      alt: "Logo M&M Consulting",
-      aria: "M&M Consulting – torna alla homepage"
-    },
-    cta: {
-      text: "Contattaci",
-      link: "#contact"
-    },
-    nav: [
-      { label: "Risparmio", target: "highlight" },
-      { label: "Come funziona", target: "how-it-works" },
-      { label: "Il Team", target: "team" },
-      { label: "Dove siamo", target: "find-us" },
-      { label: "Analisi", target: "simulator" }
-    ]
-  },
 
   footer: {
     tagline: "Il broker energetico di fiducia a Messina. Risparmiamo insieme.",

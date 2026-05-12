@@ -1,6 +1,13 @@
 {
   "version": "0.2.0",
   "configurations": [
+        {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Build Server",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/src/build.js"
+    },
     {
       "type": "node",
       "request": "launch",
