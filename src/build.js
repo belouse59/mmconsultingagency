@@ -67,7 +67,7 @@ function buildVariable(headVars, variables, outputFile) {
 //index.html
 buildPage({
   mainPage: true,
-  script: '<script type="module "src="/js/app.js"></script>',
+  script: '<script type="module" src="/js/app.js"></script>',
   pageFile: "index.html",
   outputFile: "index.html",
   headVars: siteConfig.head,
