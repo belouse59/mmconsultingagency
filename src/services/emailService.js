@@ -49,7 +49,7 @@ async function notifyNewLead(data) {
       to: process.env.NOTIFY_TO,
       subject: `Nuova richiesta da ${data.firstname || ""} ${data.lastname || ""}`,
       html,
-    });
+    }).then(email => console.log(email));
   } catch (err) {
     console.error(
       "[emailService] Failed to send lead notification:",
