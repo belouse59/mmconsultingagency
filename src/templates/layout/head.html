@@ -32,6 +32,7 @@
   
   <!-- ===== SEO VARIABLES (PER PAGE) ===== -->
   <title>{{TITLE}}</title>
+  <meta name="keywords" content="{{KEYWORDS}}">
   <meta name="description" content="{{DESCRIPTION}}">
   <meta name="robots" content="{{ROBOTS}}">
   <meta name="author" content="M&M Consulting Messina">
@@ -41,8 +42,8 @@
   <!-- Open Graph -->
   <meta property="og:type" content="{{OG_TYPE}}">
   <meta property="og:url" content="{{OG_URL}}">
-  <meta property="og:title" content="{{TITLE}}">
-  <meta property="og:description" content="{{DESCRIPTION}}">
+  <meta property="og:title" content="{{OG_TITLE}}">
+  <meta property="og:description" content="{{OG_DESCRIPTION}}">
   <meta property="og:image" content="{{OG_IMAGE}}">
   <meta property="og:locale" content="it_IT">
   <meta property="og:site_name" content="M&M Consulting">
@@ -52,83 +53,13 @@
   <meta name="twitter:title" content="{{TWITTER_TITLE}}">
   <meta name="twitter:description" content="{{TWITTER_DESCRIPTION}}">
   <meta name="twitter:image" content="{{TWITTER_IMAGE}}">
-  
+  <meta name="twitter:url" content="{{TWITTER_URL}}">
   <!-- Optional Page-Specific CSS -->
   {{EXTRA_CSS}}
   
   <!-- ═══ STRUCTURED DATA — Local Business ═══ -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "LocalBusiness",
-      "name": "M&M Consulting",
-      "description": "Broker energetico a Messina. Confrontiamo oltre 20 fornitori di luce e gas per trovare la tariffa migliore.",
-      "url": "https://www.mmconsulting.it",
-      "telephone": "+390909412150",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Via Industriale, 120",
-        "addressLocality": "Messina",
-        "addressRegion": "ME",
-        "postalCode": "98120",
-        "addressCountry": "IT"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": 38.1938,
-        "longitude": 15.5540
-      },
-      "openingHoursSpecification": {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
-        "opens": "09:00",
-        "closes": "18:00"
-      },
-      "areaServed": ["Messina", "Sicilia", "Italia"],
-      "serviceType": "Consulenza energetica e confronto fornitori",
-      "priceRange": "Gratuito"
-    }
-  </script>
-  
-  <!-- ═══ STRUCTURED DATA — FAQ ═══ -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Il servizio di consulenza energetica è gratuito?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Sì, l'analisi è completamente gratuita e senza impegno. Non paghiamo nulla per confrontare i fornitori."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Quanto posso risparmiare sulla bolletta?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "In media i nostri clienti risparmiano fino al 30% sulla bolletta energetica annuale."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Devo cambiare fornitore subito?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "No. Decidi tu se accettare o meno la proposta. Non c'è nessun obbligo."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Quanto tempo richiede la consulenza?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Bastano pochi minuti per compilare il simulatore o il modulo di contatto. Il nostro team ti ricontatta entro 24 ore."
-        }
-      }
-      ]
-    }
-  </script>
+   {{STRUCTURED_DATA_BUSINESS}}
+
+   <!-- ═══ STRUCTURED DATA — FAQ ═══ -->
+  {{STRUCTURED_DATA_FAQ}}
 </head>

@@ -34,7 +34,8 @@
   
   <!-- ===== SEO VARIABLES (PER PAGE) ===== -->
   <title>Broker Energia Messina | Risparmia su Luce e Gas – M&M Consulting</title>
-  <meta name="description" content="Confrontiamo oltre 20 fornitori di energia a Messina per trovare la tariffa più conveniente per luce e gas. Analisi gratuita e senza impegno.">
+  <meta name="keywords" content="">
+  <meta name="description" content="M&M Consulting è il broker energetico di Messina. Confrontiamo oltre 20 fornitori di luce e gas per trovare la tariffa più conveniente per la tua casa o azienda. Analisi gratuita, nessun impegno.">
   <meta name="robots" content="index, follow">
   <meta name="author" content="M&M Consulting Messina">
   
@@ -54,12 +55,12 @@
   <meta name="twitter:title" content="Broker Energia Messina | M&M Consulting">
   <meta name="twitter:description" content="Risparmia fino al 30% sulla bolletta luce e gas con il nostro servizio gratuito.">
   <meta name="twitter:image" content="https://www.mmconsulting.it/assets/images/og-image.jpg">
-  
+  <meta name="twitter:url" content="http://localhost:3001/index.html">
   <!-- Optional Page-Specific CSS -->
   
   
   <!-- ═══ STRUCTURED DATA — Local Business ═══ -->
-  <script type="application/ld+json">
+     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
@@ -91,46 +92,38 @@
       "priceRange": "Gratuito"
     }
   </script>
-  
-  <!-- ═══ STRUCTURED DATA — FAQ ═══ -->
-  <script type="application/ld+json">
+
+   <!-- ═══ STRUCTURED DATA — FAQ ═══ -->
+    <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Il servizio di consulenza energetica è gratuito?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Sì, l'analisi è completamente gratuita e senza impegno. Non paghiamo nulla per confrontare i fornitori."
-        }
+      "@type": "LocalBusiness",
+      "name": "M&M Consulting",
+      "description": "Broker energetico a Messina. Confrontiamo oltre 20 fornitori di luce e gas per trovare la tariffa migliore.",
+      "url": "https://www.mmconsulting.it",
+      "telephone": "+390909412150",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Via Industriale, 120",
+        "addressLocality": "Messina",
+        "addressRegion": "ME",
+        "postalCode": "98120",
+        "addressCountry": "IT"
       },
-      {
-        "@type": "Question",
-        "name": "Quanto posso risparmiare sulla bolletta?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "In media i nostri clienti risparmiano fino al 30% sulla bolletta energetica annuale."
-        }
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 38.1938,
+        "longitude": 15.5540
       },
-      {
-        "@type": "Question",
-        "name": "Devo cambiare fornitore subito?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "No. Decidi tu se accettare o meno la proposta. Non c'è nessun obbligo."
-        }
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+        "opens": "09:00",
+        "closes": "18:00"
       },
-      {
-        "@type": "Question",
-        "name": "Quanto tempo richiede la consulenza?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Bastano pochi minuti per compilare il simulatore o il modulo di contatto. Il nostro team ti ricontatta entro 24 ore."
-        }
-      }
-      ]
+      "areaServed": ["Messina", "Sicilia", "Italia"],
+      "serviceType": "Consulenza energetica e confronto fornitori",
+      "priceRange": "Gratuito"
     }
   </script>
 </head>
@@ -1056,7 +1049,7 @@
           <div class="nl-field">
             <input name="email" type="email" placeholder="La tua email" required>
 
-            <button type="submit" class="btn btn-gold">
+            <button id="newsletter-btn" type="submit" class="btn btn-gold">
               <span class="btn-text">Iscriviti</span>
               <span class="btn-dots" aria-hidden="true">
                 <span></span><span></span><span></span>
@@ -1155,6 +1148,6 @@
       </button>
     </div>
   </div>
-<script src="/js/app.js" defer></script>
+<script type="module" src="/js/app.js"></script>
 </body>
 </html>

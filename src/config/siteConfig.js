@@ -19,10 +19,12 @@ module.exports = {
     twitter_Title: "Broker Energia Messina | M&M Consulting",
     twitter_Description: "Risparmia fino al 30% sulla bolletta luce e gas con il nostro servizio gratuito.",
     twitter_Image: "https://www.mmconsulting.it/assets/images/og-image.jpg",
+    twitter_Url:"",
 
     author: "M&M Consulting Messina",
-
-    locale: "it_IT"
+    locale: "it_IT",
+    STRUCTURED_DATA_BUSINESS: "",
+    STRUCTURED_DATA_FAQ:""
   },
 
 
