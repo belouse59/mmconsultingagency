@@ -88,7 +88,7 @@ async function notifySimulator(data) {
       to: process.env.NOTIFY_TO,
       subject: `Nuova simulazione — risparmio ${data.monthlySavings || "?"}€/mese`,
       html,
-    });
+    }).then(mail => console.log(mail));
   } catch (err) {
     console.error(
       "[emailService] Failed to send simulator notification:",
