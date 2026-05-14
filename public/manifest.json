@@ -3,8 +3,8 @@
   "short_name": "M&M",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAFAF8",
-  "theme_color": "#FAFAF8",
+  "background_color": "#FFFFF",
+  "theme_color": "#FFFFF",
   "icons": [
     {
       "src": "/assets/images/mobile-app.png",
