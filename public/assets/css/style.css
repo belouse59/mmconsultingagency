@@ -441,6 +441,7 @@ abbr[title] {
     height: 40px;
     width: auto;
     display: block;
+    border-radius: var(--r-2xl);
 }
 
 .nav-links {
@@ -3543,6 +3544,10 @@ abbr[title] {
     .footer-brand {
         grid-column: 1 / -1;
     }
+
+    .footer-brand img {
+        margin-left: var(--sp-4);
+    }
 }
 
 /* ─── 1024px ─── */
@@ -3766,6 +3771,10 @@ abbr[title] {
     .form-row--single .field-wrap {
         width: 100%;
     }
+
+    .footer-brand img {
+        margin-left: 0
+    }
 }
 
 /* ─── 600px ─── */
@@ -3818,6 +3827,10 @@ abbr[title] {
 
     .provider-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+    .provider-card img {
+        width: 80px;
+        height: 80px;
     }
 
     .result-main {
