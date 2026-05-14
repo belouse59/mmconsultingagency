@@ -33,4 +33,28 @@ export function initReveal() {
   );
 
   $$(".reveal").forEach((el) => observer.observe(el));
+  // WhatsApp floating button mobile behavior
+  initWhatsAppFloat();
+}
+
+function initWhatsAppFloat() {
+  if (window.innerWidth > 768) return;
+
+  const waButton = $(".wa-float");
+  const footer = $("#footer") || $("#blog-link");
+  console.log(waButton, footer)
+
+  if (!waButton || !footer) return;
+
+  const floatObserver = new IntersectionObserver(
+    ([entry]) => {
+      console.log("I will toggle is-raised")
+      waButton.classList.toggle("is-raised", entry.isIntersecting);
+    },
+    {
+      threshold: 0.1
+    }
+  );
+
+  floatObserver.observe(footer);
 }

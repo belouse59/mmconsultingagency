@@ -15,6 +15,7 @@ import { initNewsletter } from "./features/forms/newsletter.js";
 import { initProviders } from "./features/simulator/providers.js";
 import { initSimulator } from "./features/simulator/simulator.js";
 
+
 /* ─────────────────────────────────────────────────────────────
    SCROLL RESTORATION — must run before DOMContentLoaded
 ───────────────────────────────────────────────────────────── */

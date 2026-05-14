@@ -3845,6 +3845,11 @@ abbr[title] {
         height: 50px;
     }
 
+  .wa-float.is-raised {
+    bottom: max(72px, calc(env(safe-area-inset-bottom) + 12px));
+  }
+
+
     .wa-float img {
         width: 24px;
         height: 24px;

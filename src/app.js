@@ -13,6 +13,7 @@ const partnerRoutes    = require("./routes/partnerRoutes");
 const providerRoutes   = require("./routes/providerRoutes");
 const teamRoutes       = require("./routes/teamRoutes");
 const formRoutes       = require("./routes/formRoutes");
+const loyaltyRoutes    = require("./routes/loyaltyRoutes");
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.use("/api/partners",  partnerRoutes);
 app.use("/api/providers", providerRoutes);
 app.use("/api/team",      teamRoutes);
 app.use("/api/form",      formRoutes);
+app.use("/api/loyalty",   loyaltyRoutes);
 
 /* ─────────────────────────────────────────────────────────────
    STATIC FILES
