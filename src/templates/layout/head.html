@@ -1,71 +1,65 @@
 <head>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- FAVICON -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon.png">
 
-  <!-- Apple (iPhone / iPad home screen icon) -->
-  <link rel="apple-touch-icon" href="/assets/images/favicon.png">
-
-  <!-- Mobile browser color (address bar / UI) -->
+  <!-- ===== BASE SEO HEAD TEMPLATE ===== -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- Theme / Geo -->
   <meta name="theme-color" content="#F7F6F4">
-  <title>Dott.ssa Myriam Rando – Psicologa a Messina | Colloqui individuali e online</title>
-  <meta charset="UTF-8">
-  <meta name="author" content="Dott.ssa Myriam Rando">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="geo.region" content="IT-ME">
   <meta name="geo.placename" content="Messina">
   <meta name="geo.position" content="38.1938;15.5540">
-  <meta name="ICBM" content="38.1938, 15.5540">
-  <meta name="description"
-    content="Psicologa a Messina. Supporto per ansia, stress, autostima e relazioni. Primo colloquio €60. Colloqui in studio e online. Prenota senza impegno.">
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:wght@500;600&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="./assets/css/style.css">
-  <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": ["Person", "LocalBusiness"],
-  "name": "Dott.ssa Myriam Rando",
-  "jobTitle": "Psicologa",
-  "description": "Psicologa a Messina specializzata in ansia, stress, autostima e supporto relazionale. Colloqui individuali e online.",
-  "url": "https://dottoressa-myriam-rando.vercel.app/",
-  "telephone": "+393713397393",
-  "email": "myriamrando00@gmail.com",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Via Roma 123",
-    "addressLocality": "Messina",
-    "addressRegion": "Sicilia",
-    "postalCode": "98100",
-    "addressCountry": "IT"
-  },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": 38.1938,
-    "longitude": 15.5540
-  },
-  "openingHours": "Mo-Fr 09:00-18:00",
-  "priceRange": "€50–€60",
-  "sameAs": [
-    "https://www.instagram.com/mente.sintetica/",
-    "https://it.linkedin.com/in/myriam-rando-752a90383",
-    "https://www.facebook.com/people/SinteticaMente/61578441935099/"
-  ]
-}
-</script>
-  <!-- Canonical -->
-  <link rel="canonical" href="https://dottoressa-myriam-rando.vercel.app/">
-
-  <!-- Open Graph (for sharing on WhatsApp, Facebook, LinkedIn) -->
-  <meta property="og:title" content="Dott.ssa Myriam Rando – Psicologa a Messina">
-  <meta property="og:description"
-    content="Supporto psicologico per ansia, stress, autostima e relazioni. Primo colloquio €60. Prenota senza impegno.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://dottoressa-myriam-rando.vercel.app/">
-  <meta property="og:image" content="https://dottoressa-myriam-rando.vercel.app/assets/images/doctor-hero.png">
+  <meta name="ICBM" content="38.1938,15.5540">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon.png">
+  <link rel="apple-touch-icon" href="/assets/images/favicon.png">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  crossorigin="anonymous" referrerpolicy="no-referrer">
+  
+  <!-- Default CSS -->
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  
+  <!-- ===== SEO VARIABLES (PER PAGE) ===== -->
+  <title>{{TITLE}}</title>
+  <meta name="keywords" content="{{KEYWORDS}}">
+  <meta name="description" content="{{DESCRIPTION}}">
+  <meta name="robots" content="{{ROBOTS}}">
+  <meta name="author" content="M&M Consulting Messina">
+  
+  <link rel="canonical" href="{{CANONICAL}}">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="{{OG_TYPE}}">
+  <meta property="og:url" content="{{OG_URL}}">
+  <meta property="og:title" content="{{OG_TITLE}}">
+  <meta property="og:description" content="{{OG_DESCRIPTION}}">
+  <meta property="og:image" content="{{OG_IMAGE}}">
   <meta property="og:locale" content="it_IT">
+  <meta property="og:site_name" content="M&M Consulting">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{TWITTER_TITLE}}">
+  <meta name="twitter:description" content="{{TWITTER_DESCRIPTION}}">
+  <meta name="twitter:image" content="{{TWITTER_IMAGE}}">
+  <meta name="twitter:url" content="{{TWITTER_URL}}">
+  <!-- Optional Page-Specific CSS -->
+  {{EXTRA_CSS}}
+  
+  <!-- ═══ STRUCTURED DATA — Local Business ═══ -->
+   {{STRUCTURED_DATA_BUSINESS}}
+
+   <!-- ═══ STRUCTURED DATA — FAQ ═══ -->
+  {{STRUCTURED_DATA_FAQ}}
 </head>
