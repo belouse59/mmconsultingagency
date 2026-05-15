@@ -13,116 +13,152 @@ const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
 const write = (file, data) =>
     fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
-const hash = (value) =>
-    crypto.createHash("sha256").update(value).digest("hex");
+const hashPassword = (password) =>
+  crypto.createHash("sha256").update(password).digest("hex");
 
-function register({ email, password }) {
-    const customers = read(customersPath);
+const detectIdentifierType = (identifier) => {
+  return identifier.includes("@") ? "email" : "phone";
+};
 
-    if (customers.find((u) => u.email === email)) {
-        throw new Error("User already exists");
-    }
+const normalizeIdentifier = (identifier) => {
+  const trimmed = identifier.trim().toLowerCase();
 
-    const customer = {
-        id: Date.now().toString(),
-        email,
-        password: hash(password),
-        qrToken: generateToken(),
-        createdAt: new Date().toISOString(),
-    };
+  if (trimmed.includes("@")) return trimmed;
 
-    customers.push(customer);
-    write(customersPath, customers);
+  return trimmed.replace(/[^\d+]/g, "");
+};
 
+function register({ identifier, password }) {
+    if (!identifier || !password) {
+    throw new Error("Missing required fields");
+  }
+
+  const customers = read(customersPath);
+
+  const normalizedIdentifier = normalizeIdentifier(identifier);
+
+  const existing = customers.find(
+    (c) => c.identifier === normalizedIdentifier
+  );
+
+  if (existing) {
+    throw new Error("Customer already exists");
+  }
+
+  const customer = {
+    id: Date.now().toString(),
+    identifier: normalizedIdentifier,
+    identifierType: detectIdentifierType(normalizedIdentifier),
+    passwordHash: hashPassword(password),
+    qrToken: generateToken(),
+    active: true,
+    createdAt: new Date().toISOString(),
+  };
+
+  customers.push(customer);
+  write(customersPath, customers);
+
+  return {
+    success: true,
+    customer,
+  };
+};
+
+function login({ identifier, password }) {
+  const customers = read(customersPath);
+
+  const normalizedIdentifier = normalizeIdentifier(identifier);
+
+  const customer = customers.find(
+    (c) =>
+      c.identifier === normalizedIdentifier &&
+      c.passwordHash === hashPassword(password)
+  );
+
+  if (!customer) {
+    throw new Error("Invalid credentials");
+  }
+
+  return {
+    success: true,
+    customer,
+  };
+};
+
+function createOffer({ title, description = "" }) {
+  const offers = read(offersPath);
+
+  const offer = {
+    id: Date.now().toString(),
+    title,
+    description,
+    active: true,
+    createdAt: new Date().toISOString(),
+  };
+
+  offers.push(offer);
+  write(offersPath, offers);
+
+  return offer;
+};
+function getByToken (token) {
+  const customers = read(customersPath);
+  return customers.find((c) => c.qrToken === token);
+};
+
+function validateRedemption ({ token, offerId, partnerId } = {}) {
+  if (!token || !offerId || !partnerId) {
     return {
-        success: true,
-        customer,
+      success: false,
+      message: "Missing token, offerId or partnerId",
     };
-};
+  }
+  const customer = getByToken(token);
 
-function login({ email, password }) {
-    const customers = read(customersPath);
-
-    const user = customers.find(
-        (u) => u.email === email && u.password === hash(password)
-    );
-
-    if (!user) throw new Error("Invalid credentials");
-
+  if (!customer) {
     return {
-        success: true,
-        customer: user,
+      success: false,
+      message: "Invalid QR code",
     };
-};
+  }
+  const redemptions = read(redemptionsPath);
 
-function getByToken(token) {
-    const customers = read(customersPath);
-    return customers.find((u) => u.qrToken === token);
-};
+  const today = new Date().toISOString().slice(0, 10);
 
-function validate({ token, offerId, partnerId }) {
-    const customer = exports.getByToken(token);
+  const existingRedemption = redemptions.find(
+    (r) =>
+      r.customerId === customer.id &&
+      r.offerId === offerId &&
+      r.date === today
+  );
 
-    if (!customer) {
-        return { success: false, message: "Invalid QR" };
-    }
-
-    const redemptions = read(redemptionsPath);
-
-    const today = new Date().toISOString().slice(0, 10);
-
-    const alreadyUsed = redemptions.find(
-        (r) =>
-            r.customerId === customer.id &&
-            r.offerId === offerId &&
-            r.date === today
-    );
-
-    if (alreadyUsed) {
-        return {
-            success: false,
-            message: "Offer already redeemed today",
-        };
-    }
-
-    redemptions.push({
-        id: Date.now().toString(),
-        customerId: customer.id,
-        partnerId,
-        offerId,
-        date: today,
-        createdAt: new Date().toISOString(),
-    });
-
-    write(redemptionsPath, redemptions);
-
+  if (existingRedemption) {
     return {
-        success: true,
-        message: "Discount validated",
-        customer,
+      success: false,
+      message: "Offer already redeemed today",
     };
+  }
+
+  const redemption = {
+    id: Date.now().toString(),
+    customerId: customer.id,
+    partnerId,
+    offerId,
+    date: today,
+    createdAt: new Date().toISOString(),
+  };
+
+  redemptions.push(redemption);
+  write(redemptionsPath, redemptions);
+
+  return {
+    success: true,
+    message: "Discount validated",
+    customer,
+  };
 };
 
-function getCustomers() {
-    read(customersPath)
-};
-function getRedemptions() {
-    read(redemptionsPath)
-};
+function getCustomers() {read(customersPath)};
+function getRedemptions() {read(redemptionsPath)};
 
-function createOffer({ title }) {
-    const offers = read(offersPath);
-
-    const offer = {
-        id: Date.now().toString(),
-        title,
-        active: true,
-    };
-
-    offers.push(offer);
-    write(offersPath, offers);
-
-    return offer;
-};
-
-module.exports = { register, login, getByToken, validate, getCustomers, getRedemptions, createOffer }
+module.exports = { register, login, getByToken, validateRedemption, getCustomers, getRedemptions, createOffer }

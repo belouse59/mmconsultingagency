@@ -1,18 +1,26 @@
 "use strict";
 
 const express = require("express");
-const controller = require("../controllers/loyaltyController");
+const {
+    registerCustomer, 
+    loginCustomer, 
+    getCustomerByToken, 
+    validateRedemptionController, 
+    getCustomersController,
+    getRedemptionsController,
+    createOfferController
+} = require("../controllers/loyaltyController");
 
 const router = express.Router();
 
-router.post("/register", controller.registerCustomer);
-router.post("/login", controller.loginCustomer);
-router.get("/customer/:token", controller.getCustomerByToken);
+router.post("/register", registerCustomer);
+router.post("/login", loginCustomer);
+router.get("/customer/:token", getCustomerByToken);
 
-router.post("/validate", controller.validateRedemption);
+router.post("/validate", validateRedemptionController);
 
-router.get("/admin/customers", controller.getCustomers);
-router.get("/admin/redemptions", controller.getRedemptions);
-router.post("/admin/offers", controller.createOffer);
+router.get("/admin/customers", getCustomersController);
+router.get("/admin/redemptions", getRedemptionsController);
+router.post("/admin/offers", createOfferController);
 
 module.exports = router;

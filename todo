@@ -1,3 +1,4 @@
 think about qr code implementation
 add blog to build function
 change the logic to build to create the carousels there is no need for api call in production
+email validation on contact request.

@@ -1,45 +1,45 @@
 "use strict";
 
-const { loyaltyService } = require("../services/loyaltyService");
+const { register, login, getByToken, validateRedemption, getCustomers, getRedemptions, createOffer } = require("../services/loyaltyService");
 
 function registerCustomer(req, res) {
-    const result = loyaltyService.register(req.body);
+    const result = register(req.body);
     res.json(result);
 };
 
 function loginCustomer(req, res) {
-    const result = loyaltyService.login(req.body);
+    const result = login(req.body);
     res.json(result);
 };
 
 function getCustomerByToken(req, res) {
-    const result = loyaltyService.getByToken(req.params.token);
+    const result = getByToken(req.params.token);
     res.json(result);
 };
 
-function validateRedemption(req, res) {
-    const result = loyaltyService.validate(req.body);
+function validateRedemptionController(req, res) {
+    const result = validateRedemption(req.body);
     res.json(result);
 };
 
-function getCustomers(req, res) {
-    res.json(loyaltyService.getCustomers());
+function getCustomersController(req, res) {
+    res.json(getCustomers());
 };
 
-function getRedemptions(req, res) {
-    res.json(loyaltyService.getRedemptions());
+function getRedemptionsController(req, res) {
+    res.json(getRedemptions());
 };
 
-function createOffer(req, res) {
-    res.json(loyaltyService.createOffer(req.body));
+function createOfferController(req, res) {
+    res.json(createOffer(req.body));
 };
 
 module.exports = {
     registerCustomer,
     loginCustomer,
     getCustomerByToken,
-    validateRedemption,
-    getCustomers,
-    getRedemptions,
-    createOffer
+    validateRedemptionController,
+    getCustomersController,
+    getRedemptionsController,
+    createOfferController
 };

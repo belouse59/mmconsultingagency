@@ -1,0 +1,11 @@
+[
+  {
+    "id": "1778878734303",
+    "identifier": "test@gmail.com",
+    "identifierType": "email",
+    "passwordHash": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+    "qrToken": "e900ad81ebe912f12e8a3fadc728e3c4f3f3af0692092fa423561ca19e93fb10",
+    "active": true,
+    "createdAt": "2026-05-15T20:58:54.304Z"
+  }
+]
