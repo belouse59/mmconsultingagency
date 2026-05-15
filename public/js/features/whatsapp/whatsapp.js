@@ -118,7 +118,7 @@ export function initWhatsApp() {
   // ==========================
 
   function sendToWhatsApp() {
-    const phoneNumber = "393713397393"; // no "+"
+    const phoneNumber = "34667218526"; // no "+"
     const finalMessage =
       input.value.trim() ||
       selectedMessage ||
