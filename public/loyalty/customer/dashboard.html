@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>M&M Convenzioni | Dashboard</title>
+
+  <link rel="stylesheet" href="../../assets/css/loyalty-brand.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="logo">M&M Consulting</div>
+
+      <h1>M&M Convenzioni</h1>
+
+      <p class="subtitle">
+        Your personal access to partner discounts
+      </p>
+
+      <p id="customerIdentifier"></p>
+    </div>
+
+    <div class="card" style="text-align:center;">
+      <h2>Your QR Code</h2>
+
+      <img
+        id="qrImage"
+        class="qr-image"
+        alt="Customer QR code"
+      />
+    </div>
+
+    <div class="card">
+      <button
+        class="secondary-btn"
+        id="logoutBtn"
+      >
+        Logout
+      </button>
+    </div>
+  </div>
+
+  <script src="/js/features/loyalty/customer/dashboard.js"></script>
+</body>
+</html>

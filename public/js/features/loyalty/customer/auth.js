@@ -1,24 +1,36 @@
 const registerForm = document.getElementById("registerForm");
 const loginForm = document.getElementById("loginForm");
 
+const saveCustomer = (customer) => {
+  localStorage.setItem("loyaltyCustomer", JSON.stringify(customer));
+};
+
 if (registerForm) {
   registerForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const body = {
-      email: registerForm.email.value,
+      identifier: registerForm.identifier.value,
       password: registerForm.password.value,
     };
 
     const res = await fetch("/api/loyalty/register", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(body),
     });
 
     const data = await res.json();
-    localStorage.setItem("customer", JSON.stringify(data.customer));
-    window.location = "/loyalty/dashboard.html";
+
+    if (!data.success) {
+      alert(data.message || "Registration failed");
+      return;
+    }
+
+    saveCustomer(data.customer);
+    window.location.href = "/loyalty/dashboard.html";
   });
 }
 
@@ -27,18 +39,26 @@ if (loginForm) {
     e.preventDefault();
 
     const body = {
-      email: loginForm.email.value,
+      identifier: loginForm.identifier.value,
       password: loginForm.password.value,
     };
 
     const res = await fetch("/api/loyalty/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(body),
     });
 
     const data = await res.json();
-    localStorage.setItem("customer", JSON.stringify(data.customer));
-    window.location = "/loyalty/dashboard.html";
+
+    if (!data.success) {
+      alert(data.message || "Login failed");
+      return;
+    }
+
+    saveCustomer(data.customer);
+    window.location.href = "/loyalty/dashboard.html";
   });
 }

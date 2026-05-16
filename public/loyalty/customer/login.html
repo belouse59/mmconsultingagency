@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>M&M Convenzioni | Login</title>
+
+  <link rel="stylesheet" href="../../assets/css/loyalty-brand.css" />
+</head>
+<body>
+  <div class="auth-wrapper">
+    <div class="card auth-card">
+      <div class="logo">M&M Consulting</div>
+
+      <h1>Welcome back</h1>
+
+      <p class="subtitle">
+        Access your loyalty dashboard and QR code.
+      </p>
+
+      <form id="loginForm">
+        <input
+          type="text"
+          name="identifier"
+          placeholder="Email or phone number"
+          required
+        />
+
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+        />
+
+        <button type="submit">Login</button>
+      </form>
+
+      <a href="/loyalty/register.html">
+        Create a new account
+      </a>
+    </div>
+  </div>
+
+  <script src="/js/features/loyalty/customer/auth.js"></script>
+</body>
+</html>

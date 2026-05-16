@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>M&M Convenzioni | Admin</title>
+
+ <link rel="stylesheet" href="../../assets/css/loyalty-brand.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="logo">M&M Consulting</div>
+
+      <h1>M&M Convenzioni Admin</h1>
+
+      <p class="subtitle">
+        Manage customers, offers and redemption history
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Create Offer</h2>
+
+      <form id="offerForm">
+        <input
+          type="text"
+          name="title"
+          placeholder="Offer title"
+          required
+        />
+
+        <input
+          type="text"
+          name="description"
+          placeholder="Offer description"
+        />
+
+        <button type="submit">
+          Create Offer
+        </button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Customers</h2>
+
+      <table id="customersTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Identifier</th>
+            <th>Type</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Redemptions</h2>
+
+      <table id="redemptionsTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Offer</th>
+            <th>Partner</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="/js/features/loyalty/admin/admin.js"></script>
+</body>
+</html>

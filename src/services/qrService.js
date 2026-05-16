@@ -1,8 +1,16 @@
 "use strict";
 
 const crypto = require("crypto");
+const QRCode = require("qrcode");
 
-function generateToken() {
-    return crypto.randomBytes(32).toString("hex");
+function generateQrToken() {
+  return crypto.randomBytes(32).toString("hex");
 };
-module.exports = { generateToken };
+
+async function generateQrImage(token) {
+  return QRCode.toDataURL(token, {
+    width: 280,
+    margin: 2,
+  });
+};
+module.exports ={ generateQrToken, generateQrImage } 

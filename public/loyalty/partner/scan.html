@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>M&M Convenzioni | Scanner</title>
+
+  <link rel="stylesheet" href="../../assets/css/loyalty-brand.css" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="logo">M&M Consulting</div>
+
+      <h1>QR Validation</h1>
+
+      <p class="subtitle">
+        Scan customer QR codes to validate offers.
+      </p>
+
+      <div id="reader"></div>
+
+      <p
+        id="result"
+        style="margin-top:20px;font-weight:700;"
+      ></p>
+    </div>
+  </div>
+
+  <script src="/js/features/loyalty/partner/partnerScan.js"></script>
+</body>
+</html>

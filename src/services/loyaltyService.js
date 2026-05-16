@@ -158,7 +158,7 @@ function validateRedemption ({ token, offerId, partnerId } = {}) {
   };
 };
 
-function getCustomers() {read(customersPath)};
-function getRedemptions() {read(redemptionsPath)};
+function getCustomers() {return read(customersPath)};
+function getRedemptions() {return read(redemptionsPath)};
 
 module.exports = { register, login, getByToken, validateRedemption, getCustomers, getRedemptions, createOffer }

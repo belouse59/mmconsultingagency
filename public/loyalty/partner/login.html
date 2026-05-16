@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>M&M Convenzioni | Partner Access</title>
+
+  <link rel="stylesheet" href="../../assets/css/loyalty-brand.css" />
+</head>
+<body>
+  <div class="auth-wrapper">
+    <div class="card auth-card">
+      <div class="logo">M&M Consulting</div>
+
+      <h1>Partner Access</h1>
+
+      <p class="subtitle">
+        Secure access to QR validation scanner.
+      </p>
+
+      <form id="partnerLoginForm">
+        <input
+          type="text"
+          name="partnerId"
+          placeholder="Partner ID"
+          required
+        />
+
+        <button type="submit">
+          Open Scanner
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("partnerLoginForm");
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const partnerId = form.partnerId.value.trim();
+
+      localStorage.setItem("partnerId", partnerId);
+      window.location.href = "/partner/scan.html";
+    });
+  </script>
+</body>
+</html>

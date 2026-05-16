@@ -8,7 +8,8 @@ const {
     validateRedemptionController, 
     getCustomersController,
     getRedemptionsController,
-    createOfferController
+    createOfferController,
+    getQrCodeController
 } = require("../controllers/loyaltyController");
 
 const router = express.Router();
@@ -16,6 +17,7 @@ const router = express.Router();
 router.post("/register", registerCustomer);
 router.post("/login", loginCustomer);
 router.get("/customer/:token", getCustomerByToken);
+router.get("/qr/:token", getQrCodeController);
 
 router.post("/validate", validateRedemptionController);
 
