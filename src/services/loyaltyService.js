@@ -1,17 +1,13 @@
 "use strict";
 
-const fs = require("fs");
-const path = require("path");
+const { appendRow, getSheetValues } = require("../services/sheetsService");
 const crypto = require("crypto");
 const { generateQrToken } = require("./qrService");
 
-const customersPath = path.join(__dirname, "../data/loyalty-customers.json");
-const redemptionsPath = path.join(__dirname, "../data/loyalty-redemptions.json");
-const offersPath = path.join(__dirname, "../data/loyalty-offers.json");
-
-const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
-const write = (file, data) =>
-    fs.writeFileSync(file, JSON.stringify(data, null, 2));
+// Sheet tab names
+const CUSTOMERS_SHEET = "Customers";
+const REDENTIONS_SHEET = "Redemptions";
+const OFFERS_SHEET = "Offers";
 
 const hashPassword = (password) =>
   crypto.createHash("sha256").update(password).digest("hex");
@@ -22,18 +18,68 @@ const detectIdentifierType = (identifier) => {
 
 const normalizeIdentifier = (identifier) => {
   const trimmed = identifier.trim().toLowerCase();
-
   if (trimmed.includes("@")) return trimmed;
-
   return trimmed.replace(/[^\d+]/g, "");
 };
 
-function register({ identifier, password }) {
-    if (!identifier || !password) {
+//
+// =====================
+// HELPERS (SHEETS READ)
+// =====================
+//
+function stripHeader(rows) {
+  if (!rows || rows.length === 0) return [];
+  return rows.slice(1);
+}
+
+async function readCustomers() {
+  const rows = stripHeader(await getSheetValues(CUSTOMERS_SHEET));
+  return rows.map((r) => ({
+    id: r[0],
+    identifier: r[1],
+    identifierType: r[2],
+    passwordHash: r[3],
+    qrToken: r[4],
+    active: r[5] === "true" || r[5] === "TRUE",
+    createdAt: r[6],
+  }));
+}
+
+async function readOffers() {
+  const rows = stripHeader(await getSheetValues(OFFERS_SHEET));
+  return rows.map((r) => ({
+    id: r[0],
+    title: r[1],
+    description: r[2],
+    active: r[3] === "true",
+    createdAt: r[4],
+  }));
+}
+
+async function readRedemptions() {
+  const rows = stripHeader(await getSheetValues(REDENTIONS_SHEET));
+  return rows.map((r) => ({
+    id: r[0],
+    customerId: r[1],
+    partnerId: r[2],
+    offerId: r[3],
+    date: r[4],
+    createdAt: r[5],
+  }));
+}
+
+//
+// =====================
+// CORE FUNCTIONS
+// =====================
+//
+
+async function register({ full_name, identifier, password }) {
+  if (!full_name || !identifier || !password) {
     throw new Error("Missing required fields");
   }
 
-  const customers = read(customersPath);
+  const customers = await readCustomers();
 
   const normalizedIdentifier = normalizeIdentifier(identifier);
 
@@ -47,6 +93,7 @@ function register({ identifier, password }) {
 
   const customer = {
     id: Date.now().toString(),
+    full_name: full_name,
     identifier: normalizedIdentifier,
     identifierType: detectIdentifierType(normalizedIdentifier),
     passwordHash: hashPassword(password),
@@ -55,17 +102,21 @@ function register({ identifier, password }) {
     createdAt: new Date().toISOString(),
   };
 
-  customers.push(customer);
-  write(customersPath, customers);
+  await appendRow(CUSTOMERS_SHEET, [
+    customer.id,
+    customer.identifier,
+    customer.identifierType,
+    customer.passwordHash,
+    customer.qrToken,
+    customer.active,
+    customer.createdAt,
+  ]);
 
-  return {
-    success: true,
-    customer,
-  };
-};
+  return { success: true, customer };
+}
 
-function login({ identifier, password }) {
-  const customers = read(customersPath);
+async function login({ identifier, password }) {
+  const customers = await readCustomers();
 
   const normalizedIdentifier = normalizeIdentifier(identifier);
 
@@ -79,15 +130,10 @@ function login({ identifier, password }) {
     throw new Error("Invalid credentials");
   }
 
-  return {
-    success: true,
-    customer,
-  };
-};
+  return { success: true, customer };
+}
 
-function createOffer({ title, description = "" }) {
-  const offers = read(offersPath);
-
+async function createOffer({ title, description = "" }) {
   const offer = {
     id: Date.now().toString(),
     title,
@@ -96,24 +142,31 @@ function createOffer({ title, description = "" }) {
     createdAt: new Date().toISOString(),
   };
 
-  offers.push(offer);
-  write(offersPath, offers);
+  await appendRow(OFFERS_SHEET, [
+    offer.id,
+    offer.title,
+    offer.description,
+    offer.active,
+    offer.createdAt,
+  ]);
 
   return offer;
-};
-function getByToken (token) {
-  const customers = read(customersPath);
-  return customers.find((c) => c.qrToken === token);
-};
+}
 
-function validateRedemption ({ token, offerId, partnerId } = {}) {
+async function getByToken(token) {
+  const customers = await readCustomers();
+  return customers.find((c) => c.qrToken === token);
+}
+
+async function validateRedemption({ token, offerId, partnerId } = {}) {
   if (!token || !offerId || !partnerId) {
     return {
       success: false,
       message: "Missing token, offerId or partnerId",
     };
   }
-  const customer = getByToken(token);
+
+  const customer = await getByToken(token);
 
   if (!customer) {
     return {
@@ -121,7 +174,8 @@ function validateRedemption ({ token, offerId, partnerId } = {}) {
       message: "Invalid QR code",
     };
   }
-  const redemptions = read(redemptionsPath);
+
+  const redemptions = await readRedemptions();
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -148,17 +202,34 @@ function validateRedemption ({ token, offerId, partnerId } = {}) {
     createdAt: new Date().toISOString(),
   };
 
-  redemptions.push(redemption);
-  write(redemptionsPath, redemptions);
+  await appendRow(REDENTIONS_SHEET, [
+    redemption.id,
+    redemption.customerId,
+    redemption.partnerId,
+    redemption.offerId,
+    redemption.date,
+    redemption.createdAt,
+  ]);
 
   return {
     success: true,
     message: "Discount validated",
     customer,
   };
+}
+
+//
+// =====================
+// EXPORTS
+// =====================
+//
+
+module.exports = {
+  register,
+  login,
+  getByToken,
+  validateRedemption,
+  createOffer,
+  getCustomers: readCustomers,
+  getRedemptions: readRedemptions,
 };
-
-function getCustomers() {return read(customersPath)};
-function getRedemptions() {return read(redemptionsPath)};
-
-module.exports = { register, login, getByToken, validateRedemption, getCustomers, getRedemptions, createOffer }

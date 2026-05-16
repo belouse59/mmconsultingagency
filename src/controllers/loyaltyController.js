@@ -2,14 +2,19 @@
 
 const { register, login, getByToken, validateRedemption, getCustomers, getRedemptions, createOffer } = require("../services/loyaltyService");
 const {generateQrToken, generateQrImage} = require("../services/qrService.js");
+/* ─────────────────────────────────────────────────────────────
+   RESPONSE HELPERS
+───────────────────────────────────────────────────────────── */
+const ok = (message = "ok") => ({ status: "success", message });
+const err = (message = "error") => ({ status: "error", message });
 
-function registerCustomer(req, res) {
-    const result = register(req.body);
+async function registerCustomer(req, res) {
+    const result = await register(req.body);
     res.json(result);
 };
 
-function loginCustomer(req, res) {
-    const result = login(req.body);
+async function loginCustomer(req, res) {
+    const result = await login(req.body);
     res.json(result);
 };
 
@@ -18,25 +23,39 @@ function getCustomerByToken(req, res) {
     res.json(result);
 };
 
-function validateRedemptionController(req, res) {
-    const result = validateRedemption(req.body);
+async function validateRedemptionController(req, res) {
+    const result = await validateRedemption(req.body);
     res.json(result);
 };
 
-function getCustomersController(req, res) {
-    res.json(getCustomers());
+async function getCustomersController(req, res) {
+        const customers = await getCustomers()
+        if (customers) return res.json({success: true, customers});
+
+        return res.status(403).json(err("Request Failed"));
 };
 
-function getRedemptionsController(req, res) {
-    res.json(getRedemptions());
+async function registerPartner(req, res) {
+    //const result = await register(req.body);
+    return res.json({success: true, data:[]});
 };
 
-function createOfferController(req, res) {
-    res.json(createOffer(req.body));
+async function loginPartner(req, res) {
+   // const result = await login(req.body);
+   return res.json({success: true, partnerId:"partner-6"});
+};
+
+async function getRedemptionsController(req, res) {
+    const redemptions = await getRedemptions()
+    return res.json({success: true, redemptions});
+};
+
+async function createOfferController(req, res) {
+    res.json(await createOffer(req.body));
 };
 
 async function getQrCodeController  (req, res){
-  const customer = getByToken(req.params.token);
+  const customer = await getByToken(req.params.token);
 
   if (!customer) {
     return res.status(404).json({
@@ -60,6 +79,8 @@ module.exports = {
     validateRedemptionController,
     getCustomersController,
     getRedemptionsController,
+    loginPartner,
+    registerPartner,
     createOfferController,
     getQrCodeController
 };
