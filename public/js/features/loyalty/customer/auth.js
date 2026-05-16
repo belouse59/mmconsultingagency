@@ -1,64 +1,63 @@
-const registerForm = document.getElementById("registerForm");
-const loginForm = document.getElementById("loginForm");
+const $ = (s) => document.querySelector(s);
 
-const saveCustomer = (customer) => {
-  localStorage.setItem("loyaltyCustomer", JSON.stringify(customer));
-};
+const $form = $("#loginForm");
+const $message = $("#loginMessage");
 
-if (registerForm) {
-  registerForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+/* -------------------------
+   UI FEEDBACK
+------------------------- */
+function showMessage(text, type = "error") {
+  if (!$message) return;
 
-    const body = {
-      identifier: registerForm.identifier.value,
-      password: registerForm.password.value,
-    };
+  $message.textContent = text;
+  $message.className = `loyalty-feedback ${type}`;
+}
 
-    const res = await fetch("/api/loyalty/register", {
+/* -------------------------
+   LOGIN
+------------------------- */
+async function handleLogin(e) {
+  e.preventDefault();
+
+  const identifier = $("#identifier").value.trim();
+  const password = $("#password").value.trim();
+
+  try {
+    showMessage("Authenticating...", "success");
+
+    const res = await fetch("/api/loyalty/customer/login", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        identifier,
+        password
+      })
     });
 
     const data = await res.json();
 
     if (!data.success) {
-      alert(data.message || "Registration failed");
-      return;
+      throw new Error(data.message || "Login failed");
     }
 
-    saveCustomer(data.customer);
-    window.location.href = "/loyalty/customer/dashboard.html";
-  });
+    localStorage.setItem(
+      "loyaltyCustomer",
+      JSON.stringify(data.customer)
+    );
+
+    showMessage("Access granted", "success");
+
+    setTimeout(() => {
+      window.location.href =
+        "/loyalty/customer/dashboard.html";
+    }, 700);
+
+  } catch (err) {
+    console.error(err);
+    showMessage(err.message || "Authentication failed");
+  }
 }
 
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const body = {
-      identifier: loginForm.identifier.value,
-      password: loginForm.password.value,
-    };
-
-    const res = await fetch("/api/loyalty/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-
-    const data = await res.json();
-
-    if (!data.success) {
-      alert(data.message || "Login failed");
-      return;
-    }
-
-    saveCustomer(data.customer);
-    window.location.href = "/loyalty/customer/dashboard.html";
-  });
-}
+$form?.addEventListener("submit", handleLogin);

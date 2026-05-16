@@ -1,7 +1,7 @@
 const $ = (s) => document.querySelector(s);
 
-const $form = $("#partnerLoginForm");
-const $message = $("#partnerLoginMessage");
+const $form = $("#registerForm");
+const $message = $("#registerMessage");
 
 /* -------------------------
    FEEDBACK
@@ -14,20 +14,21 @@ function showMessage(text, type = "error") {
 }
 
 /* -------------------------
-   LOGIN
+   REGISTER
 ------------------------- */
-async function handlePartnerLogin(e) {
+async function handleRegister(e) {
   e.preventDefault();
 
   const payload = {
-    partnerId: $("#partnerId").value.trim(),
+    full_name: $("#name").value.trim(),
+    identifier: $("#identifier").value.trim(),
     password: $("#password").value.trim()
   };
 
   try {
-    showMessage("Authenticating...", "success");
+    showMessage("Creating your membership...", "success");
 
-    const res = await fetch("/api/loyalty/partner/login", {
+    const res = await fetch("/api/loyalty/customer/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -38,27 +39,20 @@ async function handlePartnerLogin(e) {
     const data = await res.json();
 
     if (!data.success) {
-      throw new Error(
-        data.message || "Authentication failed"
-      );
+      throw new Error(data.message || "Registration failed");
     }
 
-    localStorage.setItem(
-      "partnerId",
-      JSON.stringify(data.partner)
-    );
-
-    showMessage("Access granted", "success");
+    showMessage("Membership created successfully", "success");
 
     setTimeout(() => {
       window.location.href =
-        "/loyalty/partner/scan.html";
-    }, 700);
+        "/loyalty/customer/login.html";
+    }, 1000);
 
   } catch (err) {
     console.error(err);
-    showMessage(err.message || "Login failed");
+    showMessage(err.message || "Registration failed");
   }
 }
 
-$form?.addEventListener("submit", handlePartnerLogin);
+$form?.addEventListener("submit", handleRegister);

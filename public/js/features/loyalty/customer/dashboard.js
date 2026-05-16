@@ -1,31 +1,71 @@
-const customer = JSON.parse(
-  localStorage.getItem("loyaltyCustomer")
-);
+const $ = (s) => document.querySelector(s);
+
+const customer = JSON.parse(localStorage.getItem("loyaltyCustomer"));
 
 if (!customer) {
   window.location.href = "/loyalty/customer/login.html";
 }
 
-document.getElementById("customerIdentifier").textContent =
-  customer.identifier;
+const $qr = $("#qrImage");
+const $logout = $("#logoutBtn");
+const $skeleton = $("#qrSkeleton");
+const $qrContainer = $("#qrContainer");
+const $status = $("#customerStatus");
 
-const loadQr = async () => {
-  const res = await fetch(
-    `/api/loyalty/qr/${customer.qrToken}`
-  );
+/* -------------------------
+   INIT CUSTOMER STATUS
+------------------------- */
+function initCustomerStatus() {
+  if (!$status) return;
 
-  const data = await res.json();
-
-  if (data.success) {
-    document.getElementById("qrImage").src = data.qrImage;
+  if (customer.active) {
+    $status.textContent = "Active Member";
+    $status.classList.add("active");
+  } else {
+    $status.textContent = "Inactive Account";
+    $status.classList.add("inactive");
   }
-};
+}
 
-loadQr();
+/* -------------------------
+   LOAD QR WITH LUXURY REVEAL
+------------------------- */
+async function loadQR() {
+  try {
+    const res = await fetch(`/api/loyalty/qr/${customer.qrToken}`);
+    const data = await res.json();
 
-document
-  .getElementById("logoutBtn")
-  .addEventListener("click", () => {
-    localStorage.removeItem("loyaltyCustomer");
-    window.location.href = "/loyalty/customer/login.html";
-  });
+    if (!data?.success || !data.qrImage) {
+      throw new Error("Invalid QR response");
+    }
+
+    $qr.src = data.qrImage;
+
+    $qr.onload = () => {
+      if ($skeleton) {
+        $skeleton.style.opacity = "0";
+        setTimeout(() => $skeleton.remove(), 300);
+      }
+
+      $qrContainer?.classList.add("revealed");
+      $qr.classList.add("is-loaded");
+    };
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+/* -------------------------
+   LOGOUT
+------------------------- */
+$logout?.addEventListener("click", () => {
+  localStorage.removeItem("loyaltyCustomer");
+  window.location.href = "/loyalty/customer/login.html";
+});
+
+/* -------------------------
+   INIT
+------------------------- */
+initCustomerStatus();
+loadQR();

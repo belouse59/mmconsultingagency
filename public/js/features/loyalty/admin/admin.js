@@ -1,76 +1,109 @@
-const customersBody = document.querySelector(
-  "#customersTable tbody"
-);
+const $ = (s) => document.querySelector(s);
 
-const redemptionsBody = document.querySelector(
-  "#redemptionsTable tbody"
-);
+const customersTable = $("#customersTableBody");
+const redemptionsTable = $("#redemptionsTableBody");
+const offerForm = $("#offerForm");
+const offerMessage = $("#offerMessage");
 
-const offerForm = document.getElementById("offerForm");
+/* -------------------------
+   CUSTOMERS
+------------------------- */
+async function loadCustomers() {
+  try {
+    const res = await fetch("/api/loyalty/admin/customers");
+    const data = await res.json();
 
-/* LOAD CUSTOMERS */
-const loadCustomers = async () => {
-  const res = await fetch("/api/loyalty/admin/customers");
-  const customers = await res.json();
+    if (!data.success) return;
 
-  customersBody.innerHTML = "";
+    $("#totalCustomers").textContent = data.customers.length;
 
-  customers.forEach((customer) => {
-    customersBody.innerHTML += `
-      <tr>
-        <td>${customer.id}</td>
-        <td>${customer.identifier}</td>
-        <td>${customer.identifierType}</td>
-        <td>${new Date(customer.createdAt).toLocaleDateString()}</td>
-      </tr>
-    `;
-  });
-};
+    customersTable.innerHTML = data.customers
+      .map(
+        (customer) => `
+          <tr>
+            <td>${customer.identifier}</td>
+            <td>${customer.active ? "Active" : "Inactive"}</td>
+          </tr>
+        `
+      )
+      .join("");
 
-/* LOAD REDEMPTIONS */
-const loadRedemptions = async () => {
-  const res = await fetch("/api/loyalty/admin/redemptions");
-  const redemptions = await res.json();
+  } catch (err) {
+    console.error(err);
+  }
+}
 
-  redemptionsBody.innerHTML = "";
+/* -------------------------
+   REDEMPTIONS
+------------------------- */
+async function loadRedemptions() {
+  try {
+    const res = await fetch("/api/loyalty/admin/redemptions");
+    const data = await res.json();
 
-  redemptions.forEach((item) => {
-    redemptionsBody.innerHTML += `
-      <tr>
-        <td>${item.id}</td>
-        <td>${item.customerId}</td>
-        <td>${item.offerId}</td>
-        <td>${item.partnerId}</td>
-        <td>${item.date}</td>
-      </tr>
-    `;
-  });
-};
+    if (!data.success) return;
 
-/* CREATE OFFER */
-offerForm.addEventListener("submit", async (e) => {
+    $("#totalRedemptions").textContent =
+      data.redemptions.length;
+
+    redemptionsTable.innerHTML = data.redemptions
+      .map(
+        (item) => `
+          <tr>
+            <td>${item.customerId}</td>
+            <td>${item.partnerId}</td>
+            <td>${item.date || "-"}</td>
+          </tr>
+        `
+      )
+      .join("");
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+/* -------------------------
+   CREATE OFFER
+------------------------- */
+async function createOffer(e) {
   e.preventDefault();
 
-  const body = {
-    title: offerForm.title.value,
-    description: offerForm.description.value,
-  };
+  try {
+    const payload = {
+      title: $("#offerTitle").value.trim(),
+      partner: $("#offerPartner").value.trim()
+    };
 
-  const res = await fetch("/api/loyalty/admin/offers", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+    const res = await fetch("/api/loyalty/admin/offers", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  if (data.id) {
-    alert("Offer created");
+    if (!data.success) {
+      throw new Error(data.message || "Offer creation failed");
+    }
+
+    offerMessage.textContent = "Offer created successfully";
+    offerMessage.className = "loyalty-feedback success";
+
     offerForm.reset();
-  }
-});
 
+  } catch (err) {
+    offerMessage.textContent = err.message;
+    offerMessage.className = "loyalty-feedback error";
+  }
+}
+
+offerForm?.addEventListener("submit", createOffer);
+
+/* -------------------------
+   INIT
+------------------------- */
 loadCustomers();
 loadRedemptions();
