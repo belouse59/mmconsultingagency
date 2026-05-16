@@ -30,7 +30,7 @@ if (registerForm) {
     }
 
     saveCustomer(data.customer);
-    window.location.href = "/loyalty/dashboard.html";
+    window.location.href = "/loyalty/customer/dashboard.html";
   });
 }
 
@@ -59,6 +59,6 @@ if (loginForm) {
     }
 
     saveCustomer(data.customer);
-    window.location.href = "/loyalty/dashboard.html";
+    window.location.href = "/loyalty/customer/dashboard.html";
   });
 }

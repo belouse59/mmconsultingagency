@@ -6,5 +6,5 @@ form.addEventListener("submit", (e) => {
     const partnerId = form.partnerId.value.trim();
 
     localStorage.setItem("partnerId", partnerId);
-    window.location.href = "/partner/scan.html";
+    window.location.href = "/loyalty/partner/scan.html";
 });

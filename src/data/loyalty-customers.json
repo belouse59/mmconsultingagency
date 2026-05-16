@@ -16,5 +16,14 @@
     "qrToken": "1cd1f0977da025328408ffa6ad3fb0df08317e4ce3dd0626c7a886c0fbcfe5df",
     "active": true,
     "createdAt": "2026-05-16T16:05:52.440Z"
+  },
+  {
+    "id": "1778954086223",
+    "identifier": "philippe.leuridon@gmail.com",
+    "identifierType": "email",
+    "passwordHash": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+    "qrToken": "62a2d4006ffd4f4b5e9026684797e3f6bd5dbb1d4da5a1855329e6a3d2c518f7",
+    "active": true,
+    "createdAt": "2026-05-16T17:54:46.225Z"
   }
 ]

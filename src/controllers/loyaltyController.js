@@ -1,7 +1,7 @@
 "use strict";
 
 const { register, login, getByToken, validateRedemption, getCustomers, getRedemptions, createOffer } = require("../services/loyaltyService");
-const {generateQrImage} = require("../services/qrService.js");
+const {generateQrToken, generateQrImage} = require("../services/qrService.js");
 
 function registerCustomer(req, res) {
     const result = register(req.body);

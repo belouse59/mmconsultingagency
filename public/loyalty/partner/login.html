@@ -36,17 +36,6 @@
     </div>
   </div>
 
-  <script>
-    const form = document.getElementById("partnerLoginForm");
-
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const partnerId = form.partnerId.value.trim();
-
-      localStorage.setItem("partnerId", partnerId);
-      window.location.href = "/partner/scan.html";
-    });
-  </script>
+<script src="/js/features/loyalty/partner/login.js"></script>
 </body>
 </html>

@@ -131,52 +131,214 @@
 <body>
 
 <!-- ═══════════════════════════════════════════
-         NAVIGATION
-    ═══════════════════════════════════════════ -->
-    
-  <header class="site-header" role="banner">
-    <nav class="nav" aria-label="Navigazione principale">
+     NAVIGATION
+════════════════════════════════════════════ -->
 
-      <div class="nav-logo">
-        <a href="/" aria-label="M&M Consulting – torna alla homepage">
-          <img src="./assets/images/logo.png" alt="Logo M&M Consulting" width="60" height="40">
-        </a>
-      </div>
+<header class="site-header" role="banner">
+  <nav class="nav" aria-label="Navigazione principale">
 
-      <ul class="nav-links" role="list">
-        <li><a href="#highlight" class="nav-link" data-target="highlight">Risparmio</a></li>
-        <li><a href="#how-it-works" class="nav-link" data-target="how-it-works">Come funziona</a></li>
-        <li><a href="#team" class="nav-link" data-target="team">Il Team</a></li>
-        <li><a href="#find-us" class="nav-link" data-target="find-us">Dove siamo</a></li>
-        <li><a href="#simulator" class="nav-link" data-target="simulator">Analisi</a></li>
-      </ul>
-
-      <div class="nav-cta">
-        <a id="navCtaBtn" href="#contact" class="btn btn-gold nav-cta-btn" data-target="contact">
-          <i class="fa fa-phone" aria-hidden="true"></i>
-          <span class="nav-cta-text">Contattaci</span>
-        </a>
-      </div>
-
-      <!-- Mobile hamburger -->
-      <button class="nav-burger" id="navBurger" aria-label="Apri menu" aria-expanded="false" aria-controls="mobileMenu">
-        <span></span><span></span><span></span>
-      </button>
-
-    </nav>
-
-    <!-- Mobile menu -->
-    <div class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Menu mobile">
-      <ul role="list">
-        <li><a href="#highlight" class="mobile-link" data-target="highlight">Risparmio</a></li>
-        <li><a href="#how-it-works" class="mobile-link" data-target="how-it-works">Come funziona</a></li>
-        <li><a href="#team" class="mobile-link" data-target="team">Il Team</a></li>
-        <li><a href="#find-us" class="mobile-link" data-target="find-us">Dove siamo</a></li>
-        <li><a href="#simulator" class="mobile-link" data-target="simulator">Analisi</a></li>
-        <li><a href="#contact" class="mobile-link mobile-link--cta" data-target="contact">Contattaci</a></li>
-      </ul>
+    <!-- Logo -->
+    <div class="nav-logo">
+      <a href="/" aria-label="M&M Consulting – torna alla homepage">
+        <img
+          src="./assets/images/logo.png"
+          alt="Logo M&M Consulting"
+          width="60"
+          height="40"
+        />
+      </a>
     </div>
-  </header>
+
+    <!-- Desktop navigation -->
+    <ul class="nav-links" role="list">
+      <li>
+        <a
+          href="#highlight"
+          class="nav-link"
+          data-target="highlight"
+        >
+          Risparmio
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="#how-it-works"
+          class="nav-link"
+          data-target="how-it-works"
+        >
+          Come funziona
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="#team"
+          class="nav-link"
+          data-target="team"
+        >
+          Il Team
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="#find-us"
+          class="nav-link"
+          data-target="find-us"
+        >
+          Dove siamo
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="#simulator"
+          class="nav-link"
+          data-target="simulator"
+        >
+          Analisi
+        </a>
+      </li>
+
+      <!-- NEW -->
+      <li>
+        <a
+          href="/loyalty/customer/login.html"
+          class="nav-link"
+        >
+          Convenzioni
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="/loyalty/partner/login.html"
+          class="nav-link"
+        >
+          Partner
+        </a>
+      </li>
+    </ul>
+
+    <!-- CTA -->
+    <div class="nav-cta">
+      <a
+        id="navCtaBtn"
+        href="#contact"
+        class="btn btn-gold nav-cta-btn"
+        data-target="contact"
+      >
+        <i class="fa fa-phone" aria-hidden="true"></i>
+        <span class="nav-cta-text">Contattaci</span>
+      </a>
+    </div>
+
+    <!-- Mobile burger -->
+    <button
+      class="nav-burger"
+      id="navBurger"
+      aria-label="Apri menu"
+      aria-expanded="false"
+      aria-controls="mobileMenu"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+  </nav>
+
+  <!-- Mobile menu -->
+  <div
+    class="mobile-menu"
+    id="mobileMenu"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Menu mobile"
+  >
+    <ul role="list">
+      <li>
+        <a
+          href="#highlight"
+          class="mobile-link"
+          data-target="highlight"
+        >
+          Risparmio
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="#how-it-works"
+          class="mobile-link"
+          data-target="how-it-works"
+        >
+          Come funziona
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="#team"
+          class="mobile-link"
+          data-target="team"
+        >
+          Il Team
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="#find-us"
+          class="mobile-link"
+          data-target="find-us"
+        >
+          Dove siamo
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="#simulator"
+          class="mobile-link"
+          data-target="simulator"
+        >
+          Analisi
+        </a>
+      </li>
+
+      <!-- NEW -->
+      <li>
+        <a
+          href="/loyalty/customer/login.html"
+          class="mobile-link"
+        >
+          Convenzioni
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="/loyalty/partner/login.html"
+          class="mobile-link"
+        >
+          Partner
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="#contact"
+          class="mobile-link mobile-link--cta"
+          data-target="contact"
+        >
+          Contattaci
+        </a>
+      </li>
+    </ul>
+  </div>
+</header>
 
 <!-- ═══════════════════════════════════════════
          HERO

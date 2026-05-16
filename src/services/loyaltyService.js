@@ -3,7 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
-const { generateToken } = require("./qrService");
+const { generateQrToken } = require("./qrService");
 
 const customersPath = path.join(__dirname, "../data/loyalty-customers.json");
 const redemptionsPath = path.join(__dirname, "../data/loyalty-redemptions.json");
@@ -50,7 +50,7 @@ function register({ identifier, password }) {
     identifier: normalizedIdentifier,
     identifierType: detectIdentifierType(normalizedIdentifier),
     passwordHash: hashPassword(password),
-    qrToken: generateToken(),
+    qrToken: generateQrToken(),
     active: true,
     createdAt: new Date().toISOString(),
   };

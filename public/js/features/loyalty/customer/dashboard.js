@@ -3,7 +3,7 @@ const customer = JSON.parse(
 );
 
 if (!customer) {
-  window.location.href = "/loyalty/login.html";
+  window.location.href = "/loyalty/customer/login.html";
 }
 
 document.getElementById("customerIdentifier").textContent =
@@ -27,5 +27,5 @@ document
   .getElementById("logoutBtn")
   .addEventListener("click", () => {
     localStorage.removeItem("loyaltyCustomer");
-    window.location.href = "/loyalty/login.html";
+    window.location.href = "/loyalty/customer/login.html";
   });
