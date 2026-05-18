@@ -337,13 +337,13 @@ abbr[title] {
 
 /* Ghost — outline on dark bg */
 .btn-ghost {
-    background: transparent;
+    background: var(--navy);
     color: rgba(255, 255, 255, 0.80);
     border: 1.5px solid rgba(255, 255, 255, 0.25);
 }
 
 .btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--navy-light);
     color: #fff;
     border-color: rgba(255, 255, 255, 0.50);
 }
