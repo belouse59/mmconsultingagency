@@ -3890,13 +3890,13 @@ abbr[title] {
 
     .simulator-container {
       /*  min-height: auto;*/
-       height: 620px;
-       gap:unset;
+       height: 720px;
+      /* gap:unset;*/
     }
 
     .result-card {
       /*  min-width: 120px;*/
-        padding: var(--sp-4) var(--sp-5);
+      /*  padding: var(--sp-4) var(--sp-5);*/
     }
    .result-insights {
       margin: 0 var(--sp-5) var(--sp-5);
