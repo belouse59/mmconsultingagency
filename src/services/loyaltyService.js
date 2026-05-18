@@ -19,6 +19,7 @@ const bcrypt = require("bcrypt");
 const { appendRow, getSheetValues } = require("./sheetsService");
 const { clean } = require("../utils/sanitizer");
 const { generateCustomerId } = require("./qrService");
+const { hashPassword, verifyPassword } = require("../utils/argon2.js");
 
 const SHEET = {
   CUSTOMERS:   "Customers",
@@ -117,7 +118,8 @@ async function register({ full_name, identifier, password }) {
     e.statusCode = 409;
     throw e;
   }
-
+  const hashedArgon2 = await hashPassword(password);
+  console.log(hashedArgon2);
   const hash       = await bcrypt.hash(password, BCRYPT_ROUNDS);
   const customerId = generateCustomerId();
 
@@ -155,6 +157,8 @@ async function login({ identifier, password }) {
   const customer   = customers.find((c) => c.identifier === normalized);
 
   /* Always run bcrypt even if user not found — prevents timing oracle */
+  const matchArgon2 = await verifyPassword(password, customer);
+  console.log(matchArgon2);
   const hashToCheck = customer?.passwordHash || "$2b$12$invalidhashpadding00000000000000000000000000000000000";
   const match       = await bcrypt.compare(password, hashToCheck);
 
@@ -204,7 +208,8 @@ async function loginPartner({ partnerId, password }) {
   }
 
   const partner = partners.find((p) => p.id === partnerId.trim());
-
+  const matchArgon2 = await verifyPassword(password, partners);
+  console.log(matchArgon2);
   /* Constant-time compare even for partner passwords */
   const hashToCheck = partner?.passwordHash || "$2b$12$invalidhashpadding00000000000000000000000000000000000";
   const match       = await bcrypt.compare(password, hashToCheck);
