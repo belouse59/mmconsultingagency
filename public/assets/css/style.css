@@ -337,13 +337,13 @@ abbr[title] {
 
 /* Ghost — outline on dark bg */
 .btn-ghost {
-    background: var(--navy);
+    background: transparent;
     color: rgba(255, 255, 255, 0.80);
     border: 1.5px solid rgba(255, 255, 255, 0.25);
 }
 
 .btn-ghost:hover {
-    background: var(--navy-light);
+    background: rgba(255, 255, 255, 0.08);
     color: #fff;
     border-color: rgba(255, 255, 255, 0.50);
 }
@@ -3889,21 +3889,12 @@ abbr[title] {
     }
 
     .simulator-container {
-      /*  min-height: auto;*/
-       height: 720px;
-      /* gap:unset;*/
+       height: 700px;
     }
 
     .result-card {
-      /*  min-width: 120px;*/
-      /*  padding: var(--sp-4) var(--sp-5);*/
+        min-width: 120px;
     }
-   .result-insights {
-      margin: 0 var(--sp-5) var(--sp-5);
-   }
-   .insight {
-      padding: 4px 6px;
-   }
 
     .team-btn--left {
         left: -8px;
