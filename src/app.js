@@ -8,6 +8,10 @@ const helmet   = require("helmet");
 const cors     = require("cors");
 const morgan   = require("morgan");
 
+const {
+  createSessionMiddleware
+} = require("./middleware/loyaltySession");
+
 const CSP_CONFIG       = require("./config/csp");
 const partnerRoutes    = require("./routes/partnerRoutes");
 const providerRoutes   = require("./routes/providerRoutes");
@@ -47,6 +51,7 @@ app.use(
 ───────────────────────────────────────────────────────────── */
 app.use(express.json({ limit: "50kb" })); // guard against large payloads
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+app.use(createSessionMiddleware());
 
 /* ─────────────────────────────────────────────────────────────
    API ROUTES
@@ -83,14 +88,6 @@ app.get("/health", (req, res) => {
     ts:      new Date().toISOString(),
   });
 });
-
-/* ─────────────────────────────────────────────────────────────
-   SPA FALLBACK — always serve index.html for unknown GET routes
-───────────────────────────────────────────────────────────── */
-// app.use((req, res) => {
-//   res.sendFile(path.join(__dirname, "../public/index.html"));
-// });
-app.use(express.static(path.join(__dirname, "../public")));
 /* ─────────────────────────────────────────────────────────────
    GLOBAL ERROR HANDLER
 ───────────────────────────────────────────────────────────── */
@@ -98,11 +95,17 @@ app.use(express.static(path.join(__dirname, "../public")));
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error("[Error]", err.message);
-  res.status(err.status || 500).json({
-    status:  "error",
-    message: process.env.NODE_ENV === "production"
-      ? "Internal server error"
-      : err.message,
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  return res.status(err.status || 500).json({
+    status: "error",
+    message:
+      process.env.NODE_ENV === "production"
+        ? "Internal server error"
+        : err.message,
   });
 });
 

@@ -3826,7 +3826,7 @@ abbr[title] {
     }
 
     .provider-grid {
-        grid-template-columns: repeat(2, 1fr);
+       /* grid-template-columns: repeat(2, 1fr);*/
     }
     .provider-card img {
         width: 80px;
@@ -3834,7 +3834,7 @@ abbr[title] {
     }
 
     .result-main {
-        flex-direction: column;
+       /* flex-direction: column;*/
         align-items: center;
     }
 
@@ -3889,7 +3889,7 @@ abbr[title] {
     }
 
     .simulator-container {
-        min-height: auto;
+       height: 700px;
     }
 
     .result-card {

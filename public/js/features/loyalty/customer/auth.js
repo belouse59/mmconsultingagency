@@ -42,11 +42,6 @@ async function handleLogin(e) {
       throw new Error(data.message || "Login failed");
     }
 
-    localStorage.setItem(
-      "loyaltyCustomer",
-      JSON.stringify(data.customer)
-    );
-
     showMessage("Access granted", "success");
 
     setTimeout(() => {

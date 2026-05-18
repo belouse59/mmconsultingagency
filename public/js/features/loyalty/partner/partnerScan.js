@@ -1,8 +1,8 @@
-const partnerId = localStorage.getItem("partnerId");
+// const partnerId = localStorage.getItem("partnerId");
 
-if (!partnerId) {
-  window.location.href = "/partner/login.html";
-}
+// if (!partnerId) {
+//   window.location.href = "/partner/login.html";
+// }
 
 const resultEl = document.getElementById("result");
 

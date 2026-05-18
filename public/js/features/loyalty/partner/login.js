@@ -42,12 +42,6 @@ async function handlePartnerLogin(e) {
         data.message || "Authentication failed"
       );
     }
-
-    localStorage.setItem(
-      "partnerId",
-      JSON.stringify(data.partner)
-    );
-
     showMessage("Access granted", "success");
 
     setTimeout(() => {
