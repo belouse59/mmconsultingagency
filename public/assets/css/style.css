@@ -3826,7 +3826,7 @@ abbr[title] {
     }
 
     .provider-grid {
-        grid-template-columns: repeat(2, 1fr);
+       /* grid-template-columns: repeat(2, 1fr);*/
     }
     .provider-card img {
         width: 80px;
@@ -3834,7 +3834,7 @@ abbr[title] {
     }
 
     .result-main {
-        flex-direction: column;
+       /* flex-direction: column;*/
         align-items: center;
     }
 
@@ -3889,12 +3889,21 @@ abbr[title] {
     }
 
     .simulator-container {
-        min-height: auto;
+      /*  min-height: auto;*/
+       height: 620px;
+       gap:unset;
     }
 
     .result-card {
-        min-width: 120px;
+      /*  min-width: 120px;*/
+        padding: var(--sp-4) var(--sp-5);
     }
+   .result-insights {
+      margin: 0 var(--sp-5) var(--sp-5);
+   }
+   .insight {
+      padding: 4px 6px;
+   }
 
     .team-btn--left {
         left: -8px;
