@@ -1,8 +1,10 @@
-const $ = (s) => document.querySelector(s);
+/* ── DOM refs ── */
+import { $ } from "../../../core/dom.js";
+import { logout } from "../../../core/logout.js";
 
 const $form = $("#partnerLoginForm");
 const $message = $("#partnerLoginMessage");
-
+const $logout = $("#logoutBtn");
 /* -------------------------
    FEEDBACK
 ------------------------- */
@@ -54,5 +56,5 @@ async function handlePartnerLogin(e) {
     showMessage(err.message || "Login failed");
   }
 }
-
+logout($logout, "/");
 $form?.addEventListener("submit", handlePartnerLogin);

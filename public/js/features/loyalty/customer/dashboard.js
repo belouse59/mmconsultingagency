@@ -1,10 +1,5 @@
-const $ = (s) => document.querySelector(s);
-
-//const customer = JSON.parse(localStorage.getItem("loyaltyCustomer"));
-
-// if (!customer) {
-//   window.location.href = "/loyalty/customer/login.html";
-// }
+import { logout } from "../../../core/logout.js";
+import { $ } from "../../../core/dom.js";
 
 const $qr = $("#qrImage");
 const $logout = $("#logoutBtn");
@@ -59,9 +54,7 @@ async function loadQR() {
 /* -------------------------
    LOGOUT
 ------------------------- */
-$logout?.addEventListener("click", () => {
-  window.location.href = "/loyalty/customer/login.html";
-});
+logout($logout, "/loyalty/customer/login.html");
 
 /* -------------------------
    INIT

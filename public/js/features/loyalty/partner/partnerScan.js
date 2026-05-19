@@ -1,9 +1,8 @@
-// const partnerId = localStorage.getItem("partnerId");
+/* ── DOM refs ── */
+import { $ } from "../../../core/dom.js";
+import { logout } from "../../../core/logout.js";
 
-// if (!partnerId) {
-//   window.location.href = "/partner/login.html";
-// }
-
+const $logout = $("#logoutBtn");
 const resultEl = document.getElementById("result");
 
 const scanner = new Html5Qrcode("reader");
@@ -51,3 +50,4 @@ scanner.start(
   },
   onScanSuccess
 );
+logout($logout, "/loyalty/partner/login.html");

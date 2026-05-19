@@ -1,4 +1,9 @@
 think about qr code implementation
 add blog and the entire loyalty section to build function
 change the logic to build to create the carousels there is no need for api call in production
-email validation on contact request.
+email validation on contact request and convenzioni mail or phone sms verif maybe
+let's see what is the best workflow for partner may be creating partner from admin dashboard set a password and first login need to reset password
+check the skeleton page when accessing protected routes.
+implement a real logout function to clear cookies session
+
+

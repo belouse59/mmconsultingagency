@@ -490,8 +490,8 @@ abbr[title] {
 .loyalty-topbar-logo img {
   height: 32px;
   width: auto;
+  border-radius: var(--r-2xl);
 }
-
 .loyalty-topbar-brand {
   font-family: var(--font-display, 'Montserrat', sans-serif);
   font-size: 0.8rem;

@@ -15,12 +15,14 @@
 
 /* ── DOM refs ── */
 import { $ } from "../../../core/dom.js";
+import { logout } from "../../../core/logout.js";
 const form         = $("#loginForm");
 const identifierEl = $("#identifier");
 const passwordEl   = $("#password");
 const submitBtn    = $("#submitBtn");
 const errorBox     = $("#loginError");
 const errorText    = $("#loginErrorText");
+const $logout = $("#logoutBtn");
 
 /* ── Helpers ── */
 function showError(msg) {
@@ -112,6 +114,11 @@ form.addEventListener("submit", async (e) => {
 [identifierEl, passwordEl].forEach((el) => {
   el.addEventListener("input", hideError);
 });
+
+/* -------------------------
+   LOGOUT
+------------------------- */
+logout($logout, "/");
 
 /* ── Boot ── */
 checkExistingSession();
