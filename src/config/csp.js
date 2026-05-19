@@ -12,6 +12,7 @@ const CSP_CONFIG = {
       scriptSrc: [
         "'self'",
         "https://cdnjs.cloudflare.com",
+        "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"
       ],
 
       styleSrc: [

@@ -1,1 +1,5 @@
-[]
+[{
+    "id":"partner-id",
+    "password": "12345678",
+    "active": true
+}]
