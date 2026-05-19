@@ -4,7 +4,7 @@
  * services/loyaltyService.js
  *
  * CHANGES FROM ORIGINAL:
- *   - SHA-256 password hashing → bcrypt (cost 12)
+ *   - SHA-256 password hashing → argon2
  *   - All user input sanitized before Sheets writes
  *   - Structured error objects instead of throw strings
  *   - No user enumeration on login (same error for wrong user vs wrong password)
@@ -15,7 +15,6 @@
  *   - Full JSDoc for maintainability
  */
 
-const bcrypt = require("bcrypt");
 const { appendRow, getSheetValues } = require("./sheetsService");
 const { clean } = require("../utils/sanitizer");
 const { generateCustomerId } = require("./qrService");

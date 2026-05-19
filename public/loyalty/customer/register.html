@@ -1,79 +1,123 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-  <title>Create Membership</title>
-  <link rel="stylesheet" href="../../assets/css/loyalty-brand.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Registrazione — Convenzioni M&M Consulting</title>
+  <meta name="description" content="Crea il tuo account Convenzioni M&M Consulting per ricevere il tuo QR code personale e accedere agli sconti dei partner.">
+  <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/loyalty.css">
 </head>
+<body>
 
-<body class="loyalty-page">
+<div class="loyalty-shell">
 
-  <main class="loyalty-card loyalty-auth-card">
+  <!-- Top bar -->
+  <header class="loyalty-topbar" role="banner">
+    <a href="/" class="loyalty-topbar-logo" aria-label="Torna alla homepage M&M Consulting">
+      <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
+      <span class="loyalty-topbar-brand">Convenzioni</span>
+    </a>
+  </header>
 
-    <div class="loyalty-auth-header">
-      <h1 class="loyalty-title">Join the Program</h1>
-      <p class="loyalty-subtitle">
-        Create your member account and unlock exclusive partner benefits
+  <main class="loyalty-main" id="main-content">
+    <div class="loyalty-card loyalty-fade-in">
+
+      <div class="loyalty-auth-header">
+        <div class="loyalty-auth-icon" aria-hidden="true">✨</div>
+        <h1 class="loyalty-auth-title">Crea il tuo account</h1>
+        <p class="loyalty-auth-sub">
+          Registrati per ricevere il tuo QR code personale e accedere agli sconti esclusivi dei nostri partner.
+        </p>
+      </div>
+
+      <!-- Error message -->
+      <div class="loyalty-error" id="registerError" role="alert" aria-live="polite">
+        <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
+        <span id="registerErrorText">Errore durante la registrazione.</span>
+      </div>
+
+      <!-- Success message -->
+      <div class="loyalty-success" id="registerSuccess" role="status" aria-live="polite">
+        <span aria-hidden="true">✓</span>
+        <span>Registrazione completata! Verrai reindirizzato...</span>
+      </div>
+
+      <form id="registerForm" novalidate>
+
+        <div class="loyalty-field">
+          <label for="full_name">Nome completo</label>
+          <input
+            type="text"
+            id="full_name"
+            name="full_name"
+            placeholder="Mario Rossi"
+            autocomplete="name"
+            required
+            aria-required="true"
+            minlength="2">
+        </div>
+
+        <div class="loyalty-field">
+          <label for="identifier">Email o numero di telefono</label>
+          <input
+            type="text"
+            id="identifier"
+            name="identifier"
+            placeholder="mario@email.com oppure +39 333 000 0000"
+            autocomplete="username"
+            inputmode="email"
+            required
+            aria-required="true">
+        </div>
+
+        <div class="loyalty-field">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Minimo 8 caratteri"
+            autocomplete="new-password"
+            minlength="8"
+            required
+            aria-required="true">
+        </div>
+
+        <div class="loyalty-field">
+          <label for="confirmPassword">Conferma password</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            placeholder="Ripeti la password"
+            autocomplete="new-password"
+            minlength="8"
+            required
+            aria-required="true">
+        </div>
+
+        <button type="submit" class="loyalty-btn-submit" id="submitBtn">
+          <span class="btn-label">Crea account</span>
+          <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
+
+      </form>
+
+      <p class="loyalty-auth-footer">
+        Hai già un account?
+        <a href="/loyalty/customer/login.html">Accedi</a>
       </p>
+
     </div>
-
-    <form id="registerForm" class="loyalty-form">
-
-      <div class="loyalty-field">
-        <label for="name">Full Name</label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          placeholder="Enter your full name"
-          required
-        />
-      </div>
-
-      <div class="loyalty-field">
-        <label for="identifier">Identifier</label>
-        <input
-          id="identifier"
-          name="identifier"
-          type="text"
-          placeholder="Enter your identifier"
-          required
-        />
-      </div>
-
-      <div class="loyalty-field">
-        <label for="password">Password</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="Create a password"
-          required
-        />
-      </div>
-
-      <button
-        type="submit"
-        class="loyalty-btn loyalty-btn-primary"
-      >
-        Create Membership
-      </button>
-
-    </form>
-
-    <div id="registerMessage" class="loyalty-feedback"></div>
-
-    <div class="loyalty-auth-footer">
-      Already a member?
-      <a href="/loyalty/customer/login.html">Access your account</a>
-    </div>
-
   </main>
 
-  <script src="../../js/features/loyalty/customer/register.js"></script>
+</div>
+
+<script type="module" src="/js/features/loyalty/customer/register.js"></script>
 </body>
 </html>
