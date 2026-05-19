@@ -490,6 +490,27 @@ abbr[title] {
 .loyalty-topbar-logo img {
   height: 32px;
   width: auto;
+  border-radius: var(--r-2xl);
+}
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #0A1628;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 1px solid #E4E4E0;
+    background: #fff;
+    transition: all .2s ease;
+}
+
+.back-link:hover {
+    border-color: #D4A017;
+    color: #D4A017;
+    transform: translateX(-2px);
 }
 
 .loyalty-topbar-brand {
@@ -1414,6 +1435,7 @@ abbr[title] {
   .loyalty-qr-wrapper img { width: 260px; height: 260px; }
   .loyalty-qr-skeleton   { width: 260px; height: 260px; }
   .loyalty-qr-error      { width: 260px; height: 260px; }
+  .back-link { font-size: 13px; padding: 9px 14px; }
 }
 
 /* Desktop */

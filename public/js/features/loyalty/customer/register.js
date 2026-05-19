@@ -1,7 +1,10 @@
-const $ = (s) => document.querySelector(s);
+/* ── DOM refs ── */
+import { $ } from "../../../core/dom.js";
+import { logout } from "../../../core/logout.js";
 
 const $form = $("#registerForm");
 const $message = $("#registerMessage");
+const $logout = $("#logoutBtn");
 
 /* -------------------------
    FEEDBACK
@@ -54,5 +57,7 @@ async function handleRegister(e) {
     showMessage(err.message || "Registration failed");
   }
 }
+
+logout($logout, "/");
 
 $form?.addEventListener("submit", handleRegister);
