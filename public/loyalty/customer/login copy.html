@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loyalty Access</title>
+  <link rel="stylesheet" href="../../assets/css/loyalty-brand.css" />
+</head>
+
+<body class="loyalty-page">
+
+  <main class="loyalty-card loyalty-auth-card">
+
+    <div class="loyalty-auth-header">
+      <h1 class="loyalty-title">Member Access</h1>
+      <p class="loyalty-subtitle">
+        Sign in to access your loyalty pass and partner benefits
+      </p>
+    </div>
+
+    <form id="loginForm" class="loyalty-form">
+
+      <div class="loyalty-field">
+        <label for="identifier">Member ID</label>
+        <input id="identifier" name="identifier" type="text" placeholder="Enter your member ID" required />
+      </div>
+
+      <div class="loyalty-field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" placeholder="Enter your password" required />
+      </div>
+
+      <button type="submit" class="loyalty-btn loyalty-btn-primary">
+        Access My Pass
+      </button>
+
+    </form>
+
+    <div id="loginMessage" class="loyalty-feedback"></div>
+    <div class="loyalty-auth-footer">
+      Not yet a member?
+      <a href="/loyalty/customer/register.html">Sign up</a>
+    </div>
+
+  </main>
+
+  <script src="../../js/features/loyalty/customer/auth.js"></script>
+</body>
+
+</html>

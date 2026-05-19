@@ -1,10 +1,10 @@
 const $ = (s) => document.querySelector(s);
 
-const customer = JSON.parse(localStorage.getItem("loyaltyCustomer"));
+//const customer = JSON.parse(localStorage.getItem("loyaltyCustomer"));
 
-if (!customer) {
-  window.location.href = "/loyalty/customer/login.html";
-}
+// if (!customer) {
+//   window.location.href = "/loyalty/customer/login.html";
+// }
 
 const $qr = $("#qrImage");
 const $logout = $("#logoutBtn");
@@ -60,7 +60,6 @@ async function loadQR() {
    LOGOUT
 ------------------------- */
 $logout?.addEventListener("click", () => {
-  localStorage.removeItem("loyaltyCustomer");
   window.location.href = "/loyalty/customer/login.html";
 });
 

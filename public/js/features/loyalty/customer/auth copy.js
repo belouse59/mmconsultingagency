@@ -1,10 +1,10 @@
 const $ = (s) => document.querySelector(s);
 
-const $form = $("#partnerLoginForm");
-const $message = $("#partnerLoginMessage");
+const $form = $("#loginForm");
+const $message = $("#loginMessage");
 
 /* -------------------------
-   FEEDBACK
+   UI FEEDBACK
 ------------------------- */
 function showMessage(text, type = "error") {
   if (!$message) return;
@@ -16,43 +16,43 @@ function showMessage(text, type = "error") {
 /* -------------------------
    LOGIN
 ------------------------- */
-async function handlePartnerLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
 
-  const payload = {
-    partnerId: $("#partnerId").value.trim(),
-    password: $("#password").value.trim()
-  };
+  const identifier = $("#identifier").value.trim();
+  const password = $("#password").value.trim();
 
   try {
     showMessage("Authenticating...", "success");
 
-    const res = await fetch("/api/loyalty/partner/login", {
+    const res = await fetch("/api/loyalty/customer/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        identifier,
+        password
+      })
     });
 
     const data = await res.json();
 
     if (!data.success) {
-      throw new Error(
-        data.message || "Authentication failed"
-      );
+      throw new Error(data.message || "Login failed");
     }
+
     showMessage("Access granted", "success");
 
     setTimeout(() => {
       window.location.href =
-        "/loyalty/partner/scan.html";
+        "/loyalty/customer/dashboard.html";
     }, 700);
 
   } catch (err) {
     console.error(err);
-    showMessage(err.message || "Login failed");
+    showMessage(err.message || "Authentication failed");
   }
 }
 
-$form?.addEventListener("submit", handlePartnerLogin);
+$form?.addEventListener("submit", handleLogin);

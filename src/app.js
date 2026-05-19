@@ -1,80 +1,75 @@
 "use strict";
 
+/**
+ * app.js — Express application
+ *
+ * CHANGES FROM ORIGINAL:
+ *   - Removed duplicate express.static() call
+ *   - Added session middleware (required for loyalty auth)
+ *   - Added /api/loyalty routes
+ *   - CSP updated: added mediaSrc for camera (QR scanner), data: for QR image
+ *   - Single clean static file handler
+ *   - Global error handler catches anything routers miss
+ */
+
 require("dotenv").config();
+const CSP_CONFIG = require("./config/csp");
+const express    = require("express");
+const path       = require("path");
+const helmet     = require("helmet");
+const cors       = require("cors");
+const morgan     = require("morgan");
 
-const express  = require("express");
-const path     = require("path");
-const helmet   = require("helmet");
-const cors     = require("cors");
-const morgan   = require("morgan");
+const { createSessionMiddleware } = require("./middleware/loyaltySession");
 
-const CSP_CONFIG       = require("./config/csp");
-const partnerRoutes    = require("./routes/partnerRoutes");
-const providerRoutes   = require("./routes/providerRoutes");
-const teamRoutes       = require("./routes/teamRoutes");
-const formRoutes       = require("./routes/formRoutes");
-const loyaltyRoutes    = require("./routes/loyaltyRoutes");
+/* Routes */
+const formRoutes     = require("./routes/formRoutes");
+const partnerRoutes  = require("./routes/partnerRoutes");
+const providerRoutes = require("./routes/providerRoutes");
+const teamRoutes     = require("./routes/teamRoutes");
+const loyaltyRoutes  = require("./routes/loyaltyRoutes");
 
 const app = express();
 
-/* ─────────────────────────────────────────────────────────────
-   SECURITY MIDDLEWARE
-───────────────────────────────────────────────────────────── */
-
-// Helmet — sets all security headers in a single call (no double-apply)
+/* ── Security headers ── */
 app.use(helmet(CSP_CONFIG));
 
-// CORS — restricted to your domain only
+/* ── CORS ── */
 const allowedOrigins = (process.env.ALLOWED_ORIGIN || "http://localhost:3000")
   .split(",")
   .map((o) => o.trim());
 
 app.use(
   cors({
-    origin: (origin, cb) => {
-      // Allow server-to-server calls (no Origin header) and listed origins
+    origin(origin, cb) {
       if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
       cb(new Error(`CORS: origin ${origin} not allowed`));
     },
-    methods: ["GET", "POST"],
+    credentials: true,          // required for session cookies cross-origin in dev
+    methods: ["GET", "POST", "DELETE"],
     allowedHeaders: ["Content-Type"],
     optionsSuccessStatus: 200,
   })
 );
 
-/* ─────────────────────────────────────────────────────────────
-   GENERAL MIDDLEWARE
-───────────────────────────────────────────────────────────── */
-app.use(express.json({ limit: "50kb" })); // guard against large payloads
+/* ── Body parsing ── */
+app.use(express.json({ limit: "50kb" }));
+app.use(express.urlencoded({ extended: false, limit: "50kb" }));
+
+/* ── Logging ── */
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-/* ─────────────────────────────────────────────────────────────
-   API ROUTES
-───────────────────────────────────────────────────────────── */
+/* ── Session ── (must be before any route that reads req.session) */
+app.use(createSessionMiddleware());
+
+/* ── API routes ── */
 app.use("/api/partners",  partnerRoutes);
 app.use("/api/providers", providerRoutes);
 app.use("/api/team",      teamRoutes);
 app.use("/api/form",      formRoutes);
 app.use("/api/loyalty",   loyaltyRoutes);
 
-/* ─────────────────────────────────────────────────────────────
-   STATIC FILES
-───────────────────────────────────────────────────────────── */
-app.use(express.static(path.join(__dirname, "../public"), {
-  maxAge: process.env.NODE_ENV === "production" ? "7d" : 0,
-  etag:   true,
-  // Never cache index.html so SEO/meta changes deploy immediately
-  setHeaders(res, filePath) {
-    if (filePath.endsWith("index.html")) {
-      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    }
-  },
-}));
-
-/* ─────────────────────────────────────────────────────────────
-   HEALTH CHECK
-───────────────────────────────────────────────────────────── */
-
+/* ── Health check ── */
 app.get("/health", (req, res) => {
   res.json({
     status:  "ok",
@@ -84,24 +79,28 @@ app.get("/health", (req, res) => {
   });
 });
 
-/* ─────────────────────────────────────────────────────────────
-   SPA FALLBACK — always serve index.html for unknown GET routes
-───────────────────────────────────────────────────────────── */
-// app.use((req, res) => {
-//   res.sendFile(path.join(__dirname, "../public/index.html"));
-// });
-app.use(express.static(path.join(__dirname, "../public")));
-/* ─────────────────────────────────────────────────────────────
-   GLOBAL ERROR HANDLER
-───────────────────────────────────────────────────────────── */
+/* ── Static files — single handler, correct order ── */
+app.use(
+  express.static(path.join(__dirname, "../public"), {
+    maxAge:  process.env.NODE_ENV === "production" ? "7d" : 0,
+    etag:    true,
+    setHeaders(res, filePath) {
+      /* Never cache HTML — ensures auth state changes deploy immediately */
+      if (filePath.endsWith(".html")) {
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      }
+    },
+  })
+);
 
+/* ── Global error handler ── */
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  console.error("[Error]", err.message);
+  console.error("[app error]", err.message || err);
   res.status(err.status || 500).json({
-    status:  "error",
+    success: false,
     message: process.env.NODE_ENV === "production"
-      ? "Internal server error"
+      ? "Errore interno del server."
       : err.message,
   });
 });

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loyalty Pass</title>
+  <link rel="stylesheet" href="../../assets/css/loyalty-brand.css">
+</head>
+
+<body class="loyalty-page">
+
+  <main class="loyalty-card">
+
+    <div class="loyalty-title">Your Loyalty Pass</div>
+    <div class="loyalty-subtitle">
+      Present this QR code to enjoy your exclusive partner benefits
+    </div>
+
+<div class="loyalty-qr" id="qrContainer">
+
+  <!-- skeleton placeholder -->
+  <div class="loyalty-qr-skeleton" id="qrSkeleton"></div>
+
+  <!-- real QR -->
+  <img id="qrImage" alt="Loyalty QR Code" />
+
+</div>
+
+    <div class="loyalty-status" id="customerStatus"></div>
+
+    <div style="margin-top:18px;">
+      <button id="logoutBtn" class="loyalty-btn loyalty-btn-secondary">
+        Logout
+      </button>
+    </div>
+
+  </main>
+
+  <script src="../../js/features/loyalty/customer/dashboard.js"></script>
+</body>
+</html>

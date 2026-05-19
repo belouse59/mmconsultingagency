@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Partner Scanner</title>
+
+  <link rel="stylesheet" href="../../assets/css/loyalty-brand.css"/>
+
+  <!-- IMPORTANT: QR SCANNER LIB -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+</head>
+
+<body class="loyalty-page loyalty-scan-page">
+
+  <main class="loyalty-scan-container">
+
+    <!-- HEADER -->
+    <header class="loyalty-scan-header">
+      <h1>Partner Scanner</h1>
+      <p>Scan customer QR to validate benefits</p>
+    </header>
+
+    <!-- SCANNER -->
+    <section class="loyalty-scan-camera">
+
+      <!-- REQUIRED FOR Html5Qrcode -->
+      <div id="reader"></div>
+
+      <!-- VISUAL FRAME OVERLAY -->
+      <div class="scan-frame"></div>
+
+    </section>
+
+    <!-- RESULT -->
+    <div id="result" class="scan-result"></div>
+
+    <!-- LOGOUT -->
+    <button id="logoutBtn" class="loyalty-btn loyalty-btn-secondary">
+      Logout
+    </button>
+
+  </main>
+
+  <script src="../../js/features/loyalty/partner/partnerScan.js"></script>
+
+</body>
+</html>

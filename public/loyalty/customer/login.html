@@ -1,66 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-  <title>Loyalty Access</title>
-  <link rel="stylesheet" href="../../assets/css/loyalty-brand.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Accesso Cliente — Convenzioni M&M Consulting</title>
+  <meta name="description" content="Accedi al tuo account Convenzioni M&M Consulting per visualizzare il tuo QR code e le offerte disponibili.">
+  <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/loyalty.css">
 </head>
+<body>
 
-<body class="loyalty-page">
+<div class="loyalty-shell">
 
-  <main class="loyalty-card loyalty-auth-card">
+  <!-- Top bar -->
+  <header class="loyalty-topbar" role="banner">
+    <a href="/" class="loyalty-topbar-logo" aria-label="Torna alla homepage M&M Consulting">
+      <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
+      <span class="loyalty-topbar-brand">Convenzioni</span>
+    </a>
+  </header>
 
-    <div class="loyalty-auth-header">
-      <h1 class="loyalty-title">Member Access</h1>
-      <p class="loyalty-subtitle">
-        Sign in to access your loyalty pass and partner benefits
+  <main class="loyalty-main" id="main-content">
+    <div class="loyalty-card loyalty-fade-in">
+
+      <div class="loyalty-auth-header">
+        <div class="loyalty-auth-icon" aria-hidden="true">🎫</div>
+        <h1 class="loyalty-auth-title">Accesso Cliente</h1>
+        <p class="loyalty-auth-sub">
+          Inserisci le tue credenziali per accedere al tuo QR code personale e alle offerte riservate.
+        </p>
+      </div>
+
+      <!-- Error message -->
+      <div class="loyalty-error" id="loginError" role="alert" aria-live="polite">
+        <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
+        <span id="loginErrorText">Credenziali non valide.</span>
+      </div>
+
+      <form id="loginForm" novalidate>
+
+        <div class="loyalty-field">
+          <label for="identifier">Email o numero di telefono</label>
+          <input
+            type="text"
+            id="identifier"
+            name="identifier"
+            placeholder="mario@email.com oppure +39 333 000 0000"
+            autocomplete="username"
+            inputmode="email"
+            required
+            aria-required="true">
+        </div>
+
+        <div class="loyalty-field">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+            aria-required="true">
+        </div>
+
+        <button type="submit" class="loyalty-btn-submit" id="submitBtn">
+          <span class="btn-label">Accedi</span>
+          <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
+      </form>
+
+      <p class="loyalty-auth-footer">
+        Non hai ancora un account?
+        <a href="/loyalty/customer/register.html">Registrati gratuitamente</a>
       </p>
-    </div>
-
-    <form id="loginForm" class="loyalty-form">
-
-      <div class="loyalty-field">
-        <label for="identifier">Member ID</label>
-        <input
-          id="identifier"
-          name="identifier"
-          type="text"
-          placeholder="Enter your member ID"
-          required
-        />
-      </div>
-
-      <div class="loyalty-field">
-        <label for="password">Password</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="Enter your password"
-          required
-        />
-      </div>
-
-      <button
-        type="submit"
-        class="loyalty-btn loyalty-btn-primary"
-      >
-        Access My Pass
-      </button>
-
-    </form>
-
-    <div id="loginMessage" class="loyalty-feedback"></div>
-    <div class="loyalty-auth-footer">
-      Not yet a member?
-      <a href="/loyalty/customer/register.html">Sign up</a>
     </div>
   </main>
 
-  <script src="../../js/features/loyalty/customer/auth.js"></script>
+</div>
+
+<script type="module" src="/js/features/loyalty/customer/auth.js"></script>
 </body>
 </html>
