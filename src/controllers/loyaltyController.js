@@ -170,6 +170,12 @@ async function getOffers(req, res) {
    PARTNER — LOGIN
 ───────────────────────────────────────────────────────────── */
 async function loginPartner(req, res) {
+const { partnerId, password } = req.body;
+
+    const result = await loyaltyService.loginPartner({
+      partnerId: clean(partnerId || ""),
+      password,
+    });
   await establishSession(req, {
     loyaltyPartner: {
       id: result.partnerId,
