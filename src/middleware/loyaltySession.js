@@ -16,10 +16,11 @@
 
 const session = require("express-session");
 const { RedisStore } = require("connect-redis");
-const { createClient } = require("redis");
 
-const path = require("path");
-const fs = require("fs");
+const {
+  redisClient,
+  connectRedis,
+} = require("../utils/redis");
 
 /* ─────────────────────────────────────────────────────────────
    SESSION MIDDLEWARE FACTORY
@@ -27,6 +28,7 @@ const fs = require("fs");
 ───────────────────────────────────────────────────────────── */
 function createSessionMiddleware() {
   const secret = process.env.SESSION_SECRET;
+
   if (!secret || secret.length < 32) {
     throw new Error(
       "SESSION_SECRET must be set in .env (min 32 chars). " +
@@ -36,44 +38,47 @@ function createSessionMiddleware() {
 
   if (!process.env.UPSTASH_REDIS_URL) {
     throw new Error(
-      "UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be set in .env. " +
-      "Get them from https://upstash.com"
+      "UPSTASH_REDIS_URL must be set in .env."
     );
   }
 
-    /* ── Upstash Redis client ── */
-const redisClient = createClient({
-  url: process.env.UPSTASH_REDIS_URL,
-});
+  connectRedis().catch((err) => {
+    console.error("[redis connect]", err);
+  });
 
-redisClient.connect().catch(console.error);
- 
-  /* ── Session store ── */
   const store = new RedisStore({
     client: redisClient,
     prefix: "mmconsulting:sess:",
-    //ttl:    7 * 24 * 60 * 60, // 7 days in seconds
   });
- 
- return session({
-  store,
-  secret,
-  name: "mm.sid",
 
-  resave: false,
-  saveUninitialized: false,
+  return session({
+    store,
+    secret,
 
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    name: "mm.sid",
 
-    sameSite: process.env.NODE_ENV === "production"
-      ? "none"
-      : "lax",
+    resave: false,
+    saveUninitialized: false,
 
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  },
-});
+    rolling: true,
+
+    unset: "destroy",
+
+    cookie: {
+      httpOnly: true,
+
+      secure: process.env.NODE_ENV === "production",
+
+      sameSite:
+        process.env.NODE_ENV === "production"
+          ? "none"
+          : "lax",
+
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+
+      path: "/",
+    },
+  });
 }
 
 /* ─────────────────────────────────────────────────────────────

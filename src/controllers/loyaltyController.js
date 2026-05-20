@@ -14,18 +14,19 @@
  *   - No stack traces returned to clients in production
  */
 
-const loyaltyService                      = require("../services/loyaltyService");
-const { generateQrImage, getQrTtl }       = require("../services/qrService");
-const { clean }                           = require("../utils/sanitizer");
-const { hashPassword, verifyPassword }    = require("../utils/argon2");
- 
+const loyaltyService = require("../services/loyaltyService");
+const { generateQrImage, getQrTtl } = require("../services/qrService");
+const { clean } = require("../utils/sanitizer");
+const { verifyPassword } = require("../utils/argon2");
+const { establishSession, destroySession } = require("../services/sessionService");
+
 /* ─────────────────────────────────────────────────────────────
    HELPERS
 ───────────────────────────────────────────────────────────── */
 
 /** Consistent error responder — never leaks stack traces in production */
 function handleError(res, err) {
-  const status  = err.statusCode || 500;
+  const status = err.statusCode || 500;
   const message = err.statusCode
     ? err.message
     : "Errore interno. Riprova più tardi.";
@@ -51,18 +52,18 @@ async function registerCustomer(req, res) {
     });
 
     /* Establish session immediately after registration */
-    req.session.loyaltyCustomer = {
-      id:        result.customerId,
-      full_name: clean(full_name || ""),
-    };
+    await establishSession(req, {
+      loyaltyCustomer: {
+        id: result.customerId,
+        full_name: clean(full_name || ""),
+      },
+    });
 
-    req.session.save(() => {
-      res.status(201).json({
-        success:    true,
-        message:    "Registrazione completata.",
-        customerId: result.customerId,
-        full_name:  clean(full_name || ""),
-      });
+    res.status(201).json({
+      success: true,
+      message: "Registrazione completata.",
+      customerId: result.customerId,
+      full_name: clean(full_name || ""),
     });
   } catch (err) {
     handleError(res, err);
@@ -81,17 +82,17 @@ async function loginCustomer(req, res) {
       password,
     });
 
-    req.session.loyaltyCustomer = {
-      id:        result.customerId,
-      full_name: result.full_name,
-    };
-
-    req.session.save(() => {
-      res.json({
-        success:   true,
-        message:   "Accesso effettuato.",
+    await establishSession(req, {
+      loyaltyCustomer: {
+        id: result.customerId,
         full_name: result.full_name,
-      });
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Accesso effettuato.",
+      full_name: result.full_name,
     });
   } catch (err) {
     handleError(res, err);
@@ -101,9 +102,17 @@ async function loginCustomer(req, res) {
 /* ─────────────────────────────────────────────────────────────
    CUSTOMER — LOGOUT
 ───────────────────────────────────────────────────────────── */
-function logoutCustomer(req, res) {
-  delete req.session.loyaltyCustomer;
-  req.session.save(() => res.json({ success: true }));
+async function logoutCustomer(req, res) {
+  try {
+    await destroySession(req, res);
+
+    res.json({
+      success: true,
+      message: "Logout effettuato.",
+    });
+  } catch (err) {
+    handleError(res, err);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -116,9 +125,9 @@ function customerSession(req, res) {
     return res.status(401).json({ success: false, message: "Non autenticato." });
   }
   res.json({
-    success:    true,
+    success: true,
     customerId: req.session.loyaltyCustomer.id,
-    full_name:  req.session.loyaltyCustomer.full_name,
+    full_name: req.session.loyaltyCustomer.full_name,
   });
 }
 
@@ -134,7 +143,7 @@ async function getCustomerQr(req, res) {
     const { qrImage, ttl } = await generateQrImage(customerId);
 
     res.json({
-      success:  true,
+      success: true,
       qrImage,
       ttl,
       fullName: req.session.loyaltyCustomer.full_name,
@@ -150,7 +159,7 @@ async function getCustomerQr(req, res) {
 async function getOffers(req, res) {
   try {
     const offers = await loyaltyService.getOffers();
-    const active  = offers.filter((o) => o.active);
+    const active = offers.filter((o) => o.active);
     res.json({ success: true, data: active });
   } catch (err) {
     handleError(res, err);
@@ -161,37 +170,34 @@ async function getOffers(req, res) {
    PARTNER — LOGIN
 ───────────────────────────────────────────────────────────── */
 async function loginPartner(req, res) {
-  try {
-    const { partnerId, password } = req.body;
-
-    const result = await loyaltyService.loginPartner({
-      partnerId: clean(partnerId || ""),
-      password,
-    });
-
-    req.session.loyaltyPartner = {
-      id:   result.partnerId,
+  await establishSession(req, {
+    loyaltyPartner: {
+      id: result.partnerId,
       name: result.name,
-    };
+    },
+  });
 
-    req.session.save(() => {
-      res.json({
-        success: true,
-        message: "Accesso effettuato.",
-        name:    result.name,
-      });
-    });
-  } catch (err) {
-    handleError(res, err);
-  }
+  res.json({
+    success: true,
+    message: "Accesso effettuato.",
+    name: result.name,
+  });
 }
 
 /* ─────────────────────────────────────────────────────────────
    PARTNER — LOGOUT
 ───────────────────────────────────────────────────────────── */
-function logoutPartner(req, res) {
-  delete req.session.loyaltyPartner;
-  req.session.save(() => res.json({ success: true }));
+async function logoutPartner(req, res) {
+  try {
+    await destroySession(req, res);
+
+    res.json({
+      success: true,
+      message: "Logout effettuato.",
+    });
+  } catch (err) {
+    handleError(res, err);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -202,9 +208,9 @@ function partnerSession(req, res) {
     return res.status(401).json({ success: false, message: "Non autenticato." });
   }
   res.json({
-    success:   true,
+    success: true,
     partnerId: req.session.loyaltyPartner.id,
-    name:      req.session.loyaltyPartner.name,
+    name: req.session.loyaltyPartner.name,
   });
 }
 
@@ -227,8 +233,8 @@ async function redeemQr(req, res) {
     const partnerId = req.session.loyaltyPartner.id;
 
     const result = await loyaltyService.validateRedemption({
-      token:    clean(token || ""),
-      offerId:  clean(offerId || ""),
+      token: clean(token || ""),
+      offerId: clean(offerId || ""),
       partnerId,
     });
 
@@ -267,8 +273,8 @@ async function loginAdmin(req, res) {
   try {
     const { email, password } = req.body;
 
-    const adminEmail    = process.env.LOYALTY_ADMIN_EMAIL;
-    const adminHashEnv  = process.env.LOYALTY_ADMIN_PASSWORD_HASH;
+    const adminEmail = process.env.LOYALTY_ADMIN_EMAIL;
+    const adminHashEnv = process.env.LOYALTY_ADMIN_PASSWORD_HASH;
 
     if (!adminEmail || !adminHashEnv) {
       console.error("[loyaltyController/admin] LOYALTY_ADMIN_EMAIL or LOYALTY_ADMIN_PASSWORD_HASH not set in .env");
@@ -280,16 +286,22 @@ async function loginAdmin(req, res) {
     }
 
     const emailMatch = email.trim().toLowerCase() === adminEmail.trim().toLowerCase();
-    const passMatch  = await verifyPassword(password, { passwordHash: adminHashEnv });
+    const passMatch = await verifyPassword(password, { passwordHash: adminHashEnv });
 
     /* Constant-time comparison of email too (minor — but correct) */
     if (!emailMatch || !passMatch) {
       return res.status(401).json({ success: false, message: "Credenziali non valide." });
     }
 
-    req.session.loyaltyAdmin = { email: adminEmail };
-    req.session.save(() => {
-      res.json({ success: true, message: "Accesso admin effettuato." });
+    await establishSession(req, {
+      loyaltyAdmin: {
+        email: adminEmail,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Accesso admin effettuato.",
     });
   } catch (err) {
     handleError(res, err);
@@ -299,9 +311,17 @@ async function loginAdmin(req, res) {
 /* ─────────────────────────────────────────────────────────────
    ADMIN — LOGOUT
 ───────────────────────────────────────────────────────────── */
-function logoutAdmin(req, res) {
-  delete req.session.loyaltyAdmin;
-  req.session.save(() => res.json({ success: true }));
+async function logoutAdmin(req, res) {
+  try {
+    await destroySession(req, res);
+
+    res.json({
+      success: true,
+      message: "Logout effettuato.",
+    });
+  } catch (err) {
+    handleError(res, err);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -350,9 +370,9 @@ async function adminCreateOffer(req, res) {
   try {
     const { title, description, partnerId } = req.body;
     const result = await loyaltyService.createOffer({
-      title:       clean(title || ""),
+      title: clean(title || ""),
       description: clean(description || ""),
-      partnerId:   clean(partnerId || ""),
+      partnerId: clean(partnerId || ""),
     });
     res.status(201).json(result);
   } catch (err) {
