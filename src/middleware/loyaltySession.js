@@ -14,9 +14,12 @@
  * MemoryStore in development. In production, ensure SESSION_SECRET is set.
  */
 
-const session      = require("express-session");
-const path         = require("path");
-const fs           = require("fs");
+const session = require("express-session");
+const { RedisStore } = require("connect-redis");
+const { createClient } = require("redis");
+
+const path = require("path");
+const fs = require("fs");
 
 /* ─────────────────────────────────────────────────────────────
    SESSION MIDDLEWARE FACTORY
@@ -31,33 +34,46 @@ function createSessionMiddleware() {
     );
   }
 
-  /* Session store: SQLite file in ./data/ so sessions survive restarts */
-  let store;
-  try {
-    const SQLiteStore = require("connect-sqlite3")(session);
-    const dataDir     = path.resolve("./data");
-    fs.mkdirSync(dataDir, { recursive: true });
-    store = new SQLiteStore({ db: "sessions.db", dir: dataDir });
-  } catch {
-    /* Falls back to in-memory store if connect-sqlite3 not installed */
-    console.warn("[session] connect-sqlite3 not found — using MemoryStore (not suitable for production)");
-    store = undefined;
+  if (!process.env.UPSTASH_REDIS_URL) {
+    throw new Error(
+      "UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be set in .env. " +
+      "Get them from https://upstash.com"
+    );
   }
 
-  const options = {
-    secret,
-    resave:            false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure:   process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge:   7 * 24 * 60 * 60 * 1000, // 7 days
-    },
-  };
+    /* ── Upstash Redis client ── */
+const redisClient = createClient({
+  url: process.env.UPSTASH_REDIS_URL,
+});
 
-  if (store) options.store = store;
-  return session(options);
+redisClient.connect().catch(console.error);
+ 
+  /* ── Session store ── */
+  const store = new RedisStore({
+    client: redisClient,
+    prefix: "mmconsulting:sess:",
+    //ttl:    7 * 24 * 60 * 60, // 7 days in seconds
+  });
+ 
+ return session({
+  store,
+  secret,
+  name: "mm.sid",
+
+  resave: false,
+  saveUninitialized: false,
+
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+
+    sameSite: process.env.NODE_ENV === "production"
+      ? "none"
+      : "lax",
+
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  },
+});
 }
 
 /* ─────────────────────────────────────────────────────────────

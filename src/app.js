@@ -60,6 +60,7 @@ app.use(express.urlencoded({ extended: false, limit: "50kb" }));
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 /* ── Session ── (must be before any route that reads req.session) */
+app.set("trust proxy", 1);
 app.use(createSessionMiddleware());
 
 /* ── API routes ── */
