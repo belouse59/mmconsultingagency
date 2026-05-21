@@ -1298,7 +1298,7 @@ abbr[title] {
 .loyalty-table th {
   text-align: left;
   padding: 10px 14px;
-  background: var(--text-primary);
+  background: var(--text-secondary);
   color: var(--bg-surface);
   font-family: var(--font-display, 'Montserrat', sans-serif);
   font-size: 0.7rem;
@@ -1314,6 +1314,10 @@ abbr[title] {
   color: var(--text-primary, #1A1A2E);
   vertical-align: middle;
 }
+.loyalty-table tr td:first-child {
+  color:var(--text-secondary);
+}
+
 
 .loyalty-table tr:last-child td { border-bottom: none; }
 
