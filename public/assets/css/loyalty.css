@@ -1314,7 +1314,8 @@ abbr[title] {
   color: var(--text-primary, #1A1A2E);
   vertical-align: middle;
 }
-.loyalty-table tr td:first-child {
+.loyalty-table tr td:first-child,
+.loyalty-table tr td:last-child{
   color:var(--text-secondary);
 }
 
