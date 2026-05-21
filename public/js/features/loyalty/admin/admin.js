@@ -176,6 +176,7 @@ logoutBtn.addEventListener("click", async () => {
     });
   } catch { /* Best-effort */ }
   showLoginPanel();
+   _setLoading(loginSubmitBtn, false);
 });
 
 /* ─────────────────────────────────────────────────────────────
