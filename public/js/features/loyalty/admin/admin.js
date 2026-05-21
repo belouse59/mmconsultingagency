@@ -235,7 +235,7 @@ async function loadCustomers() {
 
     customersBody.innerHTML = customers.map((c) => `
       <tr>
-        <td style="font-family:var(--font-display);font-size:0.72rem;color:var(--text-secondary);">
+        <td style="font-family:var(--font-display);font-size:0.72rem;">
           ${_esc(c.id)}
         </td>
         <td style="font-weight:600;">${_esc(c.full_name)}</td>
@@ -246,7 +246,7 @@ async function loadCustomers() {
           </span>
         </td>
         <td>${_badge(c.active)}</td>
-        <td style="color:var(--text-secondary);font-size:0.8rem;">${_fmtDate(c.createdAt)}</td>
+        <td style="font-size:0.8rem;">${_fmtDate(c.createdAt)}</td>
       </tr>
     `).join("");
   } catch {
@@ -271,13 +271,13 @@ async function loadRedemptions() {
 
     redemptionsBody.innerHTML = redemptions.map((r) => `
       <tr>
-        <td style="font-family:var(--font-display);font-size:0.72rem;color:var(--text-secondary);">
+        <td style="font-family:var(--font-display);font-size:0.72rem;">
           ${_esc(r.id)}
         </td>
         <td style="font-weight:600;">${_esc(r.customerId)}</td>
         <td>${_esc(r.partnerId)}</td>
         <td>${_esc(r.offerId)}</td>
-        <td style="color:var(--text-secondary);font-size:0.8rem;">${_fmtDate(r.createdAt)}</td>
+        <td style="font-size:0.8rem;">${_fmtDate(r.createdAt)}</td>
       </tr>
     `).join("");
   } catch {
@@ -302,14 +302,14 @@ async function loadOffers() {
 
     offersBody.innerHTML = offers.map((o) => `
       <tr>
-        <td style="font-family:var(--font-display);font-size:0.72rem;color:var(--text-secondary);">
+        <td style="font-family:var(--font-display);font-size:0.72rem;">
           ${_esc(o.id)}
         </td>
         <td style="font-weight:600;">${_esc(o.title)}</td>
         <td style="font-size:0.82rem;">${_esc(o.description || "—")}</td>
         <td style="font-size:0.82rem;">${_esc(o.partnerId || "Globale")}</td>
         <td>${_badge(o.active)}</td>
-        <td style="color:var(--text-secondary);font-size:0.8rem;">${_fmtDate(o.createdAt)}</td>
+        <td style="font-size:0.8rem;">${_fmtDate(o.createdAt)}</td>
       </tr>
     `).join("");
   } catch {
