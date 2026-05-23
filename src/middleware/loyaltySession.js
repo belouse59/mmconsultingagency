@@ -3,15 +3,20 @@
 /**
  * middleware/loyaltySession.js
  *
- * Session-based authentication guards for loyalty routes.
+ * API-only guards — always return JSON, never redirect.
+ * Page-level auth is handled by the inline <script> guard
+ * in each HTML file, which fires before any DOM paint.
  *
- * WHY SESSION COOKIES INSTEAD OF LOCALSTORAGE:
- *   localStorage is accessible by any JavaScript on the page — including
- *   injected scripts (XSS). httpOnly session cookies cannot be read by JS
- *   at all. This is the correct auth model for any system involving identity.
+ * mustChangePassword:
+ *   Partners created by admin have this flag set to true.
+ *   requirePartnerAPI blocks all partner endpoints except
+ *   /set-password with a 403 MUST_CHANGE_PASSWORD code.
+ *   requirePartnerAnyAPI is used only on the set-password route.
  *
- * The session store uses connect-sqlite3 (local file) or falls back to
- * MemoryStore in development. In production, ensure SESSION_SECRET is set.
+ * CSRF:
+ *   State-mutating endpoints check for X-Requested-With header.
+ *   This is a lightweight CSRF mitigation layer that works
+ *   alongside SameSite=Lax cookies without requiring token rotation.
  */
 
 const session = require("express-session");
@@ -103,27 +108,63 @@ function requireAdminPage(req, res, next) {
    API GUARDS — return JSON 401 on failure (never redirect)
    Used on all /api/loyalty/* endpoints.
 ───────────────────────────────────────────────────────────── */
+/* ── Customer API guard ── */
 function requireCustomerAPI(req, res, next) {
   if (req.session?.loyaltyCustomer) return next();
   res.status(401).json({ success: false, message: "Sessione scaduta. Effettua di nuovo l'accesso." });
 }
 
+/* ── Partner API guard — blocks if mustChangePassword ── */
 function requirePartnerAPI(req, res, next) {
-  if (req.session?.loyaltyPartner) return next();
-  res.status(401).json({ success: false, message: "Sessione scaduta. Effettua di nuovo l'accesso." });
+  if (!req.session?.loyaltyPartner) {
+    return res.status(401).json({ success: false, message: "Sessione scaduta. Accedi di nuovo." });
+  }
+  if (req.session.loyaltyPartner.mustChangePassword) {
+    return res.status(403).json({
+      success: false,
+      code:    "MUST_CHANGE_PASSWORD",
+      message: "Devi impostare una nuova password prima di continuare.",
+    });
+  }
+  return next();
 }
 
+/* ── Partner API guard — allows even if mustChangePassword ── */
+/* Used exclusively on POST /api/loyalty/partner/set-password   */
+function requirePartnerAnyAPI(req, res, next) {
+  if (!req.session?.loyaltyPartner) {
+    return res.status(401).json({ success: false, message: "Sessione scaduta. Accedi di nuovo." });
+  }
+  return next();
+}
+
+/* ── Admin API guard ── */
 function requireAdminAPI(req, res, next) {
   if (req.session?.loyaltyAdmin) return next();
   res.status(401).json({ success: false, message: "Non autorizzato." });
+}
+
+/* ── CSRF guard ──
+   Applied to all state-mutating endpoints (POST that are not login/logout).
+   Browsers never send X-Requested-With on cross-origin requests
+   unless the server explicitly allows it via CORS — which we do not.
+   This provides meaningful protection without full CSRF token rotation. */
+function requireXHR(req, res, next) {
+  const header = req.headers["x-requested-with"];
+  if (!header || header.toLowerCase() !== "xmlhttprequest") {
+    return res.status(403).json({ success: false, message: "Richiesta non autorizzata." });
+  }
+  return next();
 }
 
 module.exports = {
   createSessionMiddleware,
   requireCustomerAPI,
   requirePartnerAPI,
+  requirePartnerAnyAPI,
   requireAdminAPI,
-  requireCustomerPage,
-  requirePartnerPage,
-  requireAdminPage,
+  requireXHR
+  //requireCustomerPage,
+  //requirePartnerPage,
+  //requireAdminPage,
 };

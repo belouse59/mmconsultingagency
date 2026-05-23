@@ -5,8 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <title>Registrazione — Convenzioni M&M Consulting</title>
-  <meta name="description" content="Crea il tuo account Convenzioni M&M Consulting per ricevere il tuo QR code personale e accedere agli sconti dei partner.">
   <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
+
+  <!-- Redirect already-authenticated users immediately -->
+  <script>
+    (function () {
+      fetch("/api/loyalty/customer/session", { credentials: "same-origin" })
+        .then(function (r) {
+          if (r.ok) window.location.replace("/loyalty/customer/dashboard.html");
+        })
+        .catch(function () {});
+    })();
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -16,15 +27,11 @@
 
 <div class="loyalty-shell">
 
-  <!-- Top bar -->
   <header class="loyalty-topbar" role="banner">
     <a href="/" class="loyalty-topbar-logo" aria-label="Torna alla homepage M&M Consulting">
       <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
       <span class="loyalty-topbar-brand">Convenzioni</span>
     </a>
-    <button class="loyalty-topbar-logout" id="logoutBtn" aria-label="Esci dall'account">
-        Esci
-      </button>
   </header>
 
   <main class="loyalty-main" id="main-content">
@@ -34,17 +41,15 @@
         <div class="loyalty-auth-icon" aria-hidden="true">✨</div>
         <h1 class="loyalty-auth-title">Crea il tuo account</h1>
         <p class="loyalty-auth-sub">
-          Registrati per ricevere il tuo QR code personale e accedere agli sconti esclusivi dei nostri partner.
+          Registrati per ricevere il tuo QR code personale e accedere agli sconti esclusivi dei partner convenzionati.
         </p>
       </div>
 
-      <!-- Error message -->
       <div class="loyalty-error" id="registerError" role="alert" aria-live="polite">
         <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
-        <span id="registerErrorText">Errore durante la registrazione.</span>
+        <span id="registerErrorText"></span>
       </div>
 
-      <!-- Success message -->
       <div class="loyalty-success" id="registerSuccess" role="status" aria-live="polite">
         <span aria-hidden="true">✓</span>
         <span>Registrazione completata! Verrai reindirizzato...</span>

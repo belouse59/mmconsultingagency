@@ -17,7 +17,7 @@
 
 const { appendRow, getSheetValues } = require("./sheetsService");
 const { clean } = require("../utils/sanitizer");
-const { generateCustomerId } = require("./qrService");
+const { generateCustomerId, verifyQrToken } = require("./qrService");
 const { hashPassword, verifyPassword } = require("../utils/argon2");
 
 const SHEET = {
@@ -25,8 +25,6 @@ const SHEET = {
   REDEMPTIONS: "Redemptions",
   OFFERS:      "Offers",
 };
-
-const BCRYPT_ROUNDS = 12;
 
 /* ─────────────────────────────────────────────────────────────
    SHEET READERS
@@ -87,8 +85,14 @@ function detectIdentifierType(identifier) {
   return identifier.includes("@") ? "email" : "phone";
 }
 
+function makeError(message, statusCode = 400) {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  return err;
+}
+
 /* ─────────────────────────────────────────────────────────────
-   REGISTER
+   CUSTOMER — REGISTER
 ───────────────────────────────────────────────────────────── */
 
 /**
@@ -97,15 +101,11 @@ function detectIdentifierType(identifier) {
  */
 async function register({ full_name, identifier, password }) {
   if (!full_name?.trim() || !identifier?.trim() || !password) {
-    const e = new Error("Tutti i campi sono obbligatori.");
-    e.statusCode = 400;
-    throw e;
+    throw makeError("Tutti i campi sono obbligatori.", 400);
   }
 
   if (password.length < 8) {
-    const e = new Error("La password deve avere almeno 8 caratteri.");
-    e.statusCode = 400;
-    throw e;
+    throw makeError("La password deve avere almeno 8 caratteri.", 400);
   }
 
   const normalized = normalizeIdentifier(identifier);
@@ -113,9 +113,7 @@ async function register({ full_name, identifier, password }) {
 
   if (customers.find((c) => c.identifier === normalized)) {
     /* Generic message — no user enumeration */
-    const e = new Error("Registrazione non possibile. Contatta il supporto.");
-    e.statusCode = 409;
-    throw e;
+    throw makeError("Registrazione non possibile. Contatta il supporto.", 409);
   }
   const hash = await hashPassword(password);
   const customerId = generateCustomerId();
@@ -130,11 +128,11 @@ async function register({ full_name, identifier, password }) {
     new Date().toISOString(),
   ]);
 
-  return { success: true, customerId };
+  return { success: true, customerId, full_name: clean(full_name) };
 }
 
 /* ─────────────────────────────────────────────────────────────
-   LOGIN (CUSTOMER)
+   CUSTOMER - LOGIN
 ───────────────────────────────────────────────────────────── */
 
 /**
@@ -144,9 +142,7 @@ async function register({ full_name, identifier, password }) {
  */
 async function login({ identifier, password }) {
   if (!identifier?.trim() || !password) {
-    const e = new Error("Credenziali non valide.");
-    e.statusCode = 401;
-    throw e;
+    throw makeError("Credenziali non valide.", 401);
   }
 
   const normalized = normalizeIdentifier(identifier);
@@ -155,17 +151,10 @@ async function login({ identifier, password }) {
 
   const match = await verifyPassword(password, customer);
 
-  if (!customer || !match) {
-    const e = new Error("Credenziali non valide.");
-    e.statusCode = 401;
-    throw e;
-  }
+  if (!customer || !match) throw makeError("Credenziali non valide.", 401);
 
-  if (!customer.active) {
-    const e = new Error("Account sospeso. Contatta il supporto.");
-    e.statusCode = 403;
-    throw e;
-  }
+
+  if (!customer.active) throw makeError("Account sospeso. Contatta il supporto.", 403);
 
   return {
     success:    true,
@@ -175,7 +164,7 @@ async function login({ identifier, password }) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   LOGIN (PARTNER)
+   PARTNER - LOGIN
    Partners are managed via loyalty-partners.json for MVP simplicity.
 ───────────────────────────────────────────────────────────── */
 
@@ -183,17 +172,33 @@ async function login({ identifier, password }) {
  * Authenticate a partner business.
  * Returns { success: true, partnerId, name } or throws.
  */
+
+async function getPartnerById(partnerId) {
+  const raw = await redis.get(`mm:partner:${partnerId}`);
+  if (!raw) return null;
+  return typeof raw === "string" ? JSON.parse(raw) : raw;
+}
+ 
+async function getAllPartners() {
+  const ids = await redis.smembers("mm:partners:index");
+  if (!ids.length) return [];
+ 
+  const pipeline = redis.pipeline();
+  ids.forEach((id) => pipeline.get(`mm:partner:${id}`));
+  const results = await pipeline.exec();
+ 
+  return results
+    .map((r) => (r ? (typeof r === "string" ? JSON.parse(r) : r) : null))
+    .filter(Boolean);
+}
+
 async function loginPartner({ partnerId, password }) {
-  if (!partnerId?.trim() || !password) {
-    const e = new Error("Credenziali non valide.");
-    e.statusCode = 401;
-    throw e;
-  }
+  if (!partnerId?.trim() || !password) throw makeError("Credenziali non valide.", 401);
 
   /* Partners loaded from JSON file — avoids a Sheets call on every login */
   let partners = [];
   try {
-    partners = require("../data/loyalty-partners.json");
+    const partner = await getPartnerById(partnerId.trim());
   } catch {
     const e = new Error("Servizio temporaneamente non disponibile.");
     e.statusCode = 503;
@@ -203,19 +208,118 @@ async function loginPartner({ partnerId, password }) {
   const partner = partners.find((p) => p.id === partnerId.trim());
   const match = true || await verifyPassword(password, partners);
 
-  if (!partner || !match) {
-    const e = new Error("Credenziali non valide.");
-    e.statusCode = 401;
-    throw e;
-  }
+  if (!partner || !match) throw makeError("Credenziali non valide.", 401);
 
-  if (partner.active === false) {
-    const e = new Error("Account sospeso.");
-    e.statusCode = 403;
-    throw e;
-  }
+  if (!partner.active) throw makeError("Account sospeso.", 403);
 
-  return { success: true, partnerId: partner.id, name: partner.name };
+  return { 
+    success: true, 
+    partnerId: partner.id, 
+    name: partner.name, 
+    mustChangePassword: partner.mustChangePassword === true 
+  };
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PARTNER — SET PASSWORD (first login flow)
+───────────────────────────────────────────────────────────── */
+ 
+async function setPartnerPassword({ partnerId, newPassword }) {
+  if (!newPassword || newPassword.length < 8) {
+    throw makeError("La nuova password deve avere almeno 8 caratteri.", 400);
+  }
+ 
+  const partner = await getPartnerById(partnerId);
+  if (!partner) throw makeError("Partner non trovato.", 404);
+ 
+  const hash    = await hashPassword(newPassword);
+  const updated = { ...partner, passwordHash: hash, mustChangePassword: false };
+ 
+  await redis.set(`mm:partner:${partnerId}`, JSON.stringify(updated));
+  return { success: true };
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PARTNER — CREATE (called by admin)
+───────────────────────────────────────────────────────────── */
+ 
+async function createPartner({ id, name, category, address, tempPassword }) {
+  if (!id?.trim() || !name?.trim() || !tempPassword) throw makeError("ID, nome e password temporanea sono obbligatori.", 400);
+ 
+  const cleanId = clean(id).toLowerCase().replace(/\s+/g, "-");
+ 
+  const existing = await getPartnerById(cleanId);
+  if (existing) throw makeError("Un partner con questo ID esiste già.", 409);
+ 
+  if (tempPassword.length < 8) throw makeError("La password temporanea deve avere almeno 8 caratteri.", 400);
+ 
+  const hash    = await hashPassword(tempPassword);
+  const partner = {
+    id:                cleanId,
+    name:              clean(name),
+    category:          clean(category || "Generico"),
+    address:           clean(address || ""),
+    passwordHash:      hash,
+    mustChangePassword: true,
+    active:            true,
+    createdAt:         new Date().toISOString(),
+  };
+ 
+  await redis.set(`mm:partner:${cleanId}`, JSON.stringify(partner));
+  await redis.sadd("mm:partners:index", cleanId);
+ 
+  return { success: true, partnerId: cleanId };
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PARTNER — UPDATE ACTIVE STATUS (admin)
+───────────────────────────────────────────────────────────── */
+ 
+async function setPartnerActive(partnerId, active) {
+  const partner = await getPartnerById(partnerId);
+  if (!partner) throw makeError("Partner non trovato.", 404);
+  const updated = { ...partner, active };
+  await redis.set(`mm:partner:${partnerId}`, JSON.stringify(updated));
+  return { success: true };
+}
+
+/* ─────────────────────────────────────────────────────────────
+   OFFERS
+───────────────────────────────────────────────────────────── */
+
+async function getActiveOffers() {
+  const offers = await readOffers();
+  return offers.filter((o) => o.active);
+}
+ 
+async function getPartnerOffers(partnerId) {
+  const offers = await readOffers();
+  return offers.filter(
+    (o) => o.active && (!o.partnerId || o.partnerId === partnerId)
+  );
+}
+
+async function createOffer({ title, description, partnerId }) {
+  if (!title?.trim()) {
+    throw makeError("Il titolo dell'offerta è obbligatorio.", 400);
+  }
+ 
+  const id  = `offer-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
+  const now = new Date().toISOString();
+ 
+  await appendRow(SHEET.OFFERS, [
+    id,
+    clean(title),
+    clean(description || ""),
+    clean(partnerId   || ""),
+    "true",
+    now,
+  ]);
+ 
+  return {
+    success: true,
+    offer:   { id, title: clean(title), description: clean(description || ""), partnerId: clean(partnerId || ""), active: true, createdAt: now },
+  };
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -237,129 +341,176 @@ async function loginPartner({ partnerId, password }) {
  * @param {string} offerId     - Offer ID partner is applying
  * @param {string} partnerId   - Authenticated partner ID from session
  */
-async function validateRedemption({ token, offerId, partnerId } = {}) {
-  const { verifyQrToken } = require("./qrService");
+async function prevalidateQr({ token, partnerId } = {}) {
 
-  if (!token || !offerId || !partnerId) {
-    return { success: false, message: "Dati mancanti." };
-  }
+  if (!token || !partnerId) return { success: false, message: "Dati mancanti." };
+
+    /* 1. Signature + expiry */
+  const check = verifyQrToken(token);
 
   /* 1. Verify HMAC + expiry */
-  const verification = verifyQrToken(token);
-  if (!verification.valid) {
+  if (!check.valid) {
+    const messages = {
+      TOKEN_MISSING:           "QR mancante.",
+      TOKEN_MALFORMED:         "QR non valido.",
+      TOKEN_INVALID_SIGNATURE: "QR non autentico — rifiuta la transazione.",
+      TOKEN_EXPIRED:           "QR scaduto. Chiedi al cliente di aggiornare il QR.",
+    };
+    return { success: false, code: check.reason, message: messages[check.reason] || "QR non valido.", expiresAt: null };
+  }
+
+  const { customerId, exp } = check;
+
+  /* 2. Check QR replay lock (already used?) */
+  const tokenHash  = crypto.createHash("sha256").update(token).digest("hex");
+  const replayUsed = await redis.exists(`mm:usedqr:${tokenHash}`);
+  if (replayUsed) {
+    return { success: false, code: "TOKEN_ALREADY_USED", message: "QR già utilizzato. Chiedi al cliente di aggiornare il QR.", expiresAt: null };
+  }
+
+  /* 3. Load customer */
+  const customers = await readCustomers();
+  const customer  = customers.find((c) => c.id === customerId);
+  if (!customer)       return { success: false, code: "CUSTOMER_NOT_FOUND", message: "Cliente non trovato.", expiresAt: null };
+  if (!customer.active) return { success: false, code: "CUSTOMER_SUSPENDED", message: "Account cliente sospeso.", expiresAt: null };
+
+  /* 4. Load offers + check per-offer eligibility */
+  const offers = await getPartnerOffers(partnerId);
+ 
+  const eligibleOffers = await Promise.all(
+    offers.map(async (offer) => {
+      const lockKey = `mm:redeemed:${offer.id}:${customerId}`;
+      const used    = await redis.exists(lockKey);
+      return {
+        id:          offer.id,
+        title:       offer.title,
+        description: offer.description,
+        eligible:    !used,
+        reason:      used ? "Già utilizzata" : null,
+      };
+    })
+  );
+
+
+    return {
+    success:        true,
+    customerId,
+    customerName:   customer.full_name,
+    expiresAt:      exp,
+    eligibleOffers,
+  };
+};
+
+/* ─────────────────────────────────────────────────────────────
+   REDEMPTION — FULL ATOMIC FLOW
+   Layer 1: QR signature + expiry      (qrService.verifyQrToken)
+   Layer 2: QR replay lock             (Redis SET NX)
+   Layer 3: Permanent offer lock       (Redis SET NX, no TTL)
+   Layer 4: Idempotency key            (Redis SET NX EX 300)
+   Layer 5: Sheets audit write         (fire-and-forget)
+───────────────────────────────────────────────────────────── */
+
+async function redeemOffer({ token, offerId, partnerId, idempotencyKey }) {
+  /* ── 0. Idempotency — same key = same response, no double processing ── */
+  if (idempotencyKey) {
+    const idemKey    = `mm:idempotency:${idempotencyKey}`;
+    const cachedRaw  = await redis.get(idemKey);
+    if (cachedRaw) {
+      return typeof cachedRaw === "string" ? JSON.parse(cachedRaw) : cachedRaw;
+    }
+  }
+  /* ── 1. Verify QR signature + expiry ── */
+  const check = verifyQrToken(token);
+  if (!check.valid) {
     const messages = {
       TOKEN_MISSING:           "QR mancante.",
       TOKEN_MALFORMED:         "QR non valido.",
       TOKEN_INVALID_SIGNATURE: "QR non autentico.",
       TOKEN_EXPIRED:           "QR scaduto. Chiedi al cliente di aggiornare il QR.",
     };
-    return {
-      success: false,
-      message: messages[verification.reason] || "QR non valido.",
-    };
+    return { success: false, code: check.reason, message: messages[check.reason] || "QR non valido." };
+  }
+  const { customerId } = check;
+
+  /* ── 2. Atomic QR replay lock — SET NX EX ── */
+  const tokenHash   = crypto.createHash("sha256").update(token).digest("hex");
+  const replayKey   = `mm:usedqr:${tokenHash}`;
+  const ttlSeconds  = Math.ceil(parseInt(process.env.LOYALTY_QR_TTL_MS || "300000", 10) / 1000);
+
+  const replayLock  = await redis.set(replayKey, "1", { nx: true, ex: ttlSeconds });
+  if (replayLock === null) {
+    return { success: false, code: "TOKEN_ALREADY_USED", message: "QR già utilizzato. Chiedi al cliente di aggiornare il QR." };
   }
 
-  const { customerId } = verification;
-
-  /* 2. Load data — parallel for performance */
-  const [customers, offers, redemptions] = await Promise.all([
-    readCustomers(),
-    readOffers(),
-    readRedemptions(),
-  ]);
-
-  /* 3. Validate customer */
-  const customer = customers.find((c) => c.id === customerId);
+  /* ── 3. Validate customer ── */
+  const customers = await readCustomers();
+  const customer  = customers.find((c) => c.id === customerId);
   if (!customer) {
-    return { success: false, message: "Cliente non trovato." };
+    /* Release replay lock if customer not found — token could be retried */
+    await redis.del(replayKey);
+    return { success: false, code: "CUSTOMER_NOT_FOUND", message: "Cliente non trovato." };
   }
   if (!customer.active) {
-    return { success: false, message: "Account cliente sospeso." };
+    await redis.del(replayKey);
+    return { success: false, code: "CUSTOMER_SUSPENDED", message: "Account cliente sospeso." };
   }
 
-  /* 4. Replay attack guard — token already used */
-  if (redemptions.find((r) => r.usedToken === token)) {
-    return {
-      success: false,
-      message: "QR già utilizzato. Chiedi al cliente di aggiornare il QR.",
-    };
-  }
-
-  /* 5. Validate offer */
-  const offer = offers.find((o) => o.id === offerId);
+  /* ── 4. Validate offer ── */
+  const offers = await readOffers();
+  const offer  = offers.find((o) => o.id === offerId);
   if (!offer || !offer.active) {
-    return { success: false, message: "Offerta non valida o non attiva." };
+    await redis.del(replayKey);
+    return { success: false, code: "OFFER_INVALID", message: "Offerta non valida o non attiva." };
   }
 
-  /* 6. Per-day deduplication */
-  const today = new Date().toISOString().slice(0, 10);
-  const alreadyToday = redemptions.find(
-    (r) =>
-      r.customerId === customerId &&
-      r.offerId    === offerId    &&
-      r.partnerId  === partnerId &&
-      r.date       === today
-  );
-  if (alreadyToday) {
-    return {
-      success: false,
-      message: "Questo cliente ha già usato questa offerta oggi.",
-    };
+  /* ── 5. Atomic permanent offer redemption lock — SET NX (no TTL = forever) ── */
+  const redemptionKey  = `mm:redeemed:${offerId}:${customerId}`;
+  const redemptionData = JSON.stringify({
+    customerId,
+    offerId,
+    partnerId,
+    redeemedAt: Date.now(),
+  });
+ 
+  const redemptionLock = await redis.set(redemptionKey, redemptionData, { nx: true });
+  if (redemptionLock === null) {
+    return { success: false, code: "OFFER_ALREADY_REDEEMED", message: "Questo cliente ha già utilizzato questa offerta." };
   }
 
-  /* 7. Record redemption */
-  const redemptionId = `r-${Date.now()}`;
-  await appendRow(SHEET.REDEMPTIONS, [
+  /* ── 6. Build redemption record ── */
+  const redemptionId = `r-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
+  const now          = new Date();
+  const nowIso       = now.toISOString();
+
+/* ── 7. Persist to Sheets (audit trail — fire-and-forget) ── */
+  appendRow(SHEET.REDEMPTIONS, [
     redemptionId,
     customerId,
     clean(partnerId),
     clean(offerId),
-    token,           // store the used token for replay prevention
-    today,
-    new Date().toISOString(),
-  ]);
-
-  return {
+    tokenHash,          // store hash not raw token in sheets
+    now.toISOString().slice(0, 10),
+    nowIso,
+  ]).catch((err) => {
+    console.error("[loyaltyService/redeemOffer] Sheets write failed:", err.message);
+  });
+ 
+  const result = {
     success:       true,
-    message:       `✓ Sconto applicato: ${offer.title}`,
+    redemptionId,
     customerName:  customer.full_name,
     offerTitle:    offer.title,
-    redemptionId,
+    message:       `✓ ${offer.title} applicato per ${customer.full_name}`,
+    redeemedAt:    nowIso,
   };
-}
-
-/* ─────────────────────────────────────────────────────────────
-   OFFER MANAGEMENT
-───────────────────────────────────────────────────────────── */
-
-async function createOffer({ title, description = "", partnerId = "" }) {
-  if (!title?.trim()) {
-    const e = new Error("Il titolo dell'offerta è obbligatorio.");
-    e.statusCode = 400;
-    throw e;
+ 
+  /* ── 8. Cache idempotency result ── */
+  if (idempotencyKey) {
+    await redis.set(`mm:idempotency:${idempotencyKey}`, JSON.stringify(result), { ex: 300 });
   }
-
-  const offer = {
-    id:          `offer-${Date.now()}`,
-    title:       clean(title),
-    description: clean(description),
-    partnerId:   clean(partnerId),
-    active:      "true",
-    createdAt:   new Date().toISOString(),
-  };
-
-  await appendRow(SHEET.OFFERS, [
-    offer.id,
-    offer.title,
-    offer.description,
-    offer.partnerId,
-    offer.active,
-    offer.createdAt,
-  ]);
-
-  return { success: true, offer };
+ 
+  return result;
 }
-
 /* ─────────────────────────────────────────────────────────────
    ADMIN READS
 ───────────────────────────────────────────────────────────── */
@@ -381,11 +532,24 @@ async function getOffers() {
 ───────────────────────────────────────────────────────────── */
 
 module.exports = {
+  /* Customer */
   register,
   login,
+  /* Partner */
   loginPartner,
-  validateRedemption,
+  setPartnerPassword,
+  createPartner,
+  setPartnerActive,
+  getAllPartners,
+  getPartnerById,
+  /* Offers */
+  getActiveOffers,
+  getPartnerOffers,
   createOffer,
+  /* QR */
+  prevalidateQr,
+  redeemOffer,
+  /* Admin reads */
   getCustomers,
   getRedemptions,
   getOffers,
