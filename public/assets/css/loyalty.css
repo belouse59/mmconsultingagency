@@ -546,7 +546,7 @@ abbr[title] {
 
 /* ── Centered card wrapper ── */
 .loyalty-card {
-  background: white;
+  background: var(--bg-soft);
   border: 1px solid var(--border-light, #E4E4E0);
   border-radius: 16px;
   padding: 36px 32px;
@@ -1242,7 +1242,7 @@ abbr[title] {
 }
 
 .loyalty-admin-tab.active {
-  background: var(--navy, #0A1628);
+  background: var(--text-primary);
   color: var(--gold, #D4A017);
 }
 
@@ -1285,7 +1285,7 @@ abbr[title] {
 .loyalty-table-wrap {
   overflow-x: auto;
   border-radius: 10px;
-  border: 1px solid var(--border-light, #E4E4E0);
+  border: 1px solid var(--border, #E4E4E0);
 }
 
 .loyalty-table {
@@ -1298,8 +1298,8 @@ abbr[title] {
 .loyalty-table th {
   text-align: left;
   padding: 10px 14px;
-  background: var(--navy, #0A1628);
-  color: rgba(255, 255, 255, 0.6);
+  background: var(--text-secondary);
+  color: var(--bg-surface);
   font-family: var(--font-display, 'Montserrat', sans-serif);
   font-size: 0.7rem;
   font-weight: 700;
@@ -1314,11 +1314,17 @@ abbr[title] {
   color: var(--text-primary, #1A1A2E);
   vertical-align: middle;
 }
+.loyalty-table tr td:first-child,
+.loyalty-table tr td:last-child{
+  color:var(--text-secondary);
+}
+
 
 .loyalty-table tr:last-child td { border-bottom: none; }
 
 .loyalty-table tr:hover td {
-  background: var(--bg-soft, #FAFAF8);
+  background: var(--text-primary, #FAFAF8);
+  color: var(--bg-soft);
 }
 
 /* ── Status badge ── */

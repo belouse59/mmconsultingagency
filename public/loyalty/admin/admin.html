@@ -6,6 +6,26 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Admin — Convenzioni M&M Consulting</title>
   <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
+
+  <!--
+    ZERO-SKELETON AUTH GUARD
+    Body is invisible until session check resolves.
+    Unauthenticated = stays on page showing login form (admin login is inline).
+    Authenticated = reveals dashboard immediately.
+  -->
+  <script>
+    document.documentElement.style.visibility = "hidden";
+    fetch("/api/loyalty/admin/session", { credentials: "same-origin" })
+      .then(function (r) {
+        window.__adminAuthenticated = r.ok;
+        document.documentElement.style.visibility = "";
+      })
+      .catch(function () {
+        window.__adminAuthenticated = false;
+        document.documentElement.style.visibility = "";
+      });
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -15,22 +35,19 @@
 
 <div class="loyalty-shell">
 
-  <!-- Top bar -->
   <header class="loyalty-topbar" role="banner">
     <a href="/" class="loyalty-topbar-logo" aria-label="Torna alla homepage M&M Consulting">
       <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
       <span class="loyalty-topbar-brand">Admin</span>
     </a>
     <div class="loyalty-topbar-actions" id="adminTopbarActions" style="display:none;">
-      <button class="loyalty-topbar-logout" id="logoutBtn" aria-label="Esci dall'admin">
-        Esci
-      </button>
+      <button class="loyalty-topbar-logout" id="logoutBtn" aria-label="Esci dall'admin">Esci</button>
     </div>
   </header>
 
   <main class="loyalty-main" id="main-content">
 
-    <!-- ── LOGIN PANEL (shown when not authenticated) ── -->
+    <!-- ══ LOGIN PANEL ══ -->
     <div class="loyalty-card loyalty-fade-in" id="loginPanel">
 
       <div class="loyalty-auth-header">
@@ -41,7 +58,7 @@
 
       <div class="loyalty-error" id="loginError" role="alert" aria-live="polite">
         <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
-        <span id="loginErrorText">Credenziali non valide.</span>
+        <span id="loginErrorText"></span>
       </div>
 
       <form id="adminLoginForm" novalidate>
@@ -75,11 +92,11 @@
 
     </div>
 
-    <!-- ── DASHBOARD (shown when authenticated) ── -->
+    <!-- ══ DASHBOARD ══ -->
     <div id="adminDashboard" style="display:none;width:100%;">
 
-      <!-- Stats row -->
-      <div class="loyalty-stats-grid loyalty-card--full" style="max-width:1100px;margin:0 auto 24px;" id="statsGrid">
+      <!-- Stats -->
+      <div class="loyalty-stats-grid loyalty-card--full" style="max-width:1100px;margin:0 auto 24px;">
         <div class="loyalty-stat-card">
           <div class="loyalty-stat-value" id="statCustomers">—</div>
           <div class="loyalty-stat-label">Clienti</div>
@@ -101,19 +118,22 @@
       <!-- Main card with tabs -->
       <div class="loyalty-card loyalty-card--full loyalty-fade-in" style="max-width:1100px;margin:0 auto;">
 
-        <!-- Tab navigation -->
         <nav class="loyalty-admin-tabs" role="tablist" aria-label="Sezioni admin">
           <button class="loyalty-admin-tab active" role="tab" data-tab="customers"
             aria-selected="true" aria-controls="tabCustomers" id="tabBtnCustomers">
             👥 Clienti
           </button>
-          <button class="loyalty-admin-tab" role="tab" data-tab="redemptions"
-            aria-selected="false" aria-controls="tabRedemptions" id="tabBtnRedemptions">
-            📋 Utilizzi
+          <button class="loyalty-admin-tab" role="tab" data-tab="partners"
+            aria-selected="false" aria-controls="tabPartners" id="tabBtnPartners">
+            🏪 Partner
           </button>
           <button class="loyalty-admin-tab" role="tab" data-tab="offers"
             aria-selected="false" aria-controls="tabOffers" id="tabBtnOffers">
             🎁 Offerte
+          </button>
+          <button class="loyalty-admin-tab" role="tab" data-tab="redemptions"
+            aria-selected="false" aria-controls="tabRedemptions" id="tabBtnRedemptions">
+            📋 Utilizzi
           </button>
         </nav>
 
@@ -132,11 +152,144 @@
                 </tr>
               </thead>
               <tbody id="customersTableBody">
+                <tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text-secondary);">Caricamento...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab: Partners -->
+        <div id="tabPartners" role="tabpanel" aria-labelledby="tabBtnPartners" style="display:none;">
+
+          <!-- Create partner form -->
+          <div style="margin-bottom:20px;padding:20px;background:var(--bg-soft,#FAFAF8);border-radius:10px;border:1px solid var(--border-light,#E4E4E0);">
+            <p class="loyalty-section-title" style="margin-bottom:16px;">Crea nuovo partner</p>
+
+            <div class="loyalty-error" id="partnerError" role="alert" aria-live="polite">
+              <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
+              <span id="partnerErrorText"></span>
+            </div>
+            <div class="loyalty-success" id="partnerSuccess" role="status" aria-live="polite">
+              <span aria-hidden="true">✓</span>
+              <span id="partnerSuccessText"></span>
+            </div>
+
+            <form id="createPartnerForm" novalidate>
+              <div class="loyalty-add-form">
+                <div class="loyalty-field">
+                  <label for="partnerId">ID Partner <span style="color:#C0392B;">*</span></label>
+                  <input type="text" id="newPartnerId" name="id"
+                    placeholder="es. bar-centrale"
+                    autocomplete="off" required
+                    aria-required="true"
+                    title="Solo lettere minuscole, numeri e trattini">
+                </div>
+                <div class="loyalty-field">
+                  <label for="partnerName">Nome azienda <span style="color:#C0392B;">*</span></label>
+                  <input type="text" id="partnerName" name="name"
+                    placeholder="es. Bar Centrale Messina" required aria-required="true">
+                </div>
+                <div class="loyalty-field">
+                  <label for="partnerCategory">Categoria</label>
+                  <input type="text" id="partnerCategory" name="category"
+                    placeholder="es. Ristorazione">
+                </div>
+                <div class="loyalty-field">
+                  <label for="partnerAddress">Indirizzo</label>
+                  <input type="text" id="partnerAddress" name="address"
+                    placeholder="es. Via Garibaldi 12, Messina">
+                </div>
+                <div class="loyalty-field loyalty-field--full">
+                  <label for="partnerTempPassword">Password temporanea <span style="color:#C0392B;">*</span></label>
+                  <input type="password" id="partnerTempPassword" name="tempPassword"
+                    placeholder="Minimo 8 caratteri — il partner la cambierà al primo accesso"
+                    minlength="8" required aria-required="true">
+                </div>
+              </div>
+              <button type="submit" class="loyalty-btn-submit" id="createPartnerBtn"
+                style="max-width:220px;margin-top:12px;">
+                <span class="btn-label">Crea partner</span>
+                <span class="btn-spinner" aria-hidden="true"></span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Partners table -->
+          <div class="loyalty-table-wrap">
+            <table class="loyalty-table" aria-label="Lista partner">
+              <thead>
                 <tr>
-                  <td colspan="6" style="text-align:center;padding:24px;color:var(--text-secondary);">
-                    Caricamento...
-                  </td>
+                  <th scope="col">ID</th>
+                  <th scope="col">Nome</th>
+                  <th scope="col">Categoria</th>
+                  <th scope="col">Indirizzo</th>
+                  <th scope="col">Stato</th>
+                  <th scope="col">Pass. temp.</th>
+                  <th scope="col">Azioni</th>
                 </tr>
+              </thead>
+              <tbody id="partnersTableBody">
+                <tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text-secondary);">Caricamento...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab: Offers -->
+        <div id="tabOffers" role="tabpanel" aria-labelledby="tabBtnOffers" style="display:none;">
+
+          <div style="margin-bottom:20px;padding:20px;background:var(--bg-soft,#FAFAF8);border-radius:10px;border:1px solid var(--border-light,#E4E4E0);">
+            <p class="loyalty-section-title" style="margin-bottom:16px;">Aggiungi nuova offerta</p>
+
+            <div class="loyalty-error" id="offerError" role="alert" aria-live="polite">
+              <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
+              <span id="offerErrorText"></span>
+            </div>
+            <div class="loyalty-success" id="offerSuccess" role="status" aria-live="polite">
+              <span aria-hidden="true">✓</span>
+              <span>Offerta creata con successo!</span>
+            </div>
+
+            <form id="addOfferForm" novalidate>
+              <div class="loyalty-add-form">
+                <div class="loyalty-field">
+                  <label for="offerTitle">Titolo offerta <span style="color:#C0392B;">*</span></label>
+                  <input type="text" id="offerTitle" name="title"
+                    placeholder="es. 20% di sconto" required aria-required="true">
+                </div>
+                <div class="loyalty-field">
+                  <label for="offerPartner">ID Partner (vuoto = globale)</label>
+                  <input type="text" id="offerPartner" name="partnerId"
+                    placeholder="es. bar-centrale">
+                </div>
+                <div class="loyalty-field loyalty-field--full">
+                  <label for="offerDescription">Descrizione</label>
+                  <input type="text" id="offerDescription" name="description"
+                    placeholder="Dettagli dell'offerta mostrati ai clienti">
+                </div>
+              </div>
+              <button type="submit" class="loyalty-btn-submit" id="addOfferBtn"
+                style="max-width:200px;margin-top:12px;">
+                <span class="btn-label">Aggiungi offerta</span>
+                <span class="btn-spinner" aria-hidden="true"></span>
+              </button>
+            </form>
+          </div>
+
+          <div class="loyalty-table-wrap">
+            <table class="loyalty-table" aria-label="Lista offerte">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Titolo</th>
+                  <th scope="col">Descrizione</th>
+                  <th scope="col">Partner</th>
+                  <th scope="col">Stato</th>
+                  <th scope="col">Creata</th>
+                </tr>
+              </thead>
+              <tbody id="offersTableBody">
+                <tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text-secondary);">Caricamento...</td></tr>
               </tbody>
             </table>
           </div>
@@ -156,80 +309,10 @@
                 </tr>
               </thead>
               <tbody id="redemptionsTableBody">
-                <tr>
-                  <td colspan="5" style="text-align:center;padding:24px;color:var(--text-secondary);">
-                    Caricamento...
-                  </td>
-                </tr>
+                <tr><td colspan="5" style="text-align:center;padding:28px;color:var(--text-secondary);">Caricamento...</td></tr>
               </tbody>
             </table>
           </div>
-        </div>
-
-        <!-- Tab: Offers -->
-        <div id="tabOffers" role="tabpanel" aria-labelledby="tabBtnOffers" style="display:none;">
-
-          <!-- Add offer form -->
-          <div style="margin-bottom:20px;padding:20px;background:var(--bg-soft);border-radius:10px;border:1px solid var(--border-light);">
-            <p class="loyalty-section-title" style="margin-bottom:16px;">Aggiungi nuova offerta</p>
-
-            <div class="loyalty-error" id="offerError" role="alert" aria-live="polite">
-              <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
-              <span id="offerErrorText"></span>
-            </div>
-
-            <div class="loyalty-success" id="offerSuccess" role="status" aria-live="polite">
-              <span aria-hidden="true">✓</span>
-              <span>Offerta creata con successo!</span>
-            </div>
-
-            <form id="addOfferForm" novalidate>
-              <div class="loyalty-add-form">
-                <div class="loyalty-field">
-                  <label for="offerTitle">Titolo offerta</label>
-                  <input type="text" id="offerTitle" name="title" placeholder="es. 20% di sconto" required>
-                </div>
-                <div class="loyalty-field">
-                  <label for="offerPartner">ID Partner (opzionale)</label>
-                  <input type="text" id="offerPartner" name="partnerId" placeholder="es. partner-001">
-                </div>
-                <div class="loyalty-field loyalty-field--full">
-                  <label for="offerDescription">Descrizione</label>
-                  <input type="text" id="offerDescription" name="description"
-                    placeholder="Dettagli dell'offerta per i clienti">
-                </div>
-              </div>
-              <button type="submit" class="loyalty-btn-submit" id="addOfferBtn"
-                style="max-width:200px;margin-top:12px;">
-                <span class="btn-label">Aggiungi offerta</span>
-                <span class="btn-spinner" aria-hidden="true"></span>
-              </button>
-            </form>
-          </div>
-
-          <!-- Offers table -->
-          <div class="loyalty-table-wrap">
-            <table class="loyalty-table" aria-label="Lista offerte">
-              <thead>
-                <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col">Titolo</th>
-                  <th scope="col">Descrizione</th>
-                  <th scope="col">Partner</th>
-                  <th scope="col">Stato</th>
-                  <th scope="col">Creata</th>
-                </tr>
-              </thead>
-              <tbody id="offersTableBody">
-                <tr>
-                  <td colspan="6" style="text-align:center;padding:24px;color:var(--text-secondary);">
-                    Caricamento...
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
         </div>
 
       </div>
