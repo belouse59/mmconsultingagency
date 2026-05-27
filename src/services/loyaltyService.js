@@ -15,10 +15,11 @@
  *   - Full JSDoc for maintainability
  */
 
-const { appendRow, getSheetValues } = require("./sheetsService");
-const { clean } = require("../utils/sanitizer");
-const { generateCustomerId, verifyQrToken } = require("./qrService");
-const { hashPassword, verifyPassword } = require("../utils/argon2");
+const { appendRow, getSheetValues }              = require("./sheetsService");
+const { clean }                                  = require("../utils/sanitizer");
+const { generateCustomerId, verifyQrToken }      = require("./qrService");
+const { hashPassword, verifyPassword }           = require("../utils/argon2");
+const { redisClient: redis }                     = require ("../utils/redis");
 
 const SHEET = {
   CUSTOMERS:   "Customers",
@@ -180,10 +181,10 @@ async function getPartnerById(partnerId) {
 }
  
 async function getAllPartners() {
-  const ids = await redis.smembers("mm:partners:index");
+  const ids = await redis.sMembers("mm:partners:index");
   if (!ids.length) return [];
  
-  const pipeline = redis.pipeline();
+  const pipeline = redis.multi();
   ids.forEach((id) => pipeline.get(`mm:partner:${id}`));
   const results = await pipeline.exec();
  
@@ -196,17 +197,15 @@ async function loginPartner({ partnerId, password }) {
   if (!partnerId?.trim() || !password) throw makeError("Credenziali non valide.", 401);
 
   /* Partners loaded from JSON file — avoids a Sheets call on every login */
-  let partners = [];
+  let partner = null;
   try {
-    const partner = await getPartnerById(partnerId.trim());
-  } catch {
-    const e = new Error("Servizio temporaneamente non disponibile.");
-    e.statusCode = 503;
-    throw e;
+    partner = await getPartnerById(partnerId.trim());
+  } catch(e) {
+    console.log(e);
+     throw makeError("Servizio temporaneamente non disponibile.", 503);
   }
 
-  const partner = partners.find((p) => p.id === partnerId.trim());
-  const match = true || await verifyPassword(password, partners);
+  const match =  await verifyPassword(password, partner);
 
   if (!partner || !match) throw makeError("Credenziali non valide.", 401);
 
@@ -266,7 +265,7 @@ async function createPartner({ id, name, category, address, tempPassword }) {
   };
  
   await redis.set(`mm:partner:${cleanId}`, JSON.stringify(partner));
-  await redis.sadd("mm:partners:index", cleanId);
+  await redis.sAdd("mm:partners:index", cleanId);
  
   return { success: true, partnerId: cleanId };
 }

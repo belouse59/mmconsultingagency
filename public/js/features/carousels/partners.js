@@ -25,7 +25,7 @@ export async function initPartners() {
   /* ── Marquee (primary) ── */
   if (track.id === "marqueeTrack") {
     /* Two copies so the CSS animation loops without a visible gap */
-    [..._buildImgs(images), ..._buildImgs(images)].forEach((img) =>
+    [..._buildImgs(images), ..._buildImgs(images), ..._buildImgs(images)].forEach((img) =>
       track.appendChild(img)
     );
     return;

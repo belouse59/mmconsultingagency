@@ -8,10 +8,34 @@
   <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0A1628">
-  <!-- iOS PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Convenzioni">
+
+  <!--
+    ZERO-SKELETON AUTH GUARD
+    Body is completely empty until this resolves.
+    If unauthenticated, window.location.replace fires before
+    any CSS, fonts, or DOM nodes are painted.
+    document.documentElement.style.visibility keeps the page
+    invisible during the async check, then reveals it only
+    after auth is confirmed — eliminating any flash of content.
+  -->
+  <script>
+    document.documentElement.style.visibility = "hidden";
+    fetch("/api/loyalty/customer/session", { credentials: "same-origin" })
+      .then(function (r) {
+        if (!r.ok) {
+          window.location.replace("/loyalty/customer/login.html");
+        } else {
+          document.documentElement.style.visibility = "";
+        }
+      })
+      .catch(function () {
+        window.location.replace("/loyalty/customer/login.html");
+      });
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -21,7 +45,6 @@
 
 <div class="loyalty-shell">
 
-  <!-- Top bar -->
   <header class="loyalty-topbar" role="banner">
     <a href="/" class="loyalty-topbar-logo" aria-label="Torna alla homepage M&M Consulting">
       <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
@@ -29,60 +52,53 @@
     </a>
     <div class="loyalty-topbar-actions">
       <span class="loyalty-topbar-user" id="topbarUserName" aria-live="polite"></span>
-      <button class="loyalty-topbar-logout" id="logoutBtn" aria-label="Esci dall'account">
-        Esci
-      </button>
+      <button class="loyalty-topbar-logout" id="logoutBtn" aria-label="Esci dall'account">Esci</button>
     </div>
   </header>
 
   <main class="loyalty-main" id="main-content">
-
-    <!-- Desktop: side-by-side layout; mobile: stacked -->
-    <div class="loyalty-dashboard-grid" style="width:100%;">
+    <div class="loyalty-dashboard-grid">
 
       <!-- QR Card -->
       <div class="loyalty-card loyalty-fade-in">
 
         <div class="loyalty-dashboard-header">
           <p class="loyalty-section-title">Il tuo QR personale</p>
-          <h1 class="loyalty-welcome" id="welcomeName">
-            <!-- Skeleton -->
-            <span class="loyalty-skeleton loyalty-skeleton-line" style="width:160px;display:inline-block;"></span>
-          </h1>
+          <h1 class="loyalty-welcome" id="welcomeName">&nbsp;</h1>
           <p class="loyalty-welcome-sub">
-            Mostra questo QR ai partner per usufruire degli sconti riservati.
+            Mostra questo QR ai partner convenzionati per usufruire degli sconti riservati.
           </p>
         </div>
 
         <!-- QR display -->
         <div class="loyalty-qr-container" role="img" aria-label="Il tuo QR code personale">
-
           <span class="loyalty-qr-label">QR Code Personale</span>
 
-          <div class="loyalty-qr-wrapper" id="qrWrapper">
-            <!-- Skeleton shown while loading -->
+          <div class="loyalty-qr-wrapper">
             <div class="loyalty-qr-skeleton" id="qrSkeleton" aria-hidden="true"></div>
-            <!-- QR image injected here -->
-            <img id="qrImage" src="" alt="Il tuo QR code personale — mostralo al partner per lo sconto" style="display:none;" width="260" height="260">
-            <!-- Error state -->
+            <img
+              id="qrImage"
+              src=""
+              alt="QR code personale — mostralo al partner per applicare lo sconto"
+              style="display:none;"
+              width="260"
+              height="260">
             <div class="loyalty-qr-error" id="qrError" style="display:none;" role="alert">
               <span class="loyalty-qr-error-icon" aria-hidden="true">⚠️</span>
-              <p class="loyalty-qr-error-text">QR non disponibile.</p>
-              <button class="loyalty-qr-refresh-btn" id="qrRetryBtn">Riprova</button>
+              <p class="loyalty-qr-error-text">QR non disponibile. Controlla la connessione.</p>
+              <button class="loyalty-qr-refresh-btn" id="qrRetryBtn" type="button">Riprova</button>
             </div>
           </div>
 
           <!-- Countdown timer -->
-          <div class="loyalty-qr-timer" id="qrTimer" aria-live="polite" aria-label="Tempo rimanente QR">
+          <div class="loyalty-qr-timer" id="qrTimer" aria-live="polite" aria-label="Tempo di validità QR rimanente">
             <div class="loyalty-qr-timer-bar" aria-hidden="true">
               <div class="loyalty-qr-timer-fill" id="timerFill"></div>
             </div>
             <span class="loyalty-qr-timer-text" id="timerText">--:--</span>
           </div>
-
         </div>
 
-        <!-- Trust note -->
         <p style="text-align:center;font-size:0.75rem;color:var(--text-secondary,#6B7A8D);margin-top:12px;line-height:1.5;">
           🔐 Il QR si rinnova automaticamente ogni 5 minuti per la tua sicurezza.
         </p>
@@ -91,10 +107,8 @@
 
       <!-- Offers Card -->
       <div class="loyalty-card loyalty-fade-in" style="animation-delay:0.1s;">
-
         <p class="loyalty-section-title">Offerte disponibili</p>
 
-        <!-- Loading skeleton -->
         <div id="offersLoading">
           <div class="loyalty-offer-card">
             <div class="loyalty-offer-icon loyalty-skeleton" style="border-radius:50%;"></div>
@@ -112,22 +126,17 @@
           </div>
         </div>
 
-        <!-- Offers list injected here -->
         <div class="loyalty-offers-list" id="offersList" style="display:none;"></div>
 
-        <!-- Empty state -->
         <div class="loyalty-empty" id="offersEmpty" style="display:none;">
           <span class="loyalty-empty-icon" aria-hidden="true">🏪</span>
           <p class="loyalty-empty-text">
-            Nessuna offerta disponibile al momento.<br>
-            Torna presto per le novità!
+            Nessuna offerta disponibile al momento.<br>Torna presto per le novità!
           </p>
         </div>
-
       </div>
 
     </div>
-
   </main>
 
 </div>

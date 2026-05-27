@@ -140,13 +140,13 @@ async function getCustomerQr(req, res) {
   try {
     const { id, full_name } = req.session.loyaltyCustomer;
 
-    const { qrImage, ttl } = await generateQrImage(customerId);
+    const { qrImage, ttl } = await generateQrImage(id);
 
     res.json({
       success: true,
       qrImage,
       ttl,
-      fullName,
+      full_name,
     });
   } catch (err) {
     handleError(res, err);
@@ -183,11 +183,11 @@ async function loginPartner(req, res) {
       mustChangePassword: result.mustChangePassword,
     },
   });
-
+  const {success, ...safe} = result;
   res.json({
-    success: true,
+    success,
     message: "Accesso effettuato.",
-    name: result.name,
+    partner: safe
   });
 }
 

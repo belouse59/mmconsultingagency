@@ -2,15 +2,11 @@
  * js/features/loyalty/customer/auth.js
  * Customer login page logic.
  *
- * Responsibilities:
- *   - Validate form inputs client-side before network call
- *   - POST credentials to /api/loyalty/customer/login
- *   - Auth state stored server-side in session (httpOnly cookie)
- *   - NO localStorage usage
- *   - Redirect to dashboard on success
- *   - Show error message on failure
- *   - Handle double-submit with button loading state
- *   - Respect ?next= param for post-login redirect
+ * - No localStorage — session via httpOnly cookie only
+ * - X-Requested-With header on all state-mutating requests (CSRF)
+ * - Redirect respects ?next= param with origin safety check
+ * - Password field cleared on failed attempt
+ * - Error cleared on any input change
  */
 
 /* ── DOM refs ── */
@@ -35,32 +31,15 @@ function hideError() {
   errorBox.classList.remove("visible");
 }
 
-function setLoading(loading) {
-  submitBtn.disabled = loading;
-  submitBtn.classList.toggle("loading", loading);
+function setLoading(on) {
+  submitBtn.disabled = on;
+  submitBtn.classList.toggle("loading", on);
 }
 
-function getRedirectTarget() {
-  const params = new URLSearchParams(window.location.search);
-  const next   = params.get("next");
-  /* Safety: only allow relative paths on the same origin */
-  if (next && next.startsWith("/") && !next.startsWith("//")) return next;
-  return "/loyalty/customer/dashboard.html";
-}
-
-/* ── Session check on load ──
-   If already authenticated, skip straight to dashboard */
-async function checkExistingSession() {
-  try {
-    const res = await fetch("/api/loyalty/customer/session", {
-      credentials: "same-origin",
-    });
-    if (res.ok) {
-      window.location.replace(getRedirectTarget());
-    }
-  } catch {
-    /* No session — stay on login page */
-  }
+function safeRedirect(fallback) {
+  const p    = new URLSearchParams(window.location.search).get("next");
+  const dest = p && p.startsWith("/") && !p.startsWith("//") ? p : fallback;
+  window.location.replace(dest);
 }
 
 /* ── Form submit ── */
@@ -71,17 +50,8 @@ form.addEventListener("submit", async (e) => {
   const identifier = identifierEl.value.trim();
   const password   = passwordEl.value;
 
-  /* Client-side validation */
-  if (!identifier) {
-    showError("Inserisci la tua email o numero di telefono.");
-    identifierEl.focus();
-    return;
-  }
-  if (!password) {
-    showError("Inserisci la password.");
-    passwordEl.focus();
-    return;
-  }
+  if (!identifier) { showError("Inserisci la tua email o numero di telefono."); identifierEl.focus(); return; }
+  if (!password)   { showError("Inserisci la password."); passwordEl.focus(); return; }
 
   setLoading(true);
 
@@ -89,20 +59,19 @@ form.addEventListener("submit", async (e) => {
     const res  = await fetch("/api/loyalty/customer/login", {
       method:      "POST",
       credentials: "same-origin",
-      headers:     { "Content-Type": "application/json" },
+      headers:     { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
       body:        JSON.stringify({ identifier, password }),
     });
 
     const data = await res.json();
 
     if (res.ok && data.success) {
-      /* Session cookie set by server — redirect immediately */
-      window.location.replace(getRedirectTarget());
+      safeRedirect("/loyalty/customer/dashboard.html");
     } else {
       showError(data.message || "Credenziali non valide. Riprova.");
-      setLoading(false);
       passwordEl.value = "";
       passwordEl.focus();
+      setLoading(false);
     }
   } catch {
     showError("Errore di connessione. Controlla la rete e riprova.");
@@ -111,14 +80,5 @@ form.addEventListener("submit", async (e) => {
 });
 
 /* ── Clear error on input ── */
-[identifierEl, passwordEl].forEach((el) => {
-  el.addEventListener("input", hideError);
-});
-
-/* -------------------------
-   LOGOUT
-------------------------- */
+[identifierEl, passwordEl].forEach((el) => el.addEventListener("input", hideError));
 logout($logout, "/");
-
-/* ── Boot ── */
-checkExistingSession();

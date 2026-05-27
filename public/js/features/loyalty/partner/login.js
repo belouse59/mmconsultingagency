@@ -28,88 +28,65 @@ function showError(msg) {
   errorBox.classList.add("visible");
   errorBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
-
+ 
 function hideError() {
   errorBox.classList.remove("visible");
 }
-
-function setLoading(loading) {
-  submitBtn.disabled = loading;
-  submitBtn.classList.toggle("loading", loading);
+ 
+function setLoading(on) {
+  submitBtn.disabled = on;
+  submitBtn.classList.toggle("loading", on);
 }
-
-function getRedirectTarget() {
-  const params = new URLSearchParams(window.location.search);
-  const next   = params.get("next");
-  if (next && next.startsWith("/") && !next.startsWith("//")) return next;
-  return "/loyalty/partner/scan.html";
+ 
+function safeRedirect(fallback) {
+  const p    = new URLSearchParams(window.location.search).get("next");
+  const dest = p && p.startsWith("/") && !p.startsWith("//") ? p : fallback;
+  window.location.replace(dest);
 }
-
-/* ── Session check on load ── */
-async function checkExistingSession() {
-  try {
-    const res = await fetch("/api/loyalty/partner/session", {
-      credentials: "same-origin",
-    });
-    if (res.ok) {
-      window.location.replace(getRedirectTarget());
-    }
-  } catch {
-    /* No session — stay on login page */
-  }
-}
-
+ 
 /* ── Form submit ── */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   hideError();
-
+ 
   const partnerId = partnerIdEl.value.trim();
   const password  = passwordEl.value;
-
-  if (!partnerId) {
-    showError("Inserisci il tuo ID Partner.");
-    partnerIdEl.focus();
-    return;
-  }
-
-  if (!password) {
-    showError("Inserisci la password.");
-    passwordEl.focus();
-    return;
-  }
-
+ 
+  if (!partnerId) { showError("Inserisci il tuo ID Partner."); partnerIdEl.focus(); return; }
+  if (!password)  { showError("Inserisci la password."); passwordEl.focus(); return; }
+ 
   setLoading(true);
-
+ 
   try {
     const res  = await fetch("/api/loyalty/partner/login", {
       method:      "POST",
       credentials: "same-origin",
-      headers:     { "Content-Type": "application/json" },
+      headers:     { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
       body:        JSON.stringify({ partnerId, password }),
     });
-
+ 
     const data = await res.json();
-
+ 
     if (res.ok && data.success) {
-      window.location.replace(getRedirectTarget());
+      /* First-login flow — must set a new password */
+      if (data.partner.mustChangePassword) {
+        window.location.replace("/loyalty/partner/set-password.html");
+      } else {
+        safeRedirect("/loyalty/partner/scan.html");
+      }
     } else {
       showError(data.message || "Credenziali non valide. Riprova.");
-      setLoading(false);
       passwordEl.value = "";
       passwordEl.focus();
+      setLoading(false);
     }
   } catch {
     showError("Errore di connessione. Controlla la rete e riprova.");
     setLoading(false);
   }
 });
-
+ 
 /* ── Clear error on input ── */
-[partnerIdEl, passwordEl].forEach((el) => {
-  el.addEventListener("input", hideError);
-});
-logout($logout, "/");
+[partnerIdEl, passwordEl].forEach((el) => el.addEventListener("input", hideError));
 
-/* ── Boot ── */
-checkExistingSession();
+logout($logout, "/");

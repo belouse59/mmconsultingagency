@@ -1,20 +1,25 @@
 /**
  * js/features/loyalty/admin/admin.js
- * Admin panel — login + dashboard with tabs for customers, redemptions, offers.
+ * Admin panel — login + full dashboard.
  *
- * Key improvements over original:
- *   - Session verified via httpOnly cookie — no localStorage
- *   - Login panel shown/hidden based on server session check
- *   - All data fetched fresh on tab activation (no stale state)
- *   - Stats loaded on dashboard boot
- *   - All user-supplied content escaped before DOM injection (XSS prevention)
- *   - Offer creation with client validation + server error display
- *   - Accessible tab system (aria-selected, aria-controls)
- *   - Italian strings throughout
+ * Features:
+ *   - Inline session check (HTML guard sets window.__adminAuthenticated)
+ *   - Login form shown only if unauthenticated
+ *   - Dashboard shown only if authenticated
+ *   - Tab system: Customers / Partners / Offers / Redemptions
+ *   - Partner creation with temp password + mustChangePassword flag
+ *   - Partner active/suspend toggle
+ *   - Offer creation
+ *   - All tables with safe HTML escaping (XSS prevention)
+ *   - X-Requested-With on all state-mutating requests (CSRF)
+ *   - All strings in Italian
  */
 
-/* ── DOM refs — login panel ── */
+/* ─────────────────────────────────────────────────────────────
+   DOM REFS — login
+───────────────────────────────────────────────────────────── */
 import { $, $$ } from "../../../core/dom.js";
+
 const loginPanel      = $("#loginPanel");
 const adminLoginForm  = $("#adminLoginForm");
 const adminEmailEl    = $("#adminEmail");
@@ -23,29 +28,58 @@ const loginSubmitBtn  = $("#loginSubmitBtn");
 const loginError      = $("#loginError");
 const loginErrorText  = $("#loginErrorText");
 
-/* ── DOM refs — dashboard ── */
-const adminDashboard    = $("#adminDashboard");
+/* ─────────────────────────────────────────────────────────────
+   DOM REFS — dashboard
+───────────────────────────────────────────────────────────── */
+const adminDashboard     = $("#adminDashboard");
 const adminTopbarActions = $("#adminTopbarActions");
-const logoutBtn         = $("#logoutBtn");
+const logoutBtn          = $("#logoutBtn");
 
-/* ── DOM refs — stats ── */
+/* ─────────────────────────────────────────────────────────────
+   DOM REFS — stats
+───────────────────────────────────────────────────────────── */
 const statCustomers   = $("#statCustomers");
 const statRedemptions = $("#statRedemptions");
 const statOffers      = $("#statOffers");
 const statPartners    = $("#statPartners");
 
-/* ── DOM refs — tabs ── */
-const tabBtns         = $$(".loyalty-admin-tab");
-const tabCustomers    = $("#tabCustomers");
-const tabRedemptions  = $("#tabRedemptions");
-const tabOffers       = $("#tabOffers");
+/* ─────────────────────────────────────────────────────────────
+   DOM REFS — tabs
+───────────────────────────────────────────────────────────── */
+const tabBtns = $$(".loyalty-admin-tab");
+const tabPanels = {
+  customers:   $("#tabCustomers"),
+  partners:    $("#tabPartners"),
+  offers:      $("#tabOffers"),
+  redemptions: $("#tabRedemptions"),
+};
 
-/* ── DOM refs — tables ── */
+/* ─────────────────────────────────────────────────────────────
+   DOM REFS — tables
+───────────────────────────────────────────────────────────── */
 const customersBody   = $("#customersTableBody");
-const redemptionsBody = $("#redemptionsTableBody");
+const partnersBody    = $("#partnersTableBody");
 const offersBody      = $("#offersTableBody");
+const redemptionsBody = $("#redemptionsTableBody");
 
-/* ── DOM refs — add offer form ── */
+/* ─────────────────────────────────────────────────────────────
+   DOM REFS — partner form
+───────────────────────────────────────────────────────────── */
+const createPartnerForm    = $("#createPartnerForm");
+const newPartnerIdEl       = $("#newPartnerId");
+const partnerNameEl        = $("#partnerName");
+const partnerCategoryEl    = $("#partnerCategory");
+const partnerAddressEl     = $("#partnerAddress");
+const partnerTempPassEl    = $("#partnerTempPassword");
+const createPartnerBtn     = $("#createPartnerBtn");
+const partnerError         = $("#partnerError");
+const partnerErrorText     = $("#partnerErrorText");
+const partnerSuccess       = $("#partnerSuccess");
+const partnerSuccessText   = $("#partnerSuccessText");
+
+/* ─────────────────────────────────────────────────────────────
+   DOM REFS — offer form
+───────────────────────────────────────────────────────────── */
 const addOfferForm    = $("#addOfferForm");
 const offerTitleEl    = $("#offerTitle");
 const offerDescEl     = $("#offerDescription");
@@ -55,7 +89,9 @@ const offerError      = $("#offerError");
 const offerErrorText  = $("#offerErrorText");
 const offerSuccess    = $("#offerSuccess");
 
-/* ── State ── */
+/* ─────────────────────────────────────────────────────────────
+   STATE
+───────────────────────────────────────────────────────────── */
 let _activeTab = "customers";
 
 /* ─────────────────────────────────────────────────────────────
@@ -74,57 +110,59 @@ function _fmtDate(iso) {
   if (!iso) return "—";
   try {
     return new Date(iso).toLocaleDateString("it-IT", {
-      day:   "2-digit",
-      month: "2-digit",
-      year:  "numeric",
+      day: "2-digit", month: "2-digit", year: "numeric",
     });
-  } catch {
-    return iso;
-  }
+  } catch { return iso; }
 }
 
 function _badge(active) {
   return active
     ? `<span class="loyalty-badge loyalty-badge--active">Attivo</span>`
-    : `<span class="loyalty-badge loyalty-badge--inactive">Inattivo</span>`;
+    : `<span class="loyalty-badge loyalty-badge--inactive">Sospeso</span>`;
 }
 
 function _emptyRow(colspan, msg = "Nessun dato disponibile.") {
   return `<tr><td colspan="${colspan}" style="text-align:center;padding:28px;color:var(--text-secondary);">${_esc(msg)}</td></tr>`;
 }
 
-function _setLoading(btn, loading) {
-  btn.disabled = loading;
-  btn.classList.toggle("loading", loading);
+function _setLoading(btn, on) {
+  if (!btn) return;
+  btn.disabled = on;
+  btn.classList.toggle("loading", on);
+}
+
+function _showFeedback(errEl, errTextEl, successEl, successTextEl, isSuccess, msg) {
+  if (isSuccess) {
+    if (errEl) errEl.classList.remove("visible");
+    if (successEl) {
+      if (successTextEl) successTextEl.textContent = msg;
+      successEl.classList.add("visible");
+    }
+  } else {
+    if (successEl) successEl.classList.remove("visible");
+    if (errEl) {
+      if (errTextEl) errTextEl.textContent = msg;
+      errEl.classList.add("visible");
+    }
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
    AUTH
 ───────────────────────────────────────────────────────────── */
-async function checkSession() {
-  try {
-    const res = await fetch("/api/loyalty/admin/session", {
-      credentials: "same-origin",
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
 function showLoginPanel() {
-  loginPanel.style.display    = "block";
-  adminDashboard.style.display = "none";
+  loginPanel.style.display         = "block";
+  adminDashboard.style.display     = "none";
   adminTopbarActions.style.display = "none";
 }
 
 function showDashboard() {
-  loginPanel.style.display     = "none";
-  adminDashboard.style.display = "block";
+  loginPanel.style.display         = "none";
+  adminDashboard.style.display     = "block";
   adminTopbarActions.style.display = "flex";
 }
 
-/* ── Login form submit ── */
+/* ── Admin login form ── */
 adminLoginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   loginError.classList.remove("visible");
@@ -144,7 +182,7 @@ adminLoginForm.addEventListener("submit", async (e) => {
     const res  = await fetch("/api/loyalty/admin/login", {
       method:      "POST",
       credentials: "same-origin",
-      headers:     { "Content-Type": "application/json" },
+      headers:     { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
       body:        JSON.stringify({ email, password }),
     });
 
@@ -152,7 +190,7 @@ adminLoginForm.addEventListener("submit", async (e) => {
 
     if (res.ok && data.success) {
       showDashboard();
-      await loadDashboardData();
+      await _loadDashboard();
     } else {
       loginErrorText.textContent = data.message || "Credenziali non valide.";
       loginError.classList.add("visible");
@@ -173,137 +211,140 @@ logoutBtn.addEventListener("click", async () => {
     await fetch("/api/loyalty/admin/logout", {
       method:      "POST",
       credentials: "same-origin",
+      headers:     { "X-Requested-With": "XMLHttpRequest" },
     });
-  } catch { /* Best-effort */ }
+  } catch { /* best-effort */ }
   showLoginPanel();
+  _setLoading(loginSubmitBtn, false);
 });
 
 /* ─────────────────────────────────────────────────────────────
    STATS
 ───────────────────────────────────────────────────────────── */
-async function loadStats() {
+async function _loadStats() {
   try {
-    const [custRes, redeemRes, offerRes] = await Promise.all([
+    const [cRes, rRes, oRes, pRes] = await Promise.all([
       fetch("/api/loyalty/admin/customers",   { credentials: "same-origin" }),
       fetch("/api/loyalty/admin/redemptions", { credentials: "same-origin" }),
       fetch("/api/loyalty/admin/offers",      { credentials: "same-origin" }),
+      fetch("/api/loyalty/admin/partners",    { credentials: "same-origin" }),
     ]);
 
-    const [custData, redeemData, offerData] = await Promise.all([
-      custRes.json(),
-      redeemRes.json(),
-      offerRes.json(),
+    const [cData, rData, oData, pData] = await Promise.all([
+      cRes.json(), rRes.json(), oRes.json(), pRes.json(),
     ]);
 
-    const customers    = custData.data   || [];
-    const redemptions  = redeemData.data || [];
-    const offers       = offerData.data  || [];
-
-    statCustomers.textContent   = customers.length;
-    statRedemptions.textContent = redemptions.length;
-    statOffers.textContent      = offers.filter((o) => o.active).length;
-
-    /* Partners: count unique partnerId values in redemptions */
-    const uniquePartners = new Set(redemptions.map((r) => r.partnerId).filter(Boolean));
-    statPartners.textContent = uniquePartners.size;
+    if (statCustomers)   statCustomers.textContent   = (cData.data || []).length;
+    if (statRedemptions) statRedemptions.textContent = (rData.data || []).length;
+    if (statOffers)      statOffers.textContent      = (oData.data || []).filter((o) => o.active).length;
+    if (statPartners)    statPartners.textContent    = (pData.data || []).filter((p) => p.active).length;
   } catch {
-    statCustomers.textContent   = "—";
-    statRedemptions.textContent = "—";
-    statOffers.textContent      = "—";
-    statPartners.textContent    = "—";
+    [statCustomers, statRedemptions, statOffers, statPartners]
+      .forEach((el) => { if (el) el.textContent = "—"; });
   }
 }
 
 /* ─────────────────────────────────────────────────────────────
    DATA LOADERS
 ───────────────────────────────────────────────────────────── */
-async function loadCustomers() {
-  customersBody.innerHTML = _emptyRow(6, "Caricamento...");
-
+async function _loadCustomers() {
+  if (customersBody) customersBody.innerHTML = _emptyRow(6, "Caricamento...");
   try {
     const res  = await fetch("/api/loyalty/admin/customers", { credentials: "same-origin" });
     if (res.status === 401) { showLoginPanel(); return; }
+    const data = await res.json();
+    const rows = data.data || [];
 
-    const data      = await res.json();
-    const customers = data.data || [];
-
-    if (!customers.length) {
+    if (!rows.length) {
       customersBody.innerHTML = _emptyRow(6, "Nessun cliente registrato.");
       return;
     }
 
-    customersBody.innerHTML = customers.map((c) => `
+    customersBody.innerHTML = rows.map((c) => `
       <tr>
-        <td style="font-family:var(--font-display);font-size:0.72rem;color:var(--text-secondary);">
-          ${_esc(c.id)}
-        </td>
+        <td style="font-family:var(--font-display,monospace);font-size:0.7rem;color:var(--text-secondary);">${_esc(c.id)}</td>
         <td style="font-weight:600;">${_esc(c.full_name)}</td>
         <td>${_esc(c.identifier)}</td>
-        <td>
-          <span class="loyalty-badge loyalty-badge--pending">
-            ${_esc(c.identifierType || "—")}
-          </span>
-        </td>
+        <td><span class="loyalty-badge loyalty-badge--pending">${_esc(c.identifierType || "—")}</span></td>
         <td>${_badge(c.active)}</td>
         <td style="color:var(--text-secondary);font-size:0.8rem;">${_fmtDate(c.createdAt)}</td>
       </tr>
     `).join("");
   } catch {
-    customersBody.innerHTML = _emptyRow(6, "Errore nel caricamento dei clienti.");
+    if (customersBody) customersBody.innerHTML = _emptyRow(6, "Errore nel caricamento clienti.");
   }
 }
 
-async function loadRedemptions() {
-  redemptionsBody.innerHTML = _emptyRow(5, "Caricamento...");
-
+async function _loadPartners() {
+  if (partnersBody) partnersBody.innerHTML = _emptyRow(7, "Caricamento...");
   try {
-    const res  = await fetch("/api/loyalty/admin/redemptions", { credentials: "same-origin" });
+    const res  = await fetch("/api/loyalty/admin/partners", { credentials: "same-origin" });
     if (res.status === 401) { showLoginPanel(); return; }
+    const data = await res.json();
+    const rows = data.data || [];
 
-    const data        = await res.json();
-    const redemptions = data.data || [];
-
-    if (!redemptions.length) {
-      redemptionsBody.innerHTML = _emptyRow(5, "Nessun utilizzo registrato.");
+    if (!rows.length) {
+      partnersBody.innerHTML = _emptyRow(7, "Nessun partner creato.");
       return;
     }
 
-    redemptionsBody.innerHTML = redemptions.map((r) => `
+    partnersBody.innerHTML = rows.map((p) => `
       <tr>
-        <td style="font-family:var(--font-display);font-size:0.72rem;color:var(--text-secondary);">
-          ${_esc(r.id)}
+        <td style="font-family:var(--font-display,monospace);font-size:0.72rem;color:var(--text-secondary);">${_esc(p.id)}</td>
+        <td style="font-weight:600;">${_esc(p.name)}</td>
+        <td>${_esc(p.category || "—")}</td>
+        <td style="font-size:0.82rem;color:var(--text-secondary);">${_esc(p.address || "—")}</td>
+        <td>${_badge(p.active)}</td>
+        <td>
+          ${p.mustChangePassword
+            ? `<span class="loyalty-badge loyalty-badge--pending">Da impostare</span>`
+            : `<span class="loyalty-badge loyalty-badge--active">Impostata</span>`}
         </td>
-        <td style="font-weight:600;">${_esc(r.customerId)}</td>
-        <td>${_esc(r.partnerId)}</td>
-        <td>${_esc(r.offerId)}</td>
-        <td style="color:var(--text-secondary);font-size:0.8rem;">${_fmtDate(r.createdAt)}</td>
+        <td>
+          ${p.active
+            ? `<button class="loyalty-table-action loyalty-table-action--danger"
+                data-partner-id="${_esc(p.id)}" data-action="suspend"
+                aria-label="Sospendi partner ${_esc(p.name)}">
+                Sospendi
+               </button>`
+            : `<button class="loyalty-table-action loyalty-table-action--success"
+                data-partner-id="${_esc(p.id)}" data-action="activate"
+                aria-label="Attiva partner ${_esc(p.name)}">
+                Attiva
+               </button>`}
+        </td>
       </tr>
     `).join("");
+
+    /* Bind action buttons */
+    partnersBody.querySelectorAll("[data-partner-id]").forEach((btn) => {
+      btn.addEventListener("click", () => _togglePartnerActive(
+        btn.dataset.partnerId,
+        btn.dataset.action === "activate"
+      ));
+    });
+
   } catch {
-    redemptionsBody.innerHTML = _emptyRow(5, "Errore nel caricamento degli utilizzi.");
+    if (partnersBody) partnersBody.innerHTML = _emptyRow(7, "Errore nel caricamento partner.");
   }
 }
 
-async function loadOffers() {
-  offersBody.innerHTML = _emptyRow(6, "Caricamento...");
-
+async function _loadOffers() {
+  if (offersBody) offersBody.innerHTML = _emptyRow(6, "Caricamento...");
   try {
     const res  = await fetch("/api/loyalty/admin/offers", { credentials: "same-origin" });
     if (res.status === 401) { showLoginPanel(); return; }
+    const data = await res.json();
+    const rows = data.data || [];
 
-    const data   = await res.json();
-    const offers = data.data || [];
-
-    if (!offers.length) {
+    if (!rows.length) {
       offersBody.innerHTML = _emptyRow(6, "Nessuna offerta creata.");
       return;
     }
 
-    offersBody.innerHTML = offers.map((o) => `
+    offersBody.innerHTML = rows.map((o) => `
       <tr>
-        <td style="font-family:var(--font-display);font-size:0.72rem;color:var(--text-secondary);">
-          ${_esc(o.id)}
-        </td>
+        <td style="font-family:var(--font-display,monospace);font-size:0.7rem;color:var(--text-secondary);">${_esc(o.id)}</td>
         <td style="font-weight:600;">${_esc(o.title)}</td>
         <td style="font-size:0.82rem;">${_esc(o.description || "—")}</td>
         <td style="font-size:0.82rem;">${_esc(o.partnerId || "Globale")}</td>
@@ -312,29 +353,174 @@ async function loadOffers() {
       </tr>
     `).join("");
   } catch {
-    offersBody.innerHTML = _emptyRow(6, "Errore nel caricamento delle offerte.");
+    if (offersBody) offersBody.innerHTML = _emptyRow(6, "Errore nel caricamento offerte.");
   }
 }
 
-/* ── Dashboard boot ── */
-async function loadDashboardData() {
-  await loadStats();
-  await loadCustomers(); // default tab
+async function _loadRedemptions() {
+  if (redemptionsBody) redemptionsBody.innerHTML = _emptyRow(5, "Caricamento...");
+  try {
+    const res  = await fetch("/api/loyalty/admin/redemptions", { credentials: "same-origin" });
+    if (res.status === 401) { showLoginPanel(); return; }
+    const data = await res.json();
+    const rows = data.data || [];
+
+    if (!rows.length) {
+      redemptionsBody.innerHTML = _emptyRow(5, "Nessun utilizzo registrato.");
+      return;
+    }
+
+    redemptionsBody.innerHTML = rows.map((r) => `
+      <tr>
+        <td style="font-family:var(--font-display,monospace);font-size:0.7rem;color:var(--text-secondary);">${_esc(r.id)}</td>
+        <td>${_esc(r.customerId)}</td>
+        <td>${_esc(r.partnerId)}</td>
+        <td>${_esc(r.offerId)}</td>
+        <td style="color:var(--text-secondary);font-size:0.8rem;">${_fmtDate(r.createdAt)}</td>
+      </tr>
+    `).join("");
+  } catch {
+    if (redemptionsBody) redemptionsBody.innerHTML = _emptyRow(5, "Errore nel caricamento utilizzi.");
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
-   TABS
+   PARTNER ACTIVE TOGGLE
 ───────────────────────────────────────────────────────────── */
-const tabPanels = {
-  customers:   tabCustomers,
-  redemptions: tabRedemptions,
-  offers:      tabOffers,
-};
+async function _togglePartnerActive(partnerId, active) {
+  try {
+    const res = await fetch(`/api/loyalty/admin/partners/${encodeURIComponent(partnerId)}/active`, {
+      method:      "PATCH",
+      credentials: "same-origin",
+      headers:     { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
+      body:        JSON.stringify({ active }),
+    });
 
-const tabLoaders = {
-  customers:   loadCustomers,
-  redemptions: loadRedemptions,
-  offers:      loadOffers,
+    if (!res.ok) throw new Error("Toggle failed");
+
+    /* Reload partners table and stats */
+    await Promise.all([_loadPartners(), _loadStats()]);
+  } catch {
+    alert("Errore durante l'aggiornamento del partner. Riprova.");
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PARTNER CREATION FORM
+───────────────────────────────────────────────────────────── */
+if (createPartnerForm) {
+  createPartnerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (partnerError)   partnerError.classList.remove("visible");
+    if (partnerSuccess) partnerSuccess.classList.remove("visible");
+
+    const id          = newPartnerIdEl?.value.trim();
+    const name        = partnerNameEl?.value.trim();
+    const category    = partnerCategoryEl?.value.trim();
+    const address     = partnerAddressEl?.value.trim();
+    const tempPassword = partnerTempPassEl?.value;
+
+    if (!id || !name || !tempPassword) {
+      _showFeedback(partnerError, partnerErrorText, partnerSuccess, partnerSuccessText,
+        false, "ID, nome e password temporanea sono obbligatori.");
+      return;
+    }
+
+    if (tempPassword.length < 8) {
+      _showFeedback(partnerError, partnerErrorText, partnerSuccess, partnerSuccessText,
+        false, "La password temporanea deve avere almeno 8 caratteri.");
+      return;
+    }
+
+    _setLoading(createPartnerBtn, true);
+
+    try {
+      const res  = await fetch("/api/loyalty/admin/partners", {
+        method:      "POST",
+        credentials: "same-origin",
+        headers:     { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
+        body:        JSON.stringify({ id, name, category, address, tempPassword }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        _showFeedback(partnerError, partnerErrorText, partnerSuccess, partnerSuccessText,
+          true, `Partner "${name}" creato con ID: ${data.partnerId}. Il partner dovrà impostare la propria password al primo accesso.`);
+        createPartnerForm.reset();
+        await Promise.all([_loadPartners(), _loadStats()]);
+      } else {
+        _showFeedback(partnerError, partnerErrorText, partnerSuccess, partnerSuccessText,
+          false, data.message || "Errore nella creazione del partner.");
+      }
+    } catch {
+      _showFeedback(partnerError, partnerErrorText, partnerSuccess, partnerSuccessText,
+        false, "Errore di connessione. Riprova.");
+    } finally {
+      _setLoading(createPartnerBtn, false);
+    }
+  });
+}
+
+/* ─────────────────────────────────────────────────────────────
+   OFFER CREATION FORM
+───────────────────────────────────────────────────────────── */
+if (addOfferForm) {
+  addOfferForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (offerError)   offerError.classList.remove("visible");
+    if (offerSuccess) offerSuccess.classList.remove("visible");
+
+    const title       = offerTitleEl?.value.trim();
+    const description = offerDescEl?.value.trim();
+    const partnerId   = offerPartnerEl?.value.trim();
+
+    if (!title) {
+      if (offerErrorText) offerErrorText.textContent = "Il titolo dell'offerta è obbligatorio.";
+      if (offerError)     offerError.classList.add("visible");
+      offerTitleEl?.focus();
+      return;
+    }
+
+    _setLoading(addOfferBtn, true);
+
+    try {
+      const res  = await fetch("/api/loyalty/admin/offers", {
+        method:      "POST",
+        credentials: "same-origin",
+        headers:     { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
+        body:        JSON.stringify({ title, description, partnerId }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        if (offerSuccess) offerSuccess.classList.add("visible");
+        addOfferForm.reset();
+        await Promise.all([_loadOffers(), _loadStats()]);
+      } else {
+        if (offerErrorText) offerErrorText.textContent = data.message || "Errore nella creazione dell'offerta.";
+        if (offerError)     offerError.classList.add("visible");
+      }
+    } catch {
+      if (offerErrorText) offerErrorText.textContent = "Errore di connessione. Riprova.";
+      if (offerError)     offerError.classList.add("visible");
+    } finally {
+      _setLoading(addOfferBtn, false);
+    }
+  });
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TAB SYSTEM
+───────────────────────────────────────────────────────────── */
+const _tabLoaders = {
+  customers:   _loadCustomers,
+  partners:    _loadPartners,
+  offers:      _loadOffers,
+  redemptions: _loadRedemptions,
 };
 
 tabBtns.forEach((btn) => {
@@ -342,84 +528,34 @@ tabBtns.forEach((btn) => {
     const tab = btn.dataset.tab;
     if (tab === _activeTab) return;
 
-    /* Update button states */
-    tabBtns.forEach((b) => {
-      b.classList.remove("active");
-      b.setAttribute("aria-selected", "false");
-    });
+    tabBtns.forEach((b) => { b.classList.remove("active"); b.setAttribute("aria-selected", "false"); });
     btn.classList.add("active");
     btn.setAttribute("aria-selected", "true");
 
-    /* Switch panels */
-    Object.values(tabPanels).forEach((p) => (p.style.display = "none"));
-    tabPanels[tab].style.display = "block";
+    Object.values(tabPanels).forEach((p) => { if (p) p.style.display = "none"; });
+    if (tabPanels[tab]) tabPanels[tab].style.display = "block";
 
     _activeTab = tab;
-
-    /* Load data for the newly active tab */
-    if (tabLoaders[tab]) await tabLoaders[tab]();
+    if (_tabLoaders[tab]) await _tabLoaders[tab]();
   });
 });
 
 /* ─────────────────────────────────────────────────────────────
-   ADD OFFER FORM
+   DASHBOARD BOOT
 ───────────────────────────────────────────────────────────── */
-addOfferForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  offerError.classList.remove("visible");
-  offerSuccess.classList.remove("visible");
-
-  const title       = offerTitleEl.value.trim();
-  const description = offerDescEl.value.trim();
-  const partnerId   = offerPartnerEl.value.trim();
-
-  if (!title) {
-    offerErrorText.textContent = "Il titolo dell'offerta è obbligatorio.";
-    offerError.classList.add("visible");
-    offerTitleEl.focus();
-    return;
-  }
-
-  _setLoading(addOfferBtn, true);
-
-  try {
-    const res  = await fetch("/api/loyalty/admin/offers", {
-      method:      "POST",
-      credentials: "same-origin",
-      headers:     { "Content-Type": "application/json" },
-      body:        JSON.stringify({ title, description, partnerId }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok && data.success) {
-      offerSuccess.classList.add("visible");
-      addOfferForm.reset();
-      /* Reload offers table to show new entry */
-      await loadOffers();
-      await loadStats();
-    } else {
-      offerErrorText.textContent = data.message || "Errore nella creazione dell'offerta.";
-      offerError.classList.add("visible");
-    }
-  } catch {
-    offerErrorText.textContent = "Errore di connessione. Riprova.";
-    offerError.classList.add("visible");
-  } finally {
-    _setLoading(addOfferBtn, false);
-  }
-});
+async function _loadDashboard() {
+  await _loadStats();
+  await _loadCustomers(); // default tab
+}
 
 /* ─────────────────────────────────────────────────────────────
    BOOT
+   window.__adminAuthenticated set by inline guard in HTML.
 ───────────────────────────────────────────────────────────── */
 (async () => {
-  const authenticated = await checkSession();
-
-  if (authenticated) {
+  if (window.__adminAuthenticated) {
     showDashboard();
-    await loadDashboardData();
+    await _loadDashboard();
   } else {
     showLoginPanel();
   }
