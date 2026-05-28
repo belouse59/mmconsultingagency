@@ -20,6 +20,7 @@ const { generateCustomerId, verifyQrToken }      = require("./qrService");
 const { hashPassword, verifyPassword }           = require("../utils/argon2");
 const { redisClient: redis }                     = require ("../utils/redis");
 const crypto = require("crypto");
+const db = require("../db"); // your pg wrapper
 
 const SHEET = {
   CUSTOMERS:   "Customers",
@@ -100,6 +101,7 @@ function makeError(message, statusCode = 400) {
  * Register a new customer.
  * Returns { success: true, customerId } or throws with a safe message.
  */
+
 async function register({ full_name, identifier, password }) {
   if (!full_name?.trim() || !identifier?.trim() || !password) {
     throw makeError("Tutti i campi sono obbligatori.", 400);
@@ -110,26 +112,74 @@ async function register({ full_name, identifier, password }) {
   }
 
   const normalized = normalizeIdentifier(identifier);
-  const customers  = await readCustomers();
-
-  if (customers.find((c) => c.identifier === normalized)) {
-    /* Generic message — no user enumeration */
-    throw makeError("Registrazione non possibile. Contatta il supporto.", 409);
-  }
   const hash = await hashPassword(password);
   const customerId = generateCustomerId();
+  const nowIso = new Date().toISOString();
 
-  await appendRow(SHEET.CUSTOMERS, [
+  const identifierType = detectIdentifierType(normalized);
+
+  /* ─────────────────────────────────────────────
+     1. INSERT (DB IS SOURCE OF TRUTH)
+     Handles race conditions via UNIQUE constraint
+  ───────────────────────────────────────────── */
+  try {
+    await db.query(
+      `
+      INSERT INTO customers (
+        id,
+        full_name,
+        identifier,
+        identifier_type,
+        password_hash,
+        active,
+        created_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      `,
+      [
+        customerId,
+        clean(full_name),
+        normalized,
+        identifierType,
+        hash,
+        true,
+      ]
+    );
+  } catch (err) {
+    /* Unique violation = already exists */
+    if (err.code === "23505") {
+      throw makeError(
+        "Registrazione non possibile. Contatta il supporto.",
+        409
+      );
+    }
+    throw err;
+  }
+
+  /* ─────────────────────────────────────────────
+     2. OPTIONAL: SHEETS SYNC (LEGACY)
+     Non-blocking, can be removed later
+  ───────────────────────────────────────────── */
+  appendRow(SHEET.CUSTOMERS, [
     customerId,
     clean(full_name),
     normalized,
-    detectIdentifierType(normalized),
+    identifierType,
     hash,
     "true",
-    new Date().toISOString(),
-  ]);
+    nowIso,
+  ]).catch((err) => {
+    console.error("[register] Sheets sync failed:", err.message);
+  });
 
-  return { success: true, customerId, full_name: clean(full_name) };
+  /* ─────────────────────────────────────────────
+     3. RESPONSE
+  ───────────────────────────────────────────── */
+  return {
+    success: true,
+    customerId,
+    full_name: clean(full_name),
+  };
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -238,36 +288,99 @@ async function setPartnerPassword({ partnerId, newPassword }) {
   return { success: true };
 }
 
-/* ─────────────────────────────────────────────────────────────
-   PARTNER — CREATE (called by admin)
-───────────────────────────────────────────────────────────── */
- 
+
 async function createPartner({ id, name, category, address, tempPassword }) {
-  if (!id?.trim() || !name?.trim() || !tempPassword) throw makeError("ID, nome e password temporanea sono obbligatori.", 400);
- 
+  if (!id?.trim() || !name?.trim() || !tempPassword) {
+    throw makeError(
+      "ID, nome e password temporanea sono obbligatori.",
+      400
+    );
+  }
+
   const cleanId = clean(id).toLowerCase().replace(/\s+/g, "-");
- 
-  const existing = await getPartnerById(cleanId);
-  if (existing) throw makeError("Un partner con questo ID esiste già.", 409);
- 
-  if (tempPassword.length < 8) throw makeError("La password temporanea deve avere almeno 8 caratteri.", 400);
- 
-  const hash    = await hashPassword(tempPassword);
+
+  /* ─────────────────────────────────────────────
+     1. CHECK EXISTING PARTNER (DB IS SOURCE OF TRUTH)
+  ───────────────────────────────────────────── */
+  const existing = await db.query(
+    `SELECT id FROM partners WHERE id = $1`,
+    [cleanId]
+  );
+
+  if (existing.rowCount > 0) {
+    throw makeError("Un partner con questo ID esiste già.", 409);
+  }
+
+  /* ─────────────────────────────────────────────
+     2. VALIDATE PASSWORD
+  ───────────────────────────────────────────── */
+  if (tempPassword.length < 8) {
+    throw makeError(
+      "La password temporanea deve avere almeno 8 caratteri.",
+      400
+    );
+  }
+
+  const hash = await hashPassword(tempPassword);
+
+  const nowIso = new Date().toISOString();
+
+  /* ─────────────────────────────────────────────
+     3. INSERT INTO POSTGRES (SOURCE OF TRUTH)
+  ───────────────────────────────────────────── */
+  await db.query(
+    `
+    INSERT INTO partners (
+      id,
+      name,
+      category,
+      address,
+      password_hash,
+      must_change_password,
+      active,
+      created_at
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+    `,
+    [
+      cleanId,
+      clean(name),
+      clean(category || "Generico"),
+      clean(address || ""),
+      hash,
+      true,
+      true,
+    ]
+  );
+
+  /* ─────────────────────────────────────────────
+     4. OPTIONAL REDIS CACHE (NOT SOURCE OF TRUTH)
+     Keep only for fast access if needed
+  ───────────────────────────────────────────── */
   const partner = {
-    id:                cleanId,
-    name:              clean(name),
-    category:          clean(category || "Generico"),
-    address:           clean(address || ""),
-    passwordHash:      hash,
+    id: cleanId,
+    name: clean(name),
+    category: clean(category || "Generico"),
+    address: clean(address || ""),
+    passwordHash: hash,
     mustChangePassword: true,
-    active:            true,
-    createdAt:         new Date().toISOString(),
+    active: true,
+    createdAt: nowIso,
   };
- 
-  await redis.set(`mm:partner:${cleanId}`, JSON.stringify(partner));
-  await redis.sAdd("mm:partners:index", cleanId);
- 
-  return { success: true, partnerId: cleanId };
+
+  await redis
+    .set(`mm:partner:${cleanId}`, JSON.stringify(partner))
+    .catch(() => {});
+
+  await redis.sAdd("mm:partners:index", cleanId).catch(() => {});
+
+  /* ─────────────────────────────────────────────
+     5. RESPONSE
+  ───────────────────────────────────────────── */
+  return {
+    success: true,
+    partnerId: cleanId,
+  };
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -303,21 +416,52 @@ async function createOffer({ title, description, partnerId }) {
     throw makeError("Il titolo dell'offerta è obbligatorio.", 400);
   }
  
-  const id  = `offer-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
-  const now = new Date().toISOString();
+  const cleanTitle = clean(title);
+  const cleanDesc = clean(description || "");
+  const cleanPartnerId = clean(partnerId || "");
+
+  const id = `offer-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
+  const nowIso = new Date().toISOString();
  
+    /* ─────────────────────────────────────────────
+     1. WRITE TO POSTGRES (SOURCE OF TRUTH)
+  ───────────────────────────────────────────── */
+  await db.query(
+    `
+    INSERT INTO offers (
+      id,
+      title,
+      description,
+      partner_id,
+      active,
+      created_at
+    )
+    VALUES ($1, $2, $3, $4, $5, NOW())
+    `,
+    [
+      id,
+      cleanTitle,
+      cleanDesc,
+      cleanPartnerId,
+      true,
+    ]
+  );
+  /* ─────────────────────────────────────────────
+     2. WRITE TO GOOGLE SHEETS (LEGACY SYNC)
+     Do NOT block main flow if it fails
+  ───────────────────────────────────────────── */
   await appendRow(SHEET.OFFERS, [
     id,
     clean(title),
     clean(description || ""),
     clean(partnerId   || ""),
     "true",
-    now,
+    nowIso,
   ]);
  
   return {
     success: true,
-    offer:   { id, title: clean(title), description: clean(description || ""), partnerId: clean(partnerId || ""), active: true, createdAt: now },
+    offer:   { id, title: clean(title), description: clean(description || ""), partnerId: clean(partnerId || ""), active: true, createdAt: nowIso },
   };
 }
 
@@ -340,65 +484,96 @@ async function createOffer({ title, description, partnerId }) {
  * @param {string} offerId     - Offer ID partner is applying
  * @param {string} partnerId   - Authenticated partner ID from session
  */
+
 async function prevalidateQr({ token, partnerId } = {}) {
+  if (!token || !partnerId) {
+    return { success: false, message: "Dati mancanti." };
+  }
 
-  if (!token || !partnerId) return { success: false, message: "Dati mancanti." };
-
-    /* 1. Signature + expiry */
+  /* 1. VERIFY QR */
   const check = verifyQrToken(token);
 
-  /* 1. Verify HMAC + expiry */
   if (!check.valid) {
     const messages = {
-      TOKEN_MISSING:           "QR mancante.",
-      TOKEN_MALFORMED:         "QR non valido.",
+      TOKEN_MISSING: "QR mancante.",
+      TOKEN_MALFORMED: "QR non valido.",
       TOKEN_INVALID_SIGNATURE: "QR non autentico — rifiuta la transazione.",
-      TOKEN_EXPIRED:           "QR scaduto. Chiedi al cliente di aggiornare il QR.",
+      TOKEN_EXPIRED: "QR scaduto. Chiedi al cliente di aggiornare il QR.",
     };
-    return { success: false, code: check.reason, message: messages[check.reason] || "QR non valido.", expiresAt: null };
+
+    return {
+      success: false,
+      code: check.reason,
+      message: messages[check.reason] || "QR non valido.",
+      expiresAt: null,
+    };
   }
 
   const { customerId, exp } = check;
 
-  /* 2. Check QR replay lock (already used?) */
-  const tokenHash  = crypto.createHash("sha256").update(token).digest("hex");
-  const replayUsed = await redis.exists(`mm:usedqr:${tokenHash}`);
-  if (replayUsed) {
-    return { success: false, code: "TOKEN_ALREADY_USED", message: "QR già utilizzato. Chiedi al cliente di aggiornare il QR.", expiresAt: null };
+  /* 2. PARALLEL LOAD (customer + offers) */
+  const [customerRes, offers] = await Promise.all([
+    db.query(
+      `SELECT id, full_name, active FROM customers WHERE id = $1`,
+      [customerId]
+    ),
+    getPartnerOffers(partnerId),
+  ]);
+
+  const customer = customerRes.rows[0];
+
+  if (!customer) {
+    return {
+      success: false,
+      code: "CUSTOMER_NOT_FOUND",
+      message: "Cliente non trovato.",
+      expiresAt: null,
+    };
   }
 
-  /* 3. Load customer */
-  const customers = await readCustomers();
-  const customer  = customers.find((c) => c.id === customerId);
-  if (!customer)       return { success: false, code: "CUSTOMER_NOT_FOUND", message: "Cliente non trovato.", expiresAt: null };
-  if (!customer.active) return { success: false, code: "CUSTOMER_SUSPENDED", message: "Account cliente sospeso.", expiresAt: null };
+  if (!customer.active) {
+    return {
+      success: false,
+      code: "CUSTOMER_SUSPENDED",
+      message: "Account cliente sospeso.",
+      expiresAt: null,
+    };
+  }
 
-  /* 4. Load offers + check per-offer eligibility */
-  const offers = await getPartnerOffers(partnerId);
- 
-  const eligibleOffers = await Promise.all(
-    offers.map(async (offer) => {
-      const lockKey = `mm:redeemed:${partnerId}:${offer.id}:${customerId}`;
-      const used    = await redis.exists(lockKey);
-      return {
-        id:          offer.id,
-        title:       offer.title,
-        description: offer.description,
-        eligible:    !used,
-        reason:      used ? "Già utilizzata" : null,
-      };
-    })
+  /* 3. BULK FETCH ALL REDEMPTIONS (IMPORTANT OPTIMIZATION) */
+  const redemptionsRes = await db.query(
+    `
+    SELECT offer_id
+    FROM redemptions
+    WHERE customer_id = $1
+      AND partner_id = $2
+    `,
+    [customerId, partnerId]
   );
 
+  const usedOffers = new Set(redemptionsRes.rows.map(r => r.offer_id));
+
+  /* 4. BUILD RESPONSE (O(N) ONLY) */
+  const eligibleOffers = offers.map((offer) => {
+    const used = usedOffers.has(offer.id);
 
     return {
-    success:        true,
+      id: offer.id,
+      title: offer.title,
+      description: offer.description,
+      eligible: !used,
+      reason: used ? "Già utilizzata" : null,
+    };
+  });
+
+  return {
+    success: true,
     customerId,
-    customerName:   customer.full_name,
-    expiresAt:      exp,
+    customerName: customer.full_name,
+    expiresAt: exp,
     eligibleOffers,
   };
-};
+}
 
 /* ─────────────────────────────────────────────────────────────
    REDEMPTION — FULL ATOMIC FLOW
@@ -408,33 +583,16 @@ async function prevalidateQr({ token, partnerId } = {}) {
    Layer 4: Idempotency key            (Redis SET NX EX 300)
    Layer 5: Sheets audit write         (fire-and-forget)
 ───────────────────────────────────────────────────────────── */
-async function redeemOffer({ token, offerId, partnerId, idempotencyKey }) {
-  /* ─────────────────────────────────────────────────────────────
-     0. IDEMPOTENCY
-     Same request repeated = same response returned
-  ───────────────────────────────────────────────────────────── */
-  if (idempotencyKey) {
-    const idemKey   = `mm:idempotency:${idempotencyKey}`;
-    const cachedRaw = await redis.get(idemKey);
-
-    if (cachedRaw) {
-      return typeof cachedRaw === "string"
-        ? JSON.parse(cachedRaw)
-        : cachedRaw;
-    }
-  }
-
-  /* ─────────────────────────────────────────────────────────────
-     1. VERIFY QR TOKEN
-  ───────────────────────────────────────────────────────────── */
+async function redeemOffer({ token, offerId, partnerId } = {}) {
+  /* 1. VERIFY QR */
   const check = verifyQrToken(token);
 
   if (!check.valid) {
     const messages = {
-      TOKEN_MISSING:           "QR mancante.",
-      TOKEN_MALFORMED:         "QR non valido.",
+      TOKEN_MISSING: "QR mancante.",
+      TOKEN_MALFORMED: "QR non valido.",
       TOKEN_INVALID_SIGNATURE: "QR non autentico.",
-      TOKEN_EXPIRED:           "QR scaduto. Chiedi al cliente di aggiornare il QR.",
+      TOKEN_EXPIRED: "QR scaduto. Chiedi al cliente di aggiornare il QR.",
     };
 
     return {
@@ -444,179 +602,96 @@ async function redeemOffer({ token, offerId, partnerId, idempotencyKey }) {
     };
   }
 
-  /* ─────────────────────────────────────────────────────────────
-     2. NORMALIZE IDS
-     Prevent Redis key mismatches due to type inconsistencies
-  ───────────────────────────────────────────────────────────── */
-  const normalizedCustomerId = String(check.customerId).trim();
-  const normalizedOfferId    = String(offerId).trim();
-  const normalizedPartnerId  = String(partnerId).trim();
+  const customerId = String(check.customerId).trim();
 
-  /* ─────────────────────────────────────────────────────────────
-     3. TEMPORARY QR REPLAY PROTECTION
-     Prevent same QR reuse during QR lifetime
-  ───────────────────────────────────────────────────────────── */
-  const tokenHash = crypto
-    .createHash("sha256")
-    .update(token)
-    .digest("hex");
+  /* 2. SHORT REDIS LOCK (ONLY FOR DOUBLE SCAN PROTECTION) */
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const lockKey = `mm:scanlock:${tokenHash}:${offerId}`;
 
-  const replayKey = `mm:usedqr:${tokenHash}`;
+  const locked = await redis.set(lockKey, "1", {
+    nx: true,
+    ex: 5,
+  });
 
-  const ttlSeconds = Math.ceil(
-    parseInt(process.env.LOYALTY_QR_TTL_MS || "300000", 10) / 1000
-  );
+  if (!locked) {
+    return {
+      success: false,
+      code: "SCAN_TOO_FAST",
+      message: "Scansione già in corso. Riprova.",
+    };
+  }
 
-  const replayLock = await redis.set(
-    replayKey,
-    "1",
-    {
-      nx: true,
-      ex: ttlSeconds,
+  try {
+    /* 3. PARALLEL LOAD (customer + offer) */
+    const [customerRes, offerRes] = await Promise.all([
+      db.query(
+        `SELECT id, full_name, active FROM customers WHERE id = $1`,
+        [customerId]
+      ),
+      db.query(
+        `SELECT id, title, active 
+         FROM offers 
+         WHERE id = $1 AND partner_id = $2`,
+        [offerId, partnerId]
+      ),
+    ]);
+
+    const customer = customerRes.rows[0];
+    const offer = offerRes.rows[0];
+
+    if (!customer) {
+      return { success: false, code: "CUSTOMER_NOT_FOUND", message: "Cliente non trovato." };
     }
-  );
 
-  if (replayLock === null) {
-    return {
-      success: false,
-      code: "TOKEN_ALREADY_USED",
-      message: "QR già utilizzato. Chiedi al cliente di aggiornare il QR.",
-    };
-  }
+    if (!customer.active) {
+      return { success: false, code: "CUSTOMER_SUSPENDED", message: "Account cliente sospeso." };
+    }
 
-  /* ─────────────────────────────────────────────────────────────
-     4. VALIDATE CUSTOMER
-  ───────────────────────────────────────────────────────────── */
-  const customers = await readCustomers();
+    if (!offer || !offer.active) {
+      return { success: false, code: "OFFER_INVALID", message: "Offerta non valida o non attiva." };
+    }
 
-  const customer = customers.find(
-    (c) => String(c.id).trim() === normalizedCustomerId
-  );
+    /* 4. INSERT (DB GUARANTEES UNIQUENESS) */
+    const redemptionId =
+      `r-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
 
-  if (!customer) {
-    await redis.del(replayKey);
-
-    return {
-      success: false,
-      code: "CUSTOMER_NOT_FOUND",
-      message: "Cliente non trovato.",
-    };
-  }
-
-  if (!customer.active) {
-    await redis.del(replayKey);
-
-    return {
-      success: false,
-      code: "CUSTOMER_SUSPENDED",
-      message: "Account cliente sospeso.",
-    };
-  }
-
-  /* ─────────────────────────────────────────────────────────────
-     5. VALIDATE OFFER
-  ───────────────────────────────────────────────────────────── */
-  const offers = await readOffers();
-
-  const offer = offers.find(
-    (o) => String(o.id).trim() === normalizedOfferId
-  );
-
-  if (!offer || !offer.active) {
-    await redis.del(replayKey);
+    try {
+      await db.query(
+        `
+        INSERT INTO redemptions (
+          id,
+          customer_id,
+          partner_id,
+          offer_id,
+          used_token,
+          redeemed_at
+        )
+        VALUES ($1, $2, $3, $4, $5, NOW())
+        `,
+        [redemptionId, customerId, partnerId, offerId, token]
+      );
+    } catch (err) {
+      if (err.code === "23505") {
+        return {
+          success: false,
+          code: "OFFER_ALREADY_REDEEMED",
+          message: "Questo cliente ha già utilizzato questa offerta.",
+        };
+      }
+      throw err;
+    }
 
     return {
-      success: false,
-      code: "OFFER_INVALID",
-      message: "Offerta non valida o non attiva.",
+      success: true,
+      redemptionId,
+      customerName: customer.full_name,
+      offerTitle: offer.title,
+      redeemedAt: new Date().toISOString(),
     };
+
+  } finally {
+    await redis.del(lockKey).catch(() => {});
   }
-
-  /* ─────────────────────────────────────────────────────────────
-     6. PERMANENT BUSINESS REDEMPTION LOCK
-     Prevent same customer redeeming same offer
-     at same partner forever
-  ───────────────────────────────────────────────────────────── */
-  const redemptionKey =
-    `mm:redeemed:${normalizedPartnerId}:${normalizedOfferId}:${normalizedCustomerId}`;
-
-  const redemptionData = JSON.stringify({
-    customerId: normalizedCustomerId,
-    partnerId:  normalizedPartnerId,
-    offerId:    normalizedOfferId,
-    redeemedAt: Date.now(),
-  });
-
-  console.log("[redeemOffer] redemptionKey =", redemptionKey);
-
-  const redemptionLock = await redis.set(
-    redemptionKey,
-    redemptionData,
-    { nx: true }
-  );
-
-  if (redemptionLock === null) {
-    /* Redemption failed → release temporary QR replay lock */
-    await redis.del(replayKey);
-
-    return {
-      success: false,
-      code: "OFFER_ALREADY_REDEEMED",
-      message: "Questo cliente ha già utilizzato questa offerta.",
-    };
-  }
-
-  /* ─────────────────────────────────────────────────────────────
-     7. BUILD REDEMPTION RECORD
-  ───────────────────────────────────────────────────────────── */
-  const redemptionId =
-    `r-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
-
-  const now    = new Date();
-  const nowIso = now.toISOString();
-
-  /* ─────────────────────────────────────────────────────────────
-     8. PERSIST TO SHEETS (AUDIT TRAIL)
-  ───────────────────────────────────────────────────────────── */
-  appendRow(SHEET.REDEMPTIONS, [
-    redemptionId,
-    normalizedCustomerId,
-    normalizedPartnerId,
-    normalizedOfferId,
-    tokenHash,
-    now.toISOString().slice(0, 10),
-    nowIso,
-  ]).catch((err) => {
-    console.error(
-      "[loyaltyService/redeemOffer] Sheets write failed:",
-      err.message
-    );
-  });
-
-  /* ─────────────────────────────────────────────────────────────
-     9. SUCCESS RESPONSE
-  ───────────────────────────────────────────────────────────── */
-  const result = {
-    success: true,
-    redemptionId,
-    customerName: customer.full_name,
-    offerTitle: offer.title,
-    message: `${offer.title} applicato per ${customer.full_name}`,
-    redeemedAt: nowIso,
-  };
-
-  /* ─────────────────────────────────────────────────────────────
-     10. CACHE IDEMPOTENT RESPONSE
-  ───────────────────────────────────────────────────────────── */
-  if (idempotencyKey) {
-    await redis.set(
-      `mm:idempotency:${idempotencyKey}`,
-      JSON.stringify(result),
-      { ex: 300 }
-    );
-  }
-
-  return result;
 }
 
   /* ─────────────────────────────────────────────────────────────

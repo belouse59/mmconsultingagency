@@ -1,7 +1,5 @@
 add blog and the entire loyalty section to build function
 change the logic to build to create the carousels there is no need for api call in production
 email validation on contact request and convenzioni mail or phone sms verif maybe
-need to implement partner saved to google spreadsheet
-need to check when an offer has been validated with a qr code for a partner
-
 as well the helper show, hide error, show success setLoading passing the element as argument
+need to read now offer, partner, customer from db
