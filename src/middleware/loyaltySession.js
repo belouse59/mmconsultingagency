@@ -1,22 +1,34 @@
 "use strict";
-
+ 
 /**
- * middleware/loyaltySession.js
+ * middleware/loyaltyGuards.js
  *
- * API-only guards — always return JSON, never redirect.
- * Page-level auth is handled by the inline <script> guard
- * in each HTML file, which fires before any DOM paint.
+ * TWO LAYERS OF PROTECTION:
  *
- * mustChangePassword:
- *   Partners created by admin have this flag set to true.
- *   requirePartnerAPI blocks all partner endpoints except
- *   /set-password with a 403 MUST_CHANGE_PASSWORD code.
- *   requirePartnerAnyAPI is used only on the set-password route.
+ * 1. PAGE GUARDS (requireCustomerPage, requirePartnerPage, etc.)
+ *    Used on explicit Express GET routes registered BEFORE express.static().
+ *    The server checks the session and either:
+ *      - Calls next() so the route handler serves the HTML file
+ *      - Redirects to login — the protected HTML is NEVER sent to the client
+ *    This means zero skeleton flash by design: unauthenticated users never
+ *    receive the page HTML at all, so there is nothing to flash.
+ *    No inline <script> needed in any HTML file.
  *
- * CSRF:
- *   State-mutating endpoints check for X-Requested-With header.
- *   This is a lightweight CSRF mitigation layer that works
- *   alongside SameSite=Lax cookies without requiring token rotation.
+ * 2. API GUARDS (requireCustomerAPI, requirePartnerAPI, etc.)
+ *    Used on all /api/loyalty/* endpoints.
+ *    Always return JSON — never redirect.
+ *    Defence-in-depth even after page guards pass.
+ *
+ * CSRF GUARD (requireXHR):
+ *    Applied to all state-mutating API endpoints.
+ *    Checks X-Requested-With: XMLHttpRequest header.
+ *    Browsers never send this on cross-origin requests unless CORS
+ *    explicitly permits it — which we do not for state mutations.
+ *
+ * PARTNER mustChangePassword:
+ *    requirePartnerAPI blocks all partner endpoints except /set-password.
+ *    requirePartnerSetPasswordPage only allows the set-password page when
+ *    mustChangePassword is true — otherwise redirects to scan.
  */
 
 const session = require("express-session");
@@ -26,6 +38,8 @@ const {
   redisClient,
   connectRedis,
 } = require("../utils/redis");
+
+const { serverRenderPage } = require("../utils/renderPage");
 
 /* ─────────────────────────────────────────────────────────────
    SESSION MIDDLEWARE FACTORY
@@ -104,6 +118,22 @@ function requireAdminPage(req, res, next) {
   res.redirect("/loyalty/admin/login.html");
 }
 
+/**
+ * Partner set-password page guard.
+ * No session               → redirect to login.
+ * mustChangePassword=false → redirect to scan (already set password).
+ * OK                       → next()
+ */
+function requirePartnerSetPasswordPage(req, res, next) {
+  if (!req.session?.loyaltyPartner) {
+    return res.redirect("/loyalty/partner/login.html");
+  }
+  if (!req.session.loyaltyPartner.mustChangePassword) {
+    return res.redirect("/loyalty/partner/scan.html");
+  }
+  return next();
+}
+
 /* ─────────────────────────────────────────────────────────────
    API GUARDS — return JSON 401 on failure (never redirect)
    Used on all /api/loyalty/* endpoints.
@@ -159,12 +189,18 @@ function requireXHR(req, res, next) {
 
 module.exports = {
   createSessionMiddleware,
+
+  /* PAGE GUARDS */
+  requireCustomerPage,
+  requirePartnerPage,
+  requirePartnerSetPasswordPage,
+  requireAdminPage,
+
+  /* API GUARDS */
   requireCustomerAPI,
   requirePartnerAPI,
   requirePartnerAnyAPI,
   requireAdminAPI,
-  requireXHR
-  //requireCustomerPage,
-  //requirePartnerPage,
-  //requireAdminPage,
+
+  requireXHR,
 };

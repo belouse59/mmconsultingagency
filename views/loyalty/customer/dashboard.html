@@ -11,31 +11,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Convenzioni">
-
-  <!--
-    ZERO-SKELETON AUTH GUARD
-    Body is completely empty until this resolves.
-    If unauthenticated, window.location.replace fires before
-    any CSS, fonts, or DOM nodes are painted.
-    document.documentElement.style.visibility keeps the page
-    invisible during the async check, then reveals it only
-    after auth is confirmed — eliminating any flash of content.
-  -->
-  <script>
-    document.documentElement.style.visibility = "hidden";
-    fetch("/api/loyalty/customer/session", { credentials: "same-origin" })
-      .then(function (r) {
-        if (!r.ok) {
-          window.location.replace("/loyalty/customer/login.html");
-        } else {
-          document.documentElement.style.visibility = "";
-        }
-      })
-      .catch(function () {
-        window.location.replace("/loyalty/customer/login.html");
-      });
-  </script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">

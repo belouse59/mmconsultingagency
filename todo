@@ -1,11 +1,6 @@
 add blog and the entire loyalty section to build function
 change the logic to build to create the carousels there is no need for api call in production
 email validation on contact request and convenzioni mail or phone sms verif maybe
-check the skeleton page when accessing protected routes.
 need to implement partner saved to google spreadsheet
 
-
-externalise getStrength(pass) and updateStrengthIndicator(pass)
-for updateStrengthIndicator(pass, el)
 as well the helper show, hide error, show success setLoading passing the element as argument
-check redis set and add

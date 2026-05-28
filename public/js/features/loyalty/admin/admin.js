@@ -15,18 +15,7 @@
  *   - All strings in Italian
  */
 
-/* ─────────────────────────────────────────────────────────────
-   DOM REFS — login
-───────────────────────────────────────────────────────────── */
 import { $, $$ } from "../../../core/dom.js";
-
-const loginPanel      = $("#loginPanel");
-const adminLoginForm  = $("#adminLoginForm");
-const adminEmailEl    = $("#adminEmail");
-const adminPassEl     = $("#adminPassword");
-const loginSubmitBtn  = $("#loginSubmitBtn");
-const loginError      = $("#loginError");
-const loginErrorText  = $("#loginErrorText");
 
 /* ─────────────────────────────────────────────────────────────
    DOM REFS — dashboard
@@ -147,64 +136,6 @@ function _showFeedback(errEl, errTextEl, successEl, successTextEl, isSuccess, ms
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   AUTH
-───────────────────────────────────────────────────────────── */
-function showLoginPanel() {
-  loginPanel.style.display         = "block";
-  adminDashboard.style.display     = "none";
-  adminTopbarActions.style.display = "none";
-}
-
-function showDashboard() {
-  loginPanel.style.display         = "none";
-  adminDashboard.style.display     = "block";
-  adminTopbarActions.style.display = "flex";
-}
-
-/* ── Admin login form ── */
-adminLoginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  loginError.classList.remove("visible");
-
-  const email    = adminEmailEl.value.trim();
-  const password = adminPassEl.value;
-
-  if (!email || !password) {
-    loginErrorText.textContent = "Inserisci email e password.";
-    loginError.classList.add("visible");
-    return;
-  }
-
-  _setLoading(loginSubmitBtn, true);
-
-  try {
-    const res  = await fetch("/api/loyalty/admin/login", {
-      method:      "POST",
-      credentials: "same-origin",
-      headers:     { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
-      body:        JSON.stringify({ email, password }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok && data.success) {
-      showDashboard();
-      await _loadDashboard();
-    } else {
-      loginErrorText.textContent = data.message || "Credenziali non valide.";
-      loginError.classList.add("visible");
-      adminPassEl.value = "";
-      adminPassEl.focus();
-      _setLoading(loginSubmitBtn, false);
-    }
-  } catch {
-    loginErrorText.textContent = "Errore di connessione. Riprova.";
-    loginError.classList.add("visible");
-    _setLoading(loginSubmitBtn, false);
-  }
-});
-
 /* ── Logout ── */
 logoutBtn.addEventListener("click", async () => {
   try {
@@ -214,8 +145,7 @@ logoutBtn.addEventListener("click", async () => {
       headers:     { "X-Requested-With": "XMLHttpRequest" },
     });
   } catch { /* best-effort */ }
-  showLoginPanel();
-  _setLoading(loginSubmitBtn, false);
+  window.location.replace("/loyalty/admin/login.html");
 });
 
 /* ─────────────────────────────────────────────────────────────
@@ -549,14 +479,6 @@ async function _loadDashboard() {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   BOOT
-   window.__adminAuthenticated set by inline guard in HTML.
+   BOOT Dashboard
 ───────────────────────────────────────────────────────────── */
-(async () => {
-  if (window.__adminAuthenticated) {
-    showDashboard();
-    await _loadDashboard();
-  } else {
-    showLoginPanel();
-  }
-})();
+_loadDashboard();

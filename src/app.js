@@ -22,11 +22,12 @@ const morgan     = require("morgan");
 const { createSessionMiddleware } = require("./middleware/loyaltySession");
 
 /* Routes */
-const formRoutes     = require("./routes/formRoutes");
-const partnerRoutes  = require("./routes/partnerRoutes");
-const providerRoutes = require("./routes/providerRoutes");
-const teamRoutes     = require("./routes/teamRoutes");
-const loyaltyRoutes  = require("./routes/loyaltyRoutes");
+const formRoutes        = require("./routes/formRoutes");
+const partnerRoutes     = require("./routes/partnerRoutes");
+const providerRoutes    = require("./routes/providerRoutes");
+const teamRoutes        = require("./routes/teamRoutes");
+const loyaltyRoutes     = require("./routes/loyaltyRoutes");
+const loyaltyPageRoutes = require("./routes/loyaltyPageRoutes");
 
 const app = express();
 
@@ -68,6 +69,8 @@ app.use("/api/providers", providerRoutes);
 app.use("/api/team",      teamRoutes);
 app.use("/api/form",      formRoutes);
 app.use("/api/loyalty",   loyaltyRoutes);
+/* protected rendered pages */
+app.use(loyaltyPageRoutes);
 
 /* ── Health check ── */
 app.get("/health", (req, res) => {

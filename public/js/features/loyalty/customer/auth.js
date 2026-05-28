@@ -66,7 +66,7 @@ form.addEventListener("submit", async (e) => {
     const data = await res.json();
 
     if (res.ok && data.success) {
-      safeRedirect("/loyalty/customer/dashboard.html");
+      safeRedirect("/loyalty/customer/dashboard");
     } else {
       showError(data.message || "Credenziali non valide. Riprova.");
       passwordEl.value = "";
@@ -82,3 +82,19 @@ form.addEventListener("submit", async (e) => {
 /* ── Clear error on input ── */
 [identifierEl, passwordEl].forEach((el) => el.addEventListener("input", hideError));
 logout($logout, "/");
+
+(async () => {
+  if (!window.location.pathname.includes("/login")) return;
+
+  try {
+    const r = await fetch("/api/loyalty/customer/session", {
+      credentials: "same-origin",
+    });
+
+    if (r.ok) {
+      window.location.href = "/loyalty/customer/dashboard";
+    }
+  } catch {
+    // stay on login page
+  }
+})();

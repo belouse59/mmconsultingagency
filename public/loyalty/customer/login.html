@@ -6,27 +6,6 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Accesso Cliente — Convenzioni M&M Consulting</title>
   <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
-
-  <!--
-    ZERO-SKELETON AUTH GUARD
-    Runs synchronously before any CSS or DOM is painted.
-    If already authenticated, replaces location before first frame.
-    No content is visible until the check resolves.
-  -->
-  <script>
-    (function () {
-      fetch("/api/loyalty/customer/session", { credentials: "same-origin" })
-        .then(function (r) {
-          if (r.ok) {
-            var p = new URLSearchParams(window.location.search).get("next");
-            var safe = p && p.startsWith("/") && !p.startsWith("//") ? p : "/loyalty/customer/dashboard.html";
-            window.location.replace(safe);
-          }
-        })
-        .catch(function () { /* no session — render page normally */ });
-    })();
-  </script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">

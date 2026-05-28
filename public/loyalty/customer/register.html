@@ -6,18 +6,6 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Registrazione — Convenzioni M&M Consulting</title>
   <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
-
-  <!-- Redirect already-authenticated users immediately -->
-  <script>
-    (function () {
-      fetch("/api/loyalty/customer/session", { credentials: "same-origin" })
-        .then(function (r) {
-          if (r.ok) window.location.replace("/loyalty/customer/dashboard.html");
-        })
-        .catch(function () {});
-    })();
-  </script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -113,6 +101,12 @@
             minlength="8"
             required
             aria-required="true">
+        </div>
+        <div class="loyalty-password-strength" id="passwordStrength" aria-live="polite">
+          <div class="loyalty-strength-bar">
+            <div class="loyalty-strength-fill" id="strengthFill"></div>
+          </div>
+          <span class="loyalty-strength-label" id="strengthLabel"></span>
         </div>
 
         <button type="submit" class="loyalty-btn-submit" id="submitBtn">

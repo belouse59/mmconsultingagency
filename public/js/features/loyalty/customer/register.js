@@ -12,6 +12,7 @@
 
 /* ── DOM refs ── */
 import { $ } from "../../../core/dom.js";
+import { validate, getStrength, updateStrengthIndicator } from "../../../core/passwordChecker.js";
 import { logout } from "../../../core/logout.js";
 const form            = $("#registerForm");
 const fullNameEl      = $("#full_name");
@@ -55,11 +56,9 @@ function isPhone(str) {
 }
  
 /* ── Client-side validation ── */
-function validate() {
+function validateName() {
   const name     = fullNameEl.value.trim();
   const ident    = identifierEl.value.trim();
-  const pass     = passwordEl.value;
-  const confirm  = confirmPassEl.value;
  
   if (name.length < 2) {
     showError("Inserisci il tuo nome completo (minimo 2 caratteri).");
@@ -78,29 +77,21 @@ function validate() {
     identifierEl.focus();
     return false;
   }
- 
-  if (pass.length < 8) {
-    showError("La password deve contenere almeno 8 caratteri.");
-    passwordEl.focus();
-    return false;
-  }
- 
-  if (pass !== confirm) {
-    showError("Le password non coincidono. Riprova.");
-    confirmPassEl.value = "";
-    confirmPassEl.focus();
-    return false;
-  }
- 
   return true;
 }
+/* ── Real-time strength feedback ── */
+passwordEl.addEventListener("input", () => {
+  hideError();
+  updateStrengthIndicator(passwordEl.value);
+});
+
+confirmPassEl.addEventListener("input", hideError);
  
 /* ── Form submit ── */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   hideError();
- 
-  if (!validate()) return;
+  if (!validateName() && !validate(passwordEl, confirmPassEl)) return;
  
   const full_name  = fullNameEl.value.trim();
   const identifier = identifierEl.value.trim();
@@ -120,7 +111,7 @@ form.addEventListener("submit", async (e) => {
  
     if (res.ok && data.success) {
       showSuccess();
-      setTimeout(() => window.location.replace("/loyalty/customer/dashboard.html"), 1200);
+      setTimeout(() => window.location.replace("/loyalty/customer/dashboard"), 1200);
     } else {
       showError(data.message || "Errore durante la registrazione. Riprova.");
       setLoading(false);
@@ -137,3 +128,19 @@ form.addEventListener("submit", async (e) => {
 );
 
 logout($logout, "/");
+
+(async () => {
+  if (!window.location.pathname.includes("/register")) return;
+
+  try {
+    const r = await fetch("/api/loyalty/customer/session", {
+      credentials: "same-origin",
+    });
+
+    if (r.ok) {
+      window.location.href = "/loyalty/customer/dashboard";
+    }
+  } catch {
+    // stay on register page
+  }
+})();

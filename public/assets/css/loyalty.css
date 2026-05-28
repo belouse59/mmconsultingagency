@@ -556,9 +556,9 @@ textarea {
 
 .loyalty-password-strength {
   margin-bottom: 14px;
-  display: flex;
+  /*display: flex;*/
   align-items: center;
-  gap: 10px;
+  /*gap: 10px;*/
 }
 
 .loyalty-strength-bar {
@@ -1024,6 +1024,9 @@ textarea {
 /* ═══════════════════════════════════════════════════════════
    ADMIN PANEL
 ═══════════════════════════════════════════════════════════ */
+.adminDashboard {
+  width: 100%;
+}
 
 .loyalty-stats-grid {
   display: grid;
@@ -1045,7 +1048,7 @@ textarea {
   font-family: var(--loy-font-display);
   font-size: 2rem;
   font-weight: 800;
-  color: var(--loy-navy);
+  color: var(--loy-text);
   line-height: 1;
   margin-bottom: 6px;
   letter-spacing: -0.02em;

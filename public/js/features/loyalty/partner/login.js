@@ -70,9 +70,9 @@ form.addEventListener("submit", async (e) => {
     if (res.ok && data.success) {
       /* First-login flow — must set a new password */
       if (data.partner.mustChangePassword) {
-        window.location.replace("/loyalty/partner/set-password.html");
+        window.location.replace("/loyalty/partner/set-password");
       } else {
-        safeRedirect("/loyalty/partner/scan.html");
+        safeRedirect("/loyalty/partner/scan");
       }
     } else {
       showError(data.message || "Credenziali non valide. Riprova.");
@@ -90,3 +90,19 @@ form.addEventListener("submit", async (e) => {
 [partnerIdEl, passwordEl].forEach((el) => el.addEventListener("input", hideError));
 
 logout($logout, "/");
+
+(async () => {
+  if (!window.location.pathname.includes("/login")) return;
+
+  try {
+    const r = await fetch("/api/loyalty/partner/session", {
+      credentials: "same-origin",
+    });
+
+    if (r.ok) {
+      window.location.href = "/loyalty/partner/scan";
+    }
+  } catch {
+    // stay on login page
+  }
+})();

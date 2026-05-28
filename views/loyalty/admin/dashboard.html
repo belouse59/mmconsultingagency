@@ -6,26 +6,6 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Admin — Convenzioni M&M Consulting</title>
   <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
-
-  <!--
-    ZERO-SKELETON AUTH GUARD
-    Body is invisible until session check resolves.
-    Unauthenticated = stays on page showing login form (admin login is inline).
-    Authenticated = reveals dashboard immediately.
-  -->
-  <script>
-    document.documentElement.style.visibility = "hidden";
-    fetch("/api/loyalty/admin/session", { credentials: "same-origin" })
-      .then(function (r) {
-        window.__adminAuthenticated = r.ok;
-        document.documentElement.style.visibility = "";
-      })
-      .catch(function () {
-        window.__adminAuthenticated = false;
-        document.documentElement.style.visibility = "";
-      });
-  </script>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -40,60 +20,14 @@
       <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
       <span class="loyalty-topbar-brand">Admin</span>
     </a>
-    <div class="loyalty-topbar-actions" id="adminTopbarActions" style="display:none;">
+    <div class="loyalty-topbar-actions" id="adminTopbarActions">
       <button class="loyalty-topbar-logout" id="logoutBtn" aria-label="Esci dall'admin">Esci</button>
     </div>
   </header>
 
   <main class="loyalty-main" id="main-content">
-
-    <!-- ══ LOGIN PANEL ══ -->
-    <div class="loyalty-card loyalty-fade-in" id="loginPanel">
-
-      <div class="loyalty-auth-header">
-        <div class="loyalty-auth-icon" aria-hidden="true">🔐</div>
-        <h1 class="loyalty-auth-title">Accesso Admin</h1>
-        <p class="loyalty-auth-sub">Area riservata alla gestione della piattaforma Convenzioni.</p>
-      </div>
-
-      <div class="loyalty-error" id="loginError" role="alert" aria-live="polite">
-        <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
-        <span id="loginErrorText"></span>
-      </div>
-
-      <form id="adminLoginForm" novalidate>
-        <div class="loyalty-field">
-          <label for="adminEmail">Email amministratore</label>
-          <input
-            type="email"
-            id="adminEmail"
-            name="email"
-            placeholder="admin@mmconsulting.it"
-            autocomplete="username"
-            required
-            aria-required="true">
-        </div>
-        <div class="loyalty-field">
-          <label for="adminPassword">Password</label>
-          <input
-            type="password"
-            id="adminPassword"
-            name="password"
-            placeholder="••••••••"
-            autocomplete="current-password"
-            required
-            aria-required="true">
-        </div>
-        <button type="submit" class="loyalty-btn-submit" id="loginSubmitBtn">
-          <span class="btn-label">Accedi</span>
-          <span class="btn-spinner" aria-hidden="true"></span>
-        </button>
-      </form>
-
-    </div>
-
     <!-- ══ DASHBOARD ══ -->
-    <div id="adminDashboard" style="display:none;width:100%;">
+    <div id="adminDashboard">
 
       <!-- Stats -->
       <div class="loyalty-stats-grid loyalty-card--full" style="max-width:1100px;margin:0 auto 24px;">
