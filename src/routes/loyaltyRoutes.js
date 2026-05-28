@@ -38,11 +38,13 @@
 
 const express      = require("express");
 const rateLimit    = require("express-rate-limit");
-const controller   = require("../controllers/loyaltyController");
+const ctrl   = require("../controllers/loyaltyController");
 const {
   requireCustomerAPI,
   requirePartnerAPI,
+  requirePartnerAnyAPI,
   requireAdminAPI,
+  requireXHR,
 } = require("../middleware/loyaltySession");
 
 const router = express.Router();
@@ -81,34 +83,48 @@ const registerLimiter = rateLimit({
   skip: () => process.env.NODE_ENV === "test",
 });
 
+/** Manual scan: 10 per hour per IP — prevents mass account creation */
+const manualLimiter = rateLimit({
+  windowMs:        60 * 1000,
+  max:             10,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message:         { success: false, message: "Troppi tentativi manuali. Riprova tra un minuto." },
+  skip:            () => process.env.NODE_ENV === "test",
+});
 /* ─────────────────────────────────────────────────────────────
    CUSTOMER ROUTES
 ───────────────────────────────────────────────────────────── */
-router.post("/customer/register",  registerLimiter, controller.registerCustomer);
-router.post("/customer/login",     authLimiter,     controller.loginCustomer);
-router.post("/customer/logout",                     controller.logoutCustomer);
-router.get( "/customer/session",                    controller.customerSession);
-router.get( "/customer/qr",        requireCustomerAPI, controller.getCustomerQr);
-router.get( "/customer/offers",    requireCustomerAPI, controller.getOffers);
+router.post("/customer/register", registerLimiter, requireXHR,         ctrl.registerCustomer);
+router.post("/customer/login",    authLimiter,                         ctrl.loginCustomer);
+router.post("/customer/logout",   requireXHR,                          ctrl.logoutCustomer);
+router.get( "/customer/session",                                        ctrl.customerSession);
+router.get( "/customer/qr",       requireCustomerAPI,                   ctrl.getCustomerQr);
+router.get( "/customer/offers",   requireCustomerAPI,                   ctrl.getOffers);
 
 /* ─────────────────────────────────────────────────────────────
    PARTNER ROUTES
 ───────────────────────────────────────────────────────────── */
-router.post("/partner/login",      authLimiter,     controller.loginPartner);
-router.post("/partner/logout",                      controller.logoutPartner);
-router.get( "/partner/session",                     controller.partnerSession);
-router.get( "/partner/offers",     requirePartnerAPI, controller.getPartnerOffers);
-router.post("/partner/redeem",     requirePartnerAPI, redeemLimiter, controller.redeemQr);
+router.post("/partner/login",        authLimiter,                                              ctrl.loginPartner);
+router.post("/partner/logout",       requireXHR,                                               ctrl.logoutPartner);
+router.get( "/partner/session",                                                                ctrl.partnerSession);
+router.post("/partner/set-password", requireXHR, requirePartnerAnyAPI,                        ctrl.setPartnerPassword);
+router.get( "/partner/offers",       requirePartnerAPI,                                        ctrl.getPartnerOffers);
+router.post("/partner/prevalidate",  requireXHR, requirePartnerAPI, manualLimiter,             ctrl.prevalidateQr);
+router.post("/partner/redeem",       requireXHR, requirePartnerAPI, redeemLimiter,             ctrl.redeemQr);
 
 /* ─────────────────────────────────────────────────────────────
    ADMIN ROUTES
 ───────────────────────────────────────────────────────────── */
-router.post("/admin/login",        authLimiter,     controller.loginAdmin);
-router.post("/admin/logout",                        controller.logoutAdmin);
-router.get( "/admin/session",      requireAdminAPI, controller.adminSession);
-router.get( "/admin/customers",    requireAdminAPI, controller.adminGetCustomers);
-router.get( "/admin/redemptions",  requireAdminAPI, controller.adminGetRedemptions);
-router.get( "/admin/offers",       requireAdminAPI, controller.adminGetOffers);
-router.post("/admin/offers",       requireAdminAPI, controller.adminCreateOffer);
+router.post("/admin/login",                   authLimiter,                                     ctrl.loginAdmin);
+router.post("/admin/logout",                  requireXHR,                                      ctrl.logoutAdmin);
+router.get( "/admin/session",                 requireAdminAPI,                                 ctrl.adminSession);
+router.get( "/admin/customers",               requireAdminAPI,                                 ctrl.adminGetCustomers);
+router.get( "/admin/redemptions",             requireAdminAPI,                                 ctrl.adminGetRedemptions);
+router.get( "/admin/offers",                  requireAdminAPI,                                 ctrl.adminGetOffers);
+router.post("/admin/offers",                  requireXHR, requireAdminAPI,                     ctrl.adminCreateOffer);
+router.get( "/admin/partners",                requireAdminAPI,                                 ctrl.adminGetPartners);
+router.post("/admin/partners",                requireXHR, requireAdminAPI,                     ctrl.adminCreatePartner);
+router.patch("/admin/partners/:id/active",    requireXHR, requireAdminAPI,                     ctrl.adminSetPartnerActive);
 
 module.exports = router;

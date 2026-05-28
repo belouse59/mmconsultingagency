@@ -126,7 +126,7 @@ function verifyQrToken(token) {
     return { valid: false, reason: "TOKEN_MALFORMED" };
   }
 
-  return { valid: true, customerId: data.cid, token };
+  return { valid: true, customerId: data.cid, exp: data.exp, token };
 }
 
 /* ─────────────────────────────────────────────────────────────

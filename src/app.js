@@ -3,13 +3,12 @@
 /**
  * app.js — Express application
  *
- * CHANGES FROM ORIGINAL:
- *   - Removed duplicate express.static() call
- *   - Added session middleware (required for loyalty auth)
- *   - Added /api/loyalty routes
- *   - CSP updated: added mediaSrc for camera (QR scanner), data: for QR image
- *   - Single clean static file handler
- *   - Global error handler catches anything routers miss
+ * Integration points for the loyalty feature:
+ *   - Session middleware (Upstash Redis) mounted before all routes
+ *   - /api/loyalty/* routes mounted after session
+ *   - CSP updated: mediaSrc self (camera for QR scanner)
+ *   - imgSrc includes data: (base64 QR image display)
+ *   - Single static file handler with no-cache on HTML
  */
 
 require("dotenv").config();
@@ -23,11 +22,12 @@ const morgan     = require("morgan");
 const { createSessionMiddleware } = require("./middleware/loyaltySession");
 
 /* Routes */
-const formRoutes     = require("./routes/formRoutes");
-const partnerRoutes  = require("./routes/partnerRoutes");
-const providerRoutes = require("./routes/providerRoutes");
-const teamRoutes     = require("./routes/teamRoutes");
-const loyaltyRoutes  = require("./routes/loyaltyRoutes");
+const formRoutes        = require("./routes/formRoutes");
+const partnerRoutes     = require("./routes/partnerRoutes");
+const providerRoutes    = require("./routes/providerRoutes");
+const teamRoutes        = require("./routes/teamRoutes");
+const loyaltyRoutes     = require("./routes/loyaltyRoutes");
+const loyaltyPageRoutes = require("./routes/loyaltyPageRoutes");
 
 const app = express();
 
@@ -69,6 +69,8 @@ app.use("/api/providers", providerRoutes);
 app.use("/api/team",      teamRoutes);
 app.use("/api/form",      formRoutes);
 app.use("/api/loyalty",   loyaltyRoutes);
+/* protected rendered pages */
+app.use(loyaltyPageRoutes);
 
 /* ── Health check ── */
 app.get("/health", (req, res) => {

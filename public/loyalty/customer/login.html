@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <title>Accesso Cliente — Convenzioni M&M Consulting</title>
-  <meta name="description" content="Accedi al tuo account Convenzioni M&M Consulting per visualizzare il tuo QR code e le offerte disponibili.">
   <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,15 +15,17 @@
 
 <div class="loyalty-shell">
 
-  <!-- Top bar -->
   <header class="loyalty-topbar" role="banner">
     <a href="/" class="loyalty-topbar-logo" aria-label="Torna alla homepage M&M Consulting">
       <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
       <span class="loyalty-topbar-brand">Convenzioni</span>
     </a>
-    <button class="loyalty-topbar-logout" id="logoutBtn" aria-label="Esci dall'account">
+    <div class="loyalty-topbar-actions">
+      <span class="loyalty-topbar-user" id="topbarUserName" aria-live="polite"></span>
+      <button class="loyalty-topbar-logout" id="logoutBtn" aria-label="Esci dall'account">
         Esci
       </button>
+    </div>
   </header>
 
   <main class="loyalty-main" id="main-content">
@@ -34,14 +35,13 @@
         <div class="loyalty-auth-icon" aria-hidden="true">🎫</div>
         <h1 class="loyalty-auth-title">Accesso Cliente</h1>
         <p class="loyalty-auth-sub">
-          Inserisci le tue credenziali per accedere al tuo QR code personale e alle offerte riservate.
+          Inserisci le tue credenziali per visualizzare il tuo QR code personale e le offerte riservate.
         </p>
       </div>
 
-      <!-- Error message -->
       <div class="loyalty-error" id="loginError" role="alert" aria-live="polite">
         <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
-        <span id="loginErrorText">Credenziali non valide.</span>
+        <span id="loginErrorText"></span>
       </div>
 
       <form id="loginForm" novalidate>
@@ -75,12 +75,14 @@
           <span class="btn-label">Accedi</span>
           <span class="btn-spinner" aria-hidden="true"></span>
         </button>
+
       </form>
 
       <p class="loyalty-auth-footer">
         Non hai ancora un account?
         <a href="/loyalty/customer/register.html">Registrati gratuitamente</a>
       </p>
+
     </div>
   </main>
 

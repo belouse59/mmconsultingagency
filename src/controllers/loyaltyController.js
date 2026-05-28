@@ -138,15 +138,15 @@ function customerSession(req, res) {
 ───────────────────────────────────────────────────────────── */
 async function getCustomerQr(req, res) {
   try {
-    const customerId = req.session.loyaltyCustomer.id;
+    const { id, full_name } = req.session.loyaltyCustomer;
 
-    const { qrImage, ttl } = await generateQrImage(customerId);
+    const { qrImage, ttl } = await generateQrImage(id);
 
     res.json({
       success: true,
       qrImage,
       ttl,
-      fullName: req.session.loyaltyCustomer.full_name,
+      full_name,
     });
   } catch (err) {
     handleError(res, err);
@@ -170,24 +170,52 @@ async function getOffers(req, res) {
    PARTNER — LOGIN
 ───────────────────────────────────────────────────────────── */
 async function loginPartner(req, res) {
-const { partnerId, password } = req.body;
+  const { partnerId, password } = req.body;
 
-    const result = await loyaltyService.loginPartner({
-      partnerId: clean(partnerId || ""),
-      password,
-    });
+  const result = await loyaltyService.loginPartner({
+    partnerId: clean(partnerId || ""),
+    password,
+  });
   await establishSession(req, {
     loyaltyPartner: {
       id: result.partnerId,
       name: result.name,
+      mustChangePassword: result.mustChangePassword,
     },
   });
-
+  const {success, ...safe} = result;
   res.json({
-    success: true,
+    success,
     message: "Accesso effettuato.",
-    name: result.name,
+    partner: safe
   });
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PARTNER — SET PASSWORD (first-login flow)
+───────────────────────────────────────────────────────────── */
+async function setPartnerPassword(req, res) {
+  try {
+    const { newPassword, confirmPassword } = req.body;
+ 
+    if (!newPassword || newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: "La nuova password deve avere almeno 8 caratteri." });
+    }
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ success: false, message: "Le password non coincidono." });
+    }
+ 
+    const partnerId = req.session.loyaltyPartner.id;
+    await loyaltyService.setPartnerPassword({ partnerId, newPassword });
+ 
+    /* Clear mustChangePassword flag from session */
+    req.session.loyaltyPartner.mustChangePassword = false;
+    req.session.save(() =>
+      res.json({ success: true, message: "Password aggiornata con successo." })
+    );
+  } catch (err) {
+    handleError(res, err);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -217,35 +245,73 @@ function partnerSession(req, res) {
     success: true,
     partnerId: req.session.loyaltyPartner.id,
     name: req.session.loyaltyPartner.name,
+    mustChangePassword: req.session.loyaltyPartner.mustChangePassword || false,
   });
+
 }
 
 /* ─────────────────────────────────────────────────────────────
-   PARTNER — VALIDATE + REDEEM QR
+   PARTNER — OFFERS
+───────────────────────────────────────────────────────────── */
+async function getPartnerOffers(req, res) {
+  try {
+    const partnerId = req.session.loyaltyPartner.id;
+    const offers    = await loyaltyService.getPartnerOffers(partnerId);
+    return res.json({ success: true, data: offers });
+  } catch (err) {
+    handleError(res, err);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PARTNER — PREVALIDATE QR
+   Validates token + returns customer name + per-offer eligibility.
+   Does NOT redeem anything.
+───────────────────────────────────────────────────────────── */
+async function prevalidateQr(req, res) {
+  try {
+    const { token }   = req.body;
+    const partnerId   = req.session.loyaltyPartner.id;
+ 
+    if (!token) {
+      return res.status(400).json({ success: false, message: "Token mancante." });
+    }
+ 
+    const result = await loyaltyService.prevalidateQr({
+      token:     clean(token),
+      partnerId,
+    });
+ 
+    return res.json(result);
+  } catch (err) {
+    handleError(res, err);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PARTNER - REDEEM QR
 ───────────────────────────────────────────────────────────── */
 async function redeemQr(req, res) {
   try {
-    const { token, offerId } = req.body;
-
-    /* offerId must be provided — no "default-offer" fallback */
-    if (!offerId) {
-      return res.status(400).json({
-        success: false,
-        message: "Seleziona un'offerta prima di procedere.",
-      });
-    }
-
-    /* partnerId comes from the server-side session — never from the client body */
+    const { token, offerId, idempotencyKey } = req.body;
     const partnerId = req.session.loyaltyPartner.id;
-
-    const result = await loyaltyService.validateRedemption({
-      token: clean(token || ""),
-      offerId: clean(offerId || ""),
+ 
+    if (!token) {
+      return res.status(400).json({ success: false, message: "Token mancante." });
+    }
+    if (!offerId) {
+      return res.status(400).json({ success: false, message: "Seleziona un'offerta prima di procedere." });
+    }
+ 
+    const result = await loyaltyService.redeemOffer({
+      token:          clean(token),
+      offerId:        clean(offerId),
       partnerId,
+      idempotencyKey: idempotencyKey ? clean(idempotencyKey) : null,
     });
-
+ 
     const status = result.success ? 200 : 409;
-    res.status(status).json(result);
+    return res.status(status).json(result);
   } catch (err) {
     handleError(res, err);
   }
@@ -341,7 +407,7 @@ function adminSession(req, res) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   ADMIN — DATA READS
+   ADMIN — CUSTOMERS
 ───────────────────────────────────────────────────────────── */
 async function adminGetCustomers(req, res) {
   try {
@@ -354,6 +420,9 @@ async function adminGetCustomers(req, res) {
   }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   ADMIN — REDEMPTIONS
+───────────────────────────────────────────────────────────── */
 async function adminGetRedemptions(req, res) {
   try {
     const redemptions = await loyaltyService.getRedemptions();
@@ -363,6 +432,9 @@ async function adminGetRedemptions(req, res) {
   }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   ADMIN — OFFERS
+───────────────────────────────────────────────────────────── */
 async function adminGetOffers(req, res) {
   try {
     const offers = await loyaltyService.getOffers();
@@ -387,6 +459,49 @@ async function adminCreateOffer(req, res) {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   ADMIN — PARTNERS
+───────────────────────────────────────────────────────────── */
+async function adminGetPartners(req, res) {
+  try {
+    const partners = await loyaltyService.getAllPartners();
+    const safe     = partners.map(({ passwordHash: _pw, ...rest }) => rest);
+    return res.json({ success: true, data: safe });
+  } catch (err) {
+    handleError(res, err);
+  }
+}
+
+async function adminCreatePartner(req, res) {
+  try {
+    const { id, name, category, address, tempPassword } = req.body;
+    const result = await loyaltyService.createPartner({
+      id:          clean(id          || ""),
+      name:        clean(name        || ""),
+      category:    clean(category    || ""),
+      address:     clean(address     || ""),
+      tempPassword,
+    });
+    return res.status(201).json(result);
+  } catch (err) {
+    handleError(res, err);
+  }
+}
+ 
+async function adminSetPartnerActive(req, res) {
+  try {
+    const { id }    = req.params;
+    const { active } = req.body;
+    if (typeof active !== "boolean") {
+      return res.status(400).json({ success: false, message: "Campo 'active' deve essere boolean." });
+    }
+    const result = await loyaltyService.setPartnerActive(clean(id), active);
+    return res.json(result);
+  } catch (err) {
+    handleError(res, err);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
    EXPORTS
 ───────────────────────────────────────────────────────────── */
 module.exports = {
@@ -400,10 +515,12 @@ module.exports = {
 
   /* Partner */
   loginPartner,
+  setPartnerPassword,
   logoutPartner,
   partnerSession,
-  redeemQr,
   getPartnerOffers,
+  prevalidateQr,
+  redeemQr,
 
   /* Admin */
   loginAdmin,
@@ -413,4 +530,7 @@ module.exports = {
   adminGetRedemptions,
   adminGetOffers,
   adminCreateOffer,
+  adminGetPartners,
+  adminCreatePartner,
+  adminSetPartnerActive,
 };
