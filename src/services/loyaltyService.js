@@ -378,7 +378,7 @@ async function prevalidateQr({ token, partnerId } = {}) {
  
   const eligibleOffers = await Promise.all(
     offers.map(async (offer) => {
-      const lockKey = `mm:redeemed:${offer.id}:${customerId}`;
+      const lockKey = `mm:redeemed:${partnerId}:${offer.id}:${customerId}`;
       const used    = await redis.exists(lockKey);
       return {
         id:          offer.id,
@@ -408,18 +408,27 @@ async function prevalidateQr({ token, partnerId } = {}) {
    Layer 4: Idempotency key            (Redis SET NX EX 300)
    Layer 5: Sheets audit write         (fire-and-forget)
 ───────────────────────────────────────────────────────────── */
-
 async function redeemOffer({ token, offerId, partnerId, idempotencyKey }) {
-  /* ── 0. Idempotency — same key = same response, no double processing ── */
+  /* ─────────────────────────────────────────────────────────────
+     0. IDEMPOTENCY
+     Same request repeated = same response returned
+  ───────────────────────────────────────────────────────────── */
   if (idempotencyKey) {
-    const idemKey    = `mm:idempotency:${idempotencyKey}`;
-    const cachedRaw  = await redis.get(idemKey);
+    const idemKey   = `mm:idempotency:${idempotencyKey}`;
+    const cachedRaw = await redis.get(idemKey);
+
     if (cachedRaw) {
-      return typeof cachedRaw === "string" ? JSON.parse(cachedRaw) : cachedRaw;
+      return typeof cachedRaw === "string"
+        ? JSON.parse(cachedRaw)
+        : cachedRaw;
     }
   }
-  /* ── 1. Verify QR signature + expiry ── */
+
+  /* ─────────────────────────────────────────────────────────────
+     1. VERIFY QR TOKEN
+  ───────────────────────────────────────────────────────────── */
   const check = verifyQrToken(token);
+
   if (!check.valid) {
     const messages = {
       TOKEN_MISSING:           "QR mancante.",
@@ -427,90 +436,190 @@ async function redeemOffer({ token, offerId, partnerId, idempotencyKey }) {
       TOKEN_INVALID_SIGNATURE: "QR non autentico.",
       TOKEN_EXPIRED:           "QR scaduto. Chiedi al cliente di aggiornare il QR.",
     };
-    return { success: false, code: check.reason, message: messages[check.reason] || "QR non valido." };
+
+    return {
+      success: false,
+      code: check.reason,
+      message: messages[check.reason] || "QR non valido.",
+    };
   }
-  const { customerId } = check;
 
-  /* ── 2. Atomic QR replay lock — SET NX EX ── */
-  const tokenHash   = crypto.createHash("sha256").update(token).digest("hex");
-  const replayKey   = `mm:usedqr:${tokenHash}`;
-  const ttlSeconds  = Math.ceil(parseInt(process.env.LOYALTY_QR_TTL_MS || "300000", 10) / 1000);
+  /* ─────────────────────────────────────────────────────────────
+     2. NORMALIZE IDS
+     Prevent Redis key mismatches due to type inconsistencies
+  ───────────────────────────────────────────────────────────── */
+  const normalizedCustomerId = String(check.customerId).trim();
+  const normalizedOfferId    = String(offerId).trim();
+  const normalizedPartnerId  = String(partnerId).trim();
 
-  const replayLock  = await redis.set(replayKey, "1", { nx: true, ex: ttlSeconds });
+  /* ─────────────────────────────────────────────────────────────
+     3. TEMPORARY QR REPLAY PROTECTION
+     Prevent same QR reuse during QR lifetime
+  ───────────────────────────────────────────────────────────── */
+  const tokenHash = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  const replayKey = `mm:usedqr:${tokenHash}`;
+
+  const ttlSeconds = Math.ceil(
+    parseInt(process.env.LOYALTY_QR_TTL_MS || "300000", 10) / 1000
+  );
+
+  const replayLock = await redis.set(
+    replayKey,
+    "1",
+    {
+      nx: true,
+      ex: ttlSeconds,
+    }
+  );
+
   if (replayLock === null) {
-    return { success: false, code: "TOKEN_ALREADY_USED", message: "QR già utilizzato. Chiedi al cliente di aggiornare il QR." };
+    return {
+      success: false,
+      code: "TOKEN_ALREADY_USED",
+      message: "QR già utilizzato. Chiedi al cliente di aggiornare il QR.",
+    };
   }
 
-  /* ── 3. Validate customer ── */
+  /* ─────────────────────────────────────────────────────────────
+     4. VALIDATE CUSTOMER
+  ───────────────────────────────────────────────────────────── */
   const customers = await readCustomers();
-  const customer  = customers.find((c) => c.id === customerId);
+
+  const customer = customers.find(
+    (c) => String(c.id).trim() === normalizedCustomerId
+  );
+
   if (!customer) {
-    /* Release replay lock if customer not found — token could be retried */
     await redis.del(replayKey);
-    return { success: false, code: "CUSTOMER_NOT_FOUND", message: "Cliente non trovato." };
+
+    return {
+      success: false,
+      code: "CUSTOMER_NOT_FOUND",
+      message: "Cliente non trovato.",
+    };
   }
+
   if (!customer.active) {
     await redis.del(replayKey);
-    return { success: false, code: "CUSTOMER_SUSPENDED", message: "Account cliente sospeso." };
+
+    return {
+      success: false,
+      code: "CUSTOMER_SUSPENDED",
+      message: "Account cliente sospeso.",
+    };
   }
 
-  /* ── 4. Validate offer ── */
+  /* ─────────────────────────────────────────────────────────────
+     5. VALIDATE OFFER
+  ───────────────────────────────────────────────────────────── */
   const offers = await readOffers();
-  const offer  = offers.find((o) => o.id === offerId);
+
+  const offer = offers.find(
+    (o) => String(o.id).trim() === normalizedOfferId
+  );
+
   if (!offer || !offer.active) {
     await redis.del(replayKey);
-    return { success: false, code: "OFFER_INVALID", message: "Offerta non valida o non attiva." };
+
+    return {
+      success: false,
+      code: "OFFER_INVALID",
+      message: "Offerta non valida o non attiva.",
+    };
   }
 
-  /* ── 5. Atomic permanent offer redemption lock — SET NX (no TTL = forever) ── */
-  const redemptionKey  = `mm:redeemed:${offerId}:${customerId}`;
+  /* ─────────────────────────────────────────────────────────────
+     6. PERMANENT BUSINESS REDEMPTION LOCK
+     Prevent same customer redeeming same offer
+     at same partner forever
+  ───────────────────────────────────────────────────────────── */
+  const redemptionKey =
+    `mm:redeemed:${normalizedPartnerId}:${normalizedOfferId}:${normalizedCustomerId}`;
+
   const redemptionData = JSON.stringify({
-    customerId,
-    offerId,
-    partnerId,
+    customerId: normalizedCustomerId,
+    partnerId:  normalizedPartnerId,
+    offerId:    normalizedOfferId,
     redeemedAt: Date.now(),
   });
- 
-  const redemptionLock = await redis.set(redemptionKey, redemptionData, { nx: true });
+
+  console.log("[redeemOffer] redemptionKey =", redemptionKey);
+
+  const redemptionLock = await redis.set(
+    redemptionKey,
+    redemptionData,
+    { nx: true }
+  );
+
   if (redemptionLock === null) {
-    return { success: false, code: "OFFER_ALREADY_REDEEMED", message: "Questo cliente ha già utilizzato questa offerta." };
+    /* Redemption failed → release temporary QR replay lock */
+    await redis.del(replayKey);
+
+    return {
+      success: false,
+      code: "OFFER_ALREADY_REDEEMED",
+      message: "Questo cliente ha già utilizzato questa offerta.",
+    };
   }
 
-  /* ── 6. Build redemption record ── */
-  const redemptionId = `r-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
-  const now          = new Date();
-  const nowIso       = now.toISOString();
+  /* ─────────────────────────────────────────────────────────────
+     7. BUILD REDEMPTION RECORD
+  ───────────────────────────────────────────────────────────── */
+  const redemptionId =
+    `r-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
 
-/* ── 7. Persist to Sheets (audit trail — fire-and-forget) ── */
+  const now    = new Date();
+  const nowIso = now.toISOString();
+
+  /* ─────────────────────────────────────────────────────────────
+     8. PERSIST TO SHEETS (AUDIT TRAIL)
+  ───────────────────────────────────────────────────────────── */
   appendRow(SHEET.REDEMPTIONS, [
     redemptionId,
-    customerId,
-    clean(partnerId),
-    clean(offerId),
-    tokenHash,          // store hash not raw token in sheets
+    normalizedCustomerId,
+    normalizedPartnerId,
+    normalizedOfferId,
+    tokenHash,
     now.toISOString().slice(0, 10),
     nowIso,
   ]).catch((err) => {
-    console.error("[loyaltyService/redeemOffer] Sheets write failed:", err.message);
+    console.error(
+      "[loyaltyService/redeemOffer] Sheets write failed:",
+      err.message
+    );
   });
- 
+
+  /* ─────────────────────────────────────────────────────────────
+     9. SUCCESS RESPONSE
+  ───────────────────────────────────────────────────────────── */
   const result = {
-    success:       true,
+    success: true,
     redemptionId,
-    customerName:  customer.full_name,
-    offerTitle:    offer.title,
-    message:       `✓ ${offer.title} applicato per ${customer.full_name}`,
-    redeemedAt:    nowIso,
+    customerName: customer.full_name,
+    offerTitle: offer.title,
+    message: `${offer.title} applicato per ${customer.full_name}`,
+    redeemedAt: nowIso,
   };
- 
-  /* ── 8. Cache idempotency result ── */
+
+  /* ─────────────────────────────────────────────────────────────
+     10. CACHE IDEMPOTENT RESPONSE
+  ───────────────────────────────────────────────────────────── */
   if (idempotencyKey) {
-    await redis.set(`mm:idempotency:${idempotencyKey}`, JSON.stringify(result), { ex: 300 });
+    await redis.set(
+      `mm:idempotency:${idempotencyKey}`,
+      JSON.stringify(result),
+      { ex: 300 }
+    );
   }
- 
+
   return result;
 }
-/* ─────────────────────────────────────────────────────────────
+
+  /* ─────────────────────────────────────────────────────────────
    ADMIN READS
 ───────────────────────────────────────────────────────────── */
 

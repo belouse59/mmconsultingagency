@@ -281,7 +281,8 @@ async function prevalidateQr(req, res) {
       token:     clean(token),
       partnerId,
     });
-    result.eligibleOffers = await loyaltyService.getPartnerOffers(partnerId);
+    if(result) result.eligibleOffers = await loyaltyService.getPartnerOffers(partnerId);
+
  
     return res.json(result);
   } catch (err) {
