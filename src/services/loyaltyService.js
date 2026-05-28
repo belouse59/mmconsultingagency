@@ -14,12 +14,12 @@
  *     The token stored in Sheets is the customer UID, NOT the signed QR
  *   - Full JSDoc for maintainability
  */
-
 const { appendRow, getSheetValues }              = require("./sheetsService");
 const { clean }                                  = require("../utils/sanitizer");
 const { generateCustomerId, verifyQrToken }      = require("./qrService");
 const { hashPassword, verifyPassword }           = require("../utils/argon2");
 const { redisClient: redis }                     = require ("../utils/redis");
+const crypto = require("crypto");
 
 const SHEET = {
   CUSTOMERS:   "Customers",

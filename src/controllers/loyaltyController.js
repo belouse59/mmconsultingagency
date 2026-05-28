@@ -281,6 +281,7 @@ async function prevalidateQr(req, res) {
       token:     clean(token),
       partnerId,
     });
+    result.eligibleOffers = await loyaltyService.getPartnerOffers(partnerId);
  
     return res.json(result);
   } catch (err) {
@@ -320,21 +321,21 @@ async function redeemQr(req, res) {
 /* ─────────────────────────────────────────────────────────────
    PARTNER — OFFERS (for the scan page dropdown)
 ───────────────────────────────────────────────────────────── */
-async function getPartnerOffers(req, res) {
-  try {
-    const partnerId = req.session.loyaltyPartner.id;
-    const allOffers = await loyaltyService.getOffers();
+// async function getPartnerOffers(req, res) {
+//   try {
+//     const partnerId = req.session.loyaltyPartner.id;
+//     const allOffers = await loyaltyService.getOffers();
 
-    /* Partners see offers assigned to them OR global offers (no partnerId) */
-    const relevant = allOffers.filter(
-      (o) => o.active && (!o.partnerId || o.partnerId === partnerId)
-    );
+//     /* Partners see offers assigned to them OR global offers (no partnerId) */
+//     const relevant = allOffers.filter(
+//       (o) => o.active && (!o.partnerId || o.partnerId === partnerId)
+//     );
 
-    res.json({ success: true, data: relevant });
-  } catch (err) {
-    handleError(res, err);
-  }
-}
+//     res.json({ success: true, data: relevant });
+//   } catch (err) {
+//     handleError(res, err);
+//   }
+// }
 
 /* ─────────────────────────────────────────────────────────────
    ADMIN — LOGIN

@@ -335,13 +335,13 @@ function _populateOfferSelect(offers) {
 
   offers.forEach((offer) => {
     const opt          = document.createElement("option");
-    opt.value          = offer.eligible ? offer.id : "";
-    opt.textContent    = offer.eligible
+    opt.value          = offer.active ? offer.id : "";
+    opt.textContent    = offer.active
       ? offer.title
       : `${offer.title} — ${offer.reason || "Non disponibile"}`;
-    opt.disabled       = !offer.eligible;
+    opt.disabled       = !offer.active;
     opt.dataset.desc   = offer.description || "";
-    opt.dataset.eligible = offer.eligible ? "1" : "0";
+    opt.dataset.eligible = offer.active ? "1" : "0";
     offerSelect.appendChild(opt);
   });
 
