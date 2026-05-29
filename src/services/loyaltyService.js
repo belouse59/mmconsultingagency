@@ -631,8 +631,8 @@ async function redeemOffer({ token, offerId, partnerId } = {}) {
       db.query(
         `SELECT id, title, active 
          FROM offers 
-         WHERE id = $1 AND (partner_id = $2 OR partner_id = "Globale")`,
-        [offerId, partnerId]
+         WHERE id = $1 AND (partner_id = $2 OR partner_id = $3)`,
+        [offerId, partnerId, "Globale"]
       ),
     ]);
 
