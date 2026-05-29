@@ -405,7 +405,7 @@ if (addOfferForm) {
 
     const title       = offerTitleEl?.value.trim();
     const description = offerDescEl?.value.trim();
-    const partnerId   = offerPartnerEl?.value.trim();
+    const partnerId   = offerPartnerEl?.value.trim() === "" ? "Globale" : offerPartnerEl?.value.trim();
 
     if (!title) {
       if (offerErrorText) offerErrorText.textContent = "Il titolo dell'offerta è obbligatorio.";
