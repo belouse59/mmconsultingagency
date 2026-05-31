@@ -1,17 +1,20 @@
 "use strict";
 
 /**
- * routes/loyaltyRoutes.js
- *
- * Mounted at: /api/loyalty
- *
- * CHANGES FROM ORIGINAL:
- *   - Rate limiting on all auth endpoints (express-rate-limit)
- *   - All admin routes protected by requireAdminAPI guard
- *   - All customer data routes protected by requireCustomerAPI guard
- *   - All partner data routes protected by requirePartnerAPI guard
- *   - Redemption endpoint rate-limited independently (stricter)
- *   - Consistent REST naming
+|--------------------------------------------------------------------------
+| Loyalty Router
+|--------------------------------------------------------------------------
+|
+| Mounted at:
+|   /api/loyalty
+|
+| Principles:
+| - Role-based route grouping
+| - Centralized rate limiting
+| - Validation-ready
+| - Idempotency-ready
+| - Minimal controller responsibility
+|
  *
  * Route map:
  *   POST   /customer/register
@@ -36,97 +39,371 @@
  *   POST   /admin/offers
  */
 
-const express      = require("express");
-const rateLimit    = require("express-rate-limit");
-const adminCtrl   = require("../controllers/loyalty/adminLoyaltyController");
-const customerCtrl   = require("../controllers/loyalty/customerLoyaltyController");
-const partnerCtrl   = require("../controllers/loyalty/partnerLoyaltyController");
+const express = require("express");
+const rateLimit = require("express-rate-limit");
+
+const adminCtrl = require("../controllers/loyalty/adminLoyaltyController");
+const customerCtrl = require("../controllers/loyalty/customerLoyaltyController");
+const partnerCtrl = require("../controllers/loyalty/partnerLoyaltyController");
+
 const {
-  requireCustomerAPI,
-  requirePartnerAPI,
-  requirePartnerAnyAPI,
-  requireAdminAPI,
-  requireXHR,
+    requireCustomerAPI,
+    requirePartnerAPI,
+    requirePartnerAnyAPI,
+    requireAdminAPI,
+    requireXHR,
 } = require("../middleware/loyaltySession");
 
-const router          = express.Router();
+const router = express.Router();
 
-/* ─────────────────────────────────────────────────────────────
-   RATE LIMITERS
-───────────────────────────────────────────────────────────── */
+const {
+    ipKeyGenerator,
+} = rateLimit;
 
-/** Auth endpoints: 10 attempts per 15 minutes per IP */
-const authLimiter = rateLimit({
-  windowMs:         15 * 60 * 1000,
-  max:              10,
-  standardHeaders:  true,
-  legacyHeaders:    false,
-  message: { success: false, message: "Troppi tentativi. Riprova tra 15 minuti." },
-  skip: () => process.env.NODE_ENV === "test",
+/* ──────────────────────────────────────────────
+   LIMITER FACTORY
+────────────────────────────────────────────── */
+
+function createLimiter({
+    windowMs,
+    max,
+    message,
+    keyGenerator,
+}) {
+    return rateLimit({
+        windowMs,
+        max,
+
+        standardHeaders: true,
+        legacyHeaders: false,
+
+        skip:
+            () =>
+                process.env.NODE_ENV === "test",
+
+        keyGenerator:
+            keyGenerator ||
+            ((req) =>
+                ipKeyGenerator(req)),
+
+        handler(req, res) {
+            return res
+                .status(429)
+                .json({
+                    success: false,
+                    message,
+                });
+        },
+    });
+}
+
+/* ──────────────────────────────────────────────
+   LIMITERS
+────────────────────────────────────────────── */
+
+const authLimiter =
+createLimiter({
+    windowMs:
+        15 * 60 * 1000,
+
+    max:
+        10,
+
+    message:
+        "Troppi tentativi. Riprova tra 15 minuti.",
+
+    keyGenerator(req) {
+        return (
+            req.body?.email?.toLowerCase()
+            ||
+            req.body?.username?.toLowerCase()
+            ||
+            ipKeyGenerator(req)
+        );
+    },
 });
 
-/** Redemption endpoint: 30 scans per minute per IP (partner device) */
-const redeemLimiter = rateLimit({
-  windowMs:         60 * 1000,
-  max:              30,
-  standardHeaders:  true,
-  legacyHeaders:    false,
-  message: { success: false, message: "Troppi tentativi di validazione. Riprova tra un minuto." },
-  skip: () => process.env.NODE_ENV === "test",
+const registerLimiter =
+createLimiter({
+    windowMs:
+        60 * 60 * 1000,
+
+    max:
+        5,
+
+    message:
+        "Troppi tentativi di registrazione. Riprova tra un'ora.",
+
+    keyGenerator(req) {
+        return (
+            req.body?.email?.toLowerCase()
+            ||
+            ipKeyGenerator(req)
+        );
+    },
 });
 
-/** Registration: 5 per hour per IP — prevents mass account creation */
-const registerLimiter = rateLimit({
-  windowMs:         60 * 60 * 1000,
-  max:              5,
-  standardHeaders:  true,
-  legacyHeaders:    false,
-  message: { success: false, message: "Troppi tentativi di registrazione. Riprova tra un'ora." },
-  skip: () => process.env.NODE_ENV === "test",
+const redeemLimiter =
+createLimiter({
+    windowMs:
+        60 * 1000,
+
+    max:
+        30,
+
+    message:
+        "Troppi tentativi di validazione. Riprova tra un minuto.",
+
+    keyGenerator(req) {
+        return (
+            req.user?.partnerId
+            ||
+            ipKeyGenerator(req)
+        );
+    },
 });
 
-/** Manual scan: 10 per hour per IP — prevents mass account creation */
-const manualLimiter = rateLimit({
-  windowMs:        60 * 1000,
-  max:             10,
-  standardHeaders: true,
-  legacyHeaders:   false,
-  message:         { success: false, message: "Troppi tentativi manuali. Riprova tra un minuto." },
-  skip:            () => process.env.NODE_ENV === "test",
+const manualLimiter =
+createLimiter({
+    windowMs:
+        60 * 1000,
+
+    max:
+        10,
+
+    message:
+        "Troppi tentativi manuali. Riprova tra un minuto.",
+
+    keyGenerator(req) {
+        return (
+            req.user?.partnerId
+            ||
+            ipKeyGenerator(req)
+        );
+    },
 });
-/* ─────────────────────────────────────────────────────────────
-   CUSTOMER ROUTES
-───────────────────────────────────────────────────────────── */
-router.post("/customer/register", registerLimiter, requireXHR,         customerCtrl.registerCustomer);
-router.post("/customer/login",    authLimiter,                         customerCtrl.loginCustomer);
-router.post("/customer/logout",   requireXHR,                          customerCtrl.logoutCustomer);
-router.get( "/customer/session",                                        customerCtrl.customerSession);
-router.get( "/customer/qr",       requireCustomerAPI,                   customerCtrl.getCustomerQr);
-router.get( "/customer/offers",   requireCustomerAPI,                   customerCtrl.getOffers);
 
-/* ─────────────────────────────────────────────────────────────
-   PARTNER ROUTES
-───────────────────────────────────────────────────────────── */
-router.post("/partner/login",        authLimiter,                                              partnerCtrl.loginPartner);
-router.post("/partner/logout",       requireXHR,                                               partnerCtrl.logoutPartner);
-router.get( "/partner/session",                                                                partnerCtrl.partnerSession);
-router.post("/partner/set-password", requireXHR, requirePartnerAnyAPI,                        partnerCtrl.setPartnerPassword);
-router.get( "/partner/offers",       requirePartnerAPI,                                        partnerCtrl.getPartnerOffers);
-router.post("/partner/prevalidate",  requireXHR, requirePartnerAPI, manualLimiter,             partnerCtrl.prevalidateQr);
-router.post("/partner/redeem",       requireXHR, requirePartnerAPI, redeemLimiter,             partnerCtrl.redeemQr);
+/* ──────────────────────────────────────────────
+   OPTIONAL VALIDATION PLACEHOLDER
+────────────────────────────────────────────── */
 
-/* ─────────────────────────────────────────────────────────────
-   ADMIN ROUTES
-───────────────────────────────────────────────────────────── */
-router.post("/admin/login",                   authLimiter,                                     adminCtrl.loginAdmin);
-router.post("/admin/logout",                  requireXHR,                                      adminCtrl.logoutAdmin);
-router.get( "/admin/session",                 requireAdminAPI,                                 adminCtrl.adminSession);
-router.get( "/admin/customers",               requireAdminAPI,                                 adminCtrl.adminGetCustomers);
-router.get( "/admin/redemptions",             requireAdminAPI,                                 adminCtrl.adminGetRedemptions);
-router.get( "/admin/offers",                  requireAdminAPI,                                 adminCtrl.adminGetOffers);
-router.post("/admin/offers",                  requireXHR, requireAdminAPI,                     adminCtrl.adminCreateOffer);
-router.get( "/admin/partners",                requireAdminAPI,                                 adminCtrl.adminGetPartners);
-router.post("/admin/partners",                requireXHR, requireAdminAPI,                     adminCtrl.adminCreatePartner);
-router.patch("/admin/partners/:id/active",    requireXHR, requireAdminAPI,                     adminCtrl.adminSetPartnerActive);
+const validate =
+    (...validators) =>
+        validators;
 
-module.exports = router;
+/* ──────────────────────────────────────────────
+   OPTIONAL IDEMPOTENCY PLACEHOLDER
+────────────────────────────────────────────── */
+
+function requireIdempotency(
+    req,
+    res,
+    next
+) {
+    const key =
+        req.header(
+            "Idempotency-Key"
+        );
+
+    if (!key) {
+        return res
+            .status(400)
+            .json({
+                success: false,
+                message:
+                    "Idempotency-Key required",
+            });
+    }
+
+    next();
+}
+
+/* ──────────────────────────────────────────────
+   CUSTOMER ROUTER
+────────────────────────────────────────────── */
+
+const customerRouter =
+express.Router();
+
+customerRouter.post(
+    "/register",
+    registerLimiter,
+    requireXHR,
+    validate(),
+    customerCtrl.registerCustomer
+);
+
+customerRouter.post(
+    "/login",
+    authLimiter,
+    validate(),
+    customerCtrl.loginCustomer
+);
+
+customerRouter.post(
+    "/logout",
+    requireXHR,
+    customerCtrl.logoutCustomer
+);
+
+customerRouter.get(
+    "/session",
+    customerCtrl.customerSession
+);
+
+customerRouter.use(
+    requireCustomerAPI
+);
+
+customerRouter.get(
+    "/qr",
+    customerCtrl.getCustomerQr
+);
+
+customerRouter.get(
+    "/offers",
+    customerCtrl.getOffers
+);
+
+/* ──────────────────────────────────────────────
+   PARTNER ROUTER
+────────────────────────────────────────────── */
+
+const partnerRouter =
+express.Router();
+
+partnerRouter.post(
+    "/login",
+    authLimiter,
+    partnerCtrl.loginPartner
+);
+
+partnerRouter.post(
+    "/logout",
+    requireXHR,
+    partnerCtrl.logoutPartner
+);
+
+partnerRouter.get(
+    "/session",
+    partnerCtrl.partnerSession
+);
+
+partnerRouter.post(
+    "/set-password",
+    requireXHR,
+    requirePartnerAnyAPI,
+    partnerCtrl.setPartnerPassword
+);
+
+partnerRouter.use(
+    requirePartnerAPI
+);
+
+partnerRouter.get(
+    "/offers",
+    partnerCtrl.getPartnerOffers
+);
+
+partnerRouter.post(
+    "/prevalidate",
+    requireXHR,
+    manualLimiter,
+    partnerCtrl.prevalidateQr
+);
+
+partnerRouter.post(
+    "/redeem",
+    requireXHR,
+    redeemLimiter,
+    requireIdempotency,
+    partnerCtrl.redeemQr
+);
+
+/* ──────────────────────────────────────────────
+   ADMIN ROUTER
+────────────────────────────────────────────── */
+
+const adminRouter =
+express.Router();
+
+adminRouter.post(
+    "/login",
+    authLimiter,
+    adminCtrl.loginAdmin
+);
+
+adminRouter.use(
+    requireAdminAPI
+);
+
+adminRouter.post(
+    "/logout",
+    requireXHR,
+    adminCtrl.logoutAdmin
+);
+
+adminRouter.get(
+    "/session",
+    adminCtrl.adminSession
+);
+
+adminRouter.get(
+    "/customers",
+    adminCtrl.adminGetCustomers
+);
+
+adminRouter.get(
+    "/redemptions",
+    adminCtrl.adminGetRedemptions
+);
+
+adminRouter.get(
+    "/offers",
+    adminCtrl.adminGetOffers
+);
+
+adminRouter.post(
+    "/offers",
+    requireXHR,
+    adminCtrl.adminCreateOffer
+);
+
+adminRouter.get(
+    "/partners",
+    adminCtrl.adminGetPartners
+);
+
+adminRouter.post(
+    "/partners",
+    requireXHR,
+    adminCtrl.adminCreatePartner
+);
+
+adminRouter.patch(
+    "/partners/:id/active",
+    requireXHR,
+    adminCtrl.adminSetPartnerActive
+);
+
+/* ──────────────────────────────────────────────
+   MOUNT
+────────────────────────────────────────────── */
+
+router.use(
+    "/customer",
+    customerRouter
+);
+
+router.use(
+    "/partner",
+    partnerRouter
+);
+
+router.use(
+    "/admin",
+    adminRouter
+);
+
+module.exports =
+router;

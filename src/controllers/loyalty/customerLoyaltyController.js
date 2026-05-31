@@ -3,7 +3,6 @@ const customerLoyaltyService = require("../../services/loyalty/customerLoyaltySe
 const offerLoyaltyService = require("../../services/loyalty/offerLoyaltyService");
 const { generateQrImage } = require("../../services/qrService");
 const { clean } = require("../../utils/sanitizer");
-const { verifyPassword } = require("../../utils/argon2");
 const { establishSession, destroySession } = require("../../services/sessionService");
 const { handleError } = require("./helper")
 /* ─────────────────────────────────────────────────────────────
