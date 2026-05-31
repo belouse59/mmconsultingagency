@@ -15,7 +15,7 @@ function buildPage({ mainPage, script, pageFile, outputFile, headVars, footerVar
     path.join(LAYOUT_DIR, "base.html"),
     "utf8"
   );
-  
+
   buildVariable(headVars, variables, outputFile);
 
 
@@ -24,10 +24,26 @@ function buildPage({ mainPage, script, pageFile, outputFile, headVars, footerVar
   const whatsAppWidget = mainPage ? loadTemplate("layout/whatsApp.html") : "";
   const footer = mainPage ? loadTemplate("layout/footer.html", footerVars) : "";
   // 3. Load page content only
-  const content = fs.readFileSync(
+  let content = fs.readFileSync(
     path.join(PAGES_DIR, pageFile),
     "utf8"
-  );
+  )
+
+  if (mainPage) {
+
+    content = content.replace(
+      "{{PARTNER_LOGOS}}",
+      buildPartnersMarkup()
+    );
+    content = content.replace(
+      "{{TEAM_SLIDES}}",
+      buildTeamMarkup()
+    );
+    content = content.replace(
+    "{{PROVIDER_CARDS}}",
+    buildProvidersMarkup()
+    );
+  }
 
   // 4. Inject into base template
   const html = base
@@ -42,6 +58,113 @@ function buildPage({ mainPage, script, pageFile, outputFile, headVars, footerVar
     path.join(PUBLIC_DIR, outputFile),
     html
   );
+}
+
+function buildPartnersMarkup() {
+  const images = getImages("partners");
+  const repeated = [...images, ...images, ...images];
+
+  return repeated
+    .map(
+      (image) => `
+        <img
+          src="${image.src}"
+          alt="Logo fornitore partner M&M Consulting: ${image.name}"
+          width="110"
+          height="40"
+          loading="lazy"
+        >
+      `
+    )
+    .join("");
+}
+function buildTeamMarkup() {
+  const team = JSON.parse(
+  fs.readFileSync(
+    path.join(__dirname, "data", "team.json"),
+    "utf8"
+  )
+);
+  return team
+    .map((member, i) => {
+      const badges = member.badges
+        .map((badge) => `
+          <span class="team-badge">${badge}</span>
+        `)
+        .join("");
+
+      return `
+        <div class="team-slide${i === 0 ? " active" : ""}">
+          <div class="team-card">
+            <div class="team-image">
+              <img
+                src="/assets/team/${member.imageId}"
+                alt="Foto di ${member.name}, ${member.role} – M&M Consulting"
+                loading="lazy"
+                width="160"
+                height="190">
+            </div>
+
+            <div class="team-text">
+              <h3>${member.name}</h3>
+              <span class="team-role">${member.role}</span>
+              <p>${member.description}</p>
+              <div class="team-badges">
+                ${badges}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function buildProvidersMarkup() {
+  const providers = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, "data", "providers.json"),
+      "utf8"
+    )
+  );
+
+  return providers
+    .map(
+      (p) => `
+        <div
+          class="sim-card provider-card"
+          data-provider="${p.key}"
+          role="radio"
+          aria-checked="false"
+          aria-label="${p.name.toUpperCase()}"
+          tabindex="0"
+        >
+          <img
+            src="/assets/sim-providers/${p.file}"
+            alt="${p.name}"
+            width="40"
+            height="40"
+            loading="lazy"
+          >
+          <span>${p.name}</span>
+        </div>
+      `
+    )
+    .join("");
+}
+
+function getImages(directory) {
+  const dir = path.join(PUBLIC_DIR, "assets", directory);
+
+  return fs
+    .readdirSync(dir)
+    .filter(file =>
+      /\.(webp|png|jpg|jpeg|svg)$/i.test(file)
+    )
+    .map(file => ({
+      src: `/assets/${directory}/${file}`,
+      name: path.parse(file).name
+    }));
 }
 
 function buildVariable(headVars, variables, outputFile) {
@@ -77,7 +200,7 @@ buildPage({
     YEAR: new Date().getFullYear()
   },
   variables: {
-    description:"M&M Consulting è il broker energetico di Messina. Confrontiamo oltre 20 fornitori di luce e gas per trovare la tariffa più conveniente per la tua casa o azienda. Analisi gratuita, nessun impegno.",
+    description: "M&M Consulting è il broker energetico di Messina. Confrontiamo oltre 20 fornitori di luce e gas per trovare la tariffa più conveniente per la tua casa o azienda. Analisi gratuita, nessun impegno.",
     twitter_Title: "Broker Energia Messina | M&M Consulting",
     twitter_Description: "Risparmia fino al 30% sulla bolletta luce e gas con il nostro servizio gratuito.",
     og_Title: "Broker Energia Messina | Risparmia su Luce e Gas – M&M Consulting",
@@ -114,7 +237,7 @@ buildPage({
       "priceRange": "Gratuito"
     }
   </script>`,
-  STRUCTURED_DATA_FAQ:`  <script type="application/ld+json">
+    STRUCTURED_DATA_FAQ: `  <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "FAQPage",
@@ -154,7 +277,7 @@ buildPage({
       ]
     }
   </script>`,
-  robots: "index, follow"
+    robots: "index, follow"
   }
 });
 
@@ -176,7 +299,7 @@ buildPage({
   },
   variables: {
     keywords: "privacy policy, trattamento dati personali, GDPR, informativa privacy, protezione dati, M&M Consulting Messina",
-    description:"Consulta la Privacy Policy di M&M Consulting Messina e scopri come raccogliamo, utilizziamo e proteggiamo i tuoi dati personali in conformità al GDPR.",
+    description: "Consulta la Privacy Policy di M&M Consulting Messina e scopri come raccogliamo, utilizziamo e proteggiamo i tuoi dati personali in conformità al GDPR.",
     twitter_Title: "Privacy Policy | M&M Consulting Messina",
     twitter_Description: "Consulta la Privacy Policy del sito web M&M Consulting Messina.",
     og_Title: "Privacy Policy | M&M Consulting Messina",
@@ -204,7 +327,7 @@ buildPage({
   },
   variables: {
     keywords: "note legali, legal notice, condizioni di utilizzo, disclaimer sito web, proprietà sito web, M&M Consulting Messina",
-    description:"Consulta le Note Legali di M&M Consulting Messina con informazioni su proprietà del sito, responsabilità e condizioni di utilizzo.",
+    description: "Consulta le Note Legali di M&M Consulting Messina con informazioni su proprietà del sito, responsabilità e condizioni di utilizzo.",
     twitter_Title: "Note Legali | M&M Consulting Messina",
     twitter_Description: "Consulta le Note Legali del sito web M&M Consulting Messina.",
     og_Title: "Note Legali | M&M Consulting Messina",
@@ -232,7 +355,7 @@ buildPage({
   },
   variables: {
     keywords: "cookies policy, informativa cookies, gestione cookies, cookies sito web, privacy e cookies, cookies tecnici analitici profilazione, M&M Consulting Messina",
-    description:"Leggi la Cookies Policy di M&M Consulting Messina e scopri come utilizziamo cookies tecnici, analitici e di profilazione sul nostro sito web.",
+    description: "Leggi la Cookies Policy di M&M Consulting Messina e scopri come utilizziamo cookies tecnici, analitici e di profilazione sul nostro sito web.",
     twitter_Title: "Cookies Policy | M&M Consulting Messina",
     twitter_Description: "Consulta la Cookie Policy di M&M Consulting Messina.",
     og_Title: "Cookies Policy | M&M Consulting Messina",

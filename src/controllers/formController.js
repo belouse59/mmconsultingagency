@@ -3,7 +3,8 @@
 const { appendRow, getSheetValues } = require("../services/sheetsService");
 const { isValidEmail, isValidPhone } = require("../utils/validators");
 const { clean } = require("../utils/sanitizer");
-const { notifyNewLead, notifySimulator } = require("../services/emailService");
+const { notifyNewLead, notifySimulator, sendVerificationEmail } = require("../services/emailService");
+const { generateToken, verifyToken } = require("../services/tokenService");
 const { translateFormData } = require("../utils/translation");
 const { getLocalTimestamp } = require("../utils/dateFormat");
 
@@ -68,8 +69,100 @@ async function handleContact(data) {
     clean(data.consent)
   ]);
 
+    const emailStatus = await findEmailStatus(
+    "ContactUsForm",
+    data.email
+  );
+
+  const timestamp = getLocalTimestamp();
+
+  /*
+    CASE 1:
+    email exists but NOT verified
+    -> resend verification
+  */
+  let mailSent;
+  if (emailStatus.exists && !emailStatus.verified) {
+    const token = generateToken(data.email);
+
+    try {
+      mailSent = await sendVerificationEmail(
+        data.email,
+        token
+      );
+    } catch (err) {
+      console.error(err);
+    }
+
+    return respond(
+      "success",
+      "Request processed"
+    );
+  }
+
+  /*
+    CASE 2:
+    email exists + already verified
+    -> append directly verified=true
+  */
+  if (emailStatus.exists && emailStatus.verified) {
+    await appendRow("ContactUsForm", [
+      timestamp,
+      clean(data.name),
+      clean(data.email),
+      clean(data.phone),
+      clean(data.requestType),
+      clean(data.message),
+      "contact",
+      "SI",
+      timestamp,
+      clean(data.consent)
+    ]);
+
+    return respond(
+      "success",
+      "Request processed"
+    );
+  }
+
+  /*
+    CASE 3:
+    new email
+    -> create unverified + send email
+  */
+  await appendRow("ContactUsForm", [
+    timestamp,
+    clean(data.name),
+    clean(data.email),
+    clean(data.phone),
+    clean(data.requestType),
+    clean(data.message),
+    "contact",
+    "NO",
+    "",
+    clean(data.consent)
+  ]);
+
+  const token = generateToken(data.email);
+
+  try {
+    mailSent = await sendVerificationEmail(
+      data.email,
+      token
+    );
+    console.log(mailSent);
+  } catch (err) {
+    console.error(err);
+  }
+
+  return respond(
+    "success",
+    "Request processed"
+  );
+
   // Fire-and-forget — never blocks the API response
   notifyNewLead(data);
+  sendVerificationEmail()
 
   return ok("Richiesta ricevuta con successo.");
 }

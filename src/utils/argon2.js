@@ -48,7 +48,7 @@ async function hashPassword(password) {
  * reducing username enumeration timing attacks.
  */
 async function verifyPassword(password, user) {
-  const hashToCheck = user?.passwordHash || DUMMY_HASH;
+  const hashToCheck = user?.password_hash || DUMMY_HASH;
 
   try {
     return await argon2.verify(hashToCheck, password);

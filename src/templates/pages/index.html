@@ -285,7 +285,7 @@
 
     <div class="marquee-outer" aria-hidden="true">
       <div class="marquee-track" id="marqueeTrack">
-        <!-- Populated by carousel-partners-hero.js -->
+        {{PARTNER_LOGOS}}
       </div>
     </div>
   </section>
@@ -563,7 +563,9 @@
         <!-- Step 5: Provider -->
         <div class="sim-step" role="group" aria-labelledby="step5Label">
           <h3 id="step5Label" class="sim-step-title">Il tuo fornitore attuale</h3>
-          <div class="provider-grid" id="providerGrid" role="radiogroup" aria-label="Seleziona fornitore"></div>
+          <div class="provider-grid" id="providerGrid" role="radiogroup" aria-label="Seleziona fornitore">
+            {{PROVIDER_CARDS}}
+          </div>
           <div class="provider-fields">
             <div class="custom-select-wrap">
               <select class="provider-select" aria-label="Scegli il tuo fornitore dall'elenco">
@@ -692,7 +694,7 @@
           <i class="fa fa-chevron-left" aria-hidden="true"></i>
         </button>
         <div class="team-viewport">
-          <div class="team-track" id="teamTrack" aria-live="polite"></div>
+          <div class="team-track" id="teamTrack" aria-live="polite">{{TEAM_SLIDES}}</div>
         </div>
         <button class="team-btn team-btn--right" id="teamNext" aria-label="Membro successivo">
           <i class="fa fa-chevron-right" aria-hidden="true"></i>

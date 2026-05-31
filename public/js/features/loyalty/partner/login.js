@@ -14,6 +14,7 @@
 /* ── DOM refs ── */
 import { $ } from "../../../core/dom.js";
 import { logout } from "../../../core/logout.js";
+import { setLoading, showError, hideError, safeRedirect } from "../../../core/loyaltyUtils.js";
 const form        = $("#partnerLoginForm");
 const partnerIdEl = $("#partnerId");
 const passwordEl  = $("#password");
@@ -21,41 +22,19 @@ const submitBtn   = $("#submitBtn");
 const errorBox    = $("#loginError");
 const errorText   = $("#loginErrorText");
 const $logout = $("#logoutBtn");
-
-/* ── Helpers ── */
-function showError(msg) {
-  errorText.textContent = msg;
-  errorBox.classList.add("visible");
-  errorBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
-}
- 
-function hideError() {
-  errorBox.classList.remove("visible");
-}
- 
-function setLoading(on) {
-  submitBtn.disabled = on;
-  submitBtn.classList.toggle("loading", on);
-}
- 
-function safeRedirect(fallback) {
-  const p    = new URLSearchParams(window.location.search).get("next");
-  const dest = p && p.startsWith("/") && !p.startsWith("//") ? p : fallback;
-  window.location.replace(dest);
-}
  
 /* ── Form submit ── */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  hideError();
+  hideError(errorBox);
  
   const partnerId = partnerIdEl.value.trim();
   const password  = passwordEl.value;
  
-  if (!partnerId) { showError("Inserisci il tuo ID Partner."); partnerIdEl.focus(); return; }
-  if (!password)  { showError("Inserisci la password."); passwordEl.focus(); return; }
+  if (!partnerId) { showError("Inserisci il tuo ID Partner.", errorText, errorBox); partnerIdEl.focus(); return; }
+  if (!password)  { showError("Inserisci la password.", errorText, errorBox); passwordEl.focus(); return; }
  
-  setLoading(true);
+  setLoading(submitBtn, true);
  
   try {
     const res  = await fetch("/api/loyalty/partner/login", {
@@ -75,19 +54,21 @@ form.addEventListener("submit", async (e) => {
         safeRedirect("/loyalty/partner/scan");
       }
     } else {
-      showError(data.message || "Credenziali non valide. Riprova.");
+      showError(data.message || "Credenziali non valide. Riprova.", errorText, errorBox);
       passwordEl.value = "";
       passwordEl.focus();
-      setLoading(false);
+      setLoading(submitBtn,false);
     }
   } catch {
-    showError("Errore di connessione. Controlla la rete e riprova.");
-    setLoading(false);
+    showError("Errore di connessione. Controlla la rete e riprova.",errorText, errorBox);
+    setLoading(submitBtn, false);
   }
 });
  
 /* ── Clear error on input ── */
-[partnerIdEl, passwordEl].forEach((el) => el.addEventListener("input", hideError));
+[partnerIdEl, passwordEl].forEach((el) =>
+  el.addEventListener("input", () => hideError(errorBox))
+);
 
 logout($logout, "/");
 

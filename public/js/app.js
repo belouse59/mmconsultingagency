@@ -4,8 +4,9 @@ import { initReveal } from "./features/animations/reveal.js";
 import { initFAQ } from "./features/animations/faq.js";
 import { initReviews } from "./features/animations/reviews.js";
 
-import { initPartners } from "./features/carousels/partners.js";
-import { initTeam } from "./features/carousels/team.js";
+//import { initPartners } from "./features/carousels/partners.js";
+//import { initTeam } from "./features/carousels/team.js";
+import { logicTeamCarousel } from "./features/carousels/team.js"; 
 
 import { initWhatsApp } from "./features/whatsapp/whatsapp.js";
 
@@ -38,9 +39,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   initContactForm();
   initNewsletter();
 
-  await initPartners();
-  await initTeam();
+  logicTeamCarousel();
+  //await initPartners();
+  //await initTeam();
 
-  await initProviders();
+  initProviders();
   initSimulator();
 });

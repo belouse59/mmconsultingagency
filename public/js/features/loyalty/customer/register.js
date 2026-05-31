@@ -13,6 +13,7 @@
 /* ── DOM refs ── */
 import { $ } from "../../../core/dom.js";
 import { validate, getStrength, updateStrengthIndicator } from "../../../core/passwordChecker.js";
+import { setLoading, showError, hideError, showSuccess, safeRedirect } from "../../../core/loyaltyUtils.js";
 import { logout } from "../../../core/logout.js";
 const form            = $("#registerForm");
 const fullNameEl      = $("#full_name");
@@ -25,27 +26,6 @@ const errorText       = $("#registerErrorText");
 const successBox      = $("#registerSuccess");
 const $logout         = $("#logoutBtn");
 
-/* ── Helpers ── */
-function showError(msg) {
-  errorText.textContent = msg;
-  errorBox.classList.add("visible");
-  successBox.classList.remove("visible");
-  errorBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
-}
- 
-function hideError() {
-  errorBox.classList.remove("visible");
-}
- 
-function showSuccess() {
-  successBox.classList.add("visible");
-  errorBox.classList.remove("visible");
-}
- 
-function setLoading(on) {
-  submitBtn.disabled = on;
-  submitBtn.classList.toggle("loading", on);
-}
  
 function isEmail(str) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(str);
@@ -61,19 +41,19 @@ function validateName() {
   const ident    = identifierEl.value.trim();
  
   if (name.length < 2) {
-    showError("Inserisci il tuo nome completo (minimo 2 caratteri).");
+    showError("Inserisci il tuo nome completo (minimo 2 caratteri).", errorText, errorBox);
     fullNameEl.focus();
     return false;
   }
  
   if (!ident) {
-    showError("Inserisci la tua email o numero di telefono.");
+    showError("Inserisci la tua email o numero di telefono.", errorText, errorBox);
     identifierEl.focus();
     return false;
   }
  
   if (!isEmail(ident) && !isPhone(ident)) {
-    showError("Inserisci un'email valida (es. mario@email.com) o un numero di telefono valido.");
+    showError("Inserisci un'email valida (es. mario@email.com) o un numero di telefono valido.", errorText, errorBox);
     identifierEl.focus();
     return false;
   }
@@ -81,23 +61,23 @@ function validateName() {
 }
 /* ── Real-time strength feedback ── */
 passwordEl.addEventListener("input", () => {
-  hideError();
+  hideError(errorBox);
   updateStrengthIndicator(passwordEl.value);
 });
 
-confirmPassEl.addEventListener("input", hideError);
+confirmPassEl.addEventListener("input", () => hideError(errorBox));
  
 /* ── Form submit ── */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  hideError();
+  hideError(errorBox);
   if (!validateName() && !validate(passwordEl, confirmPassEl)) return;
  
   const full_name  = fullNameEl.value.trim();
   const identifier = identifierEl.value.trim();
   const password   = passwordEl.value;
  
-  setLoading(true);
+  setLoading(submitBtn, true);
  
   try {
     const res  = await fetch("/api/loyalty/customer/register", {
@@ -110,22 +90,23 @@ form.addEventListener("submit", async (e) => {
     const data = await res.json();
  
     if (res.ok && data.success) {
-      showSuccess();
+      showSuccess(successBox, errorBox);
       setTimeout(() => window.location.replace("/loyalty/customer/dashboard"), 1200);
     } else {
-      showError(data.message || "Errore durante la registrazione. Riprova.");
-      setLoading(false);
+      showError(data.message || "Errore durante la registrazione. Riprova.", errorText, errorBox);
+      setLoading(submitBtn, false);
     }
   } catch {
-    showError("Errore di connessione. Controlla la rete e riprova.");
-    setLoading(false);
+    showError("Errore di connessione. Controlla la rete e riprova.", errorText, errorBox);
+    setLoading(submitBtn, false);
   }
 });
  
 /* ── Clear error on input ── */
 [fullNameEl, identifierEl, passwordEl, confirmPassEl].forEach((el) =>
-  el.addEventListener("input", hideError)
+  el.addEventListener("input", () => hideError(errorBox))
 );
+
 
 logout($logout, "/");
 

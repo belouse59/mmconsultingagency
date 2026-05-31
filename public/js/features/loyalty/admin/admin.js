@@ -16,6 +16,7 @@
  */
 
 import { $, $$ } from "../../../core/dom.js";
+import { setLoading } from "../../../core/loyaltyUtils.js";
 
 /* ─────────────────────────────────────────────────────────────
    DOM REFS — dashboard
@@ -112,12 +113,6 @@ function _badge(active) {
 
 function _emptyRow(colspan, msg = "Nessun dato disponibile.") {
   return `<tr><td colspan="${colspan}" style="text-align:center;padding:28px;color:var(--text-secondary);">${_esc(msg)}</td></tr>`;
-}
-
-function _setLoading(btn, on) {
-  if (!btn) return;
-  btn.disabled = on;
-  btn.classList.toggle("loading", on);
 }
 
 function _showFeedback(errEl, errTextEl, successEl, successTextEl, isSuccess, msg) {
@@ -363,7 +358,7 @@ if (createPartnerForm) {
       return;
     }
 
-    _setLoading(createPartnerBtn, true);
+    setLoading(createPartnerBtn, true);
 
     try {
       const res  = await fetch("/api/loyalty/admin/partners", {
@@ -388,7 +383,7 @@ if (createPartnerForm) {
       _showFeedback(partnerError, partnerErrorText, partnerSuccess, partnerSuccessText,
         false, "Errore di connessione. Riprova.");
     } finally {
-      _setLoading(createPartnerBtn, false);
+      setLoading(createPartnerBtn, false);
     }
   });
 }
@@ -414,7 +409,7 @@ if (addOfferForm) {
       return;
     }
 
-    _setLoading(addOfferBtn, true);
+    setLoading(addOfferBtn, true);
 
     try {
       const res  = await fetch("/api/loyalty/admin/offers", {
@@ -438,7 +433,7 @@ if (addOfferForm) {
       if (offerErrorText) offerErrorText.textContent = "Errore di connessione. Riprova.";
       if (offerError)     offerError.classList.add("visible");
     } finally {
-      _setLoading(addOfferBtn, false);
+      setLoading(addOfferBtn, false);
     }
   });
 }

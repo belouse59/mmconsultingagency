@@ -9,50 +9,52 @@
  */
 
 import { $, $$ } from "../../core/dom.js";
-import { getJSON } from "../../core/api.js";
+//import { getJSON } from "../../core/api.js";
 
 const AUTOPLAY_INTERVAL = 6500;
 
-export async function initTeam() {
-  const track = $("#teamTrack");
-  if (!track) return;
+// export async function initTeam() {
+//   const track = $("#teamTrack");
+//   if (!track) return;
 
-  const team = await getJSON("/api/team");
-  if (!team?.length) return;
+//   const team = await getJSON("/api/team");
+//   if (!team?.length) return;
 
-  /* ── Build slides ── */
-  track.innerHTML = "";
+//   /* ── Build slides ── */
+//   track.innerHTML = "";
 
-  team.forEach((member, i) => {
-    const slide = document.createElement("div");
-    slide.className = "team-slide" + (i === 0 ? " active" : "");
+//   team.forEach((member, i) => {
+//     const slide = document.createElement("div");
+//     slide.className = "team-slide" + (i === 0 ? " active" : "");
 
-    const badges = Array.isArray(member.badges)
-      ? member.badges.map((b) => `<span class="team-badge">${b}</span>`).join("")
-      : "";
+//     const badges = Array.isArray(member.badges)
+//       ? member.badges.map((b) => `<span class="team-badge">${b}</span>`).join("")
+//       : "";
 
-    slide.innerHTML = `
-      <div class="team-card">
-        <div class="team-image">
-          <img
-            src="./assets/team/${member.imageId}"
-            alt="Foto di ${member.name}, ${member.role} – M&amp;M Consulting"
-            loading="lazy"
-            width="160"
-            height="190">
-        </div>
-        <div class="team-text">
-          <h3>${member.name}</h3>
-          <span class="team-role">${member.role}</span>
-          <p>${member.description}</p>
-          <div class="team-badges">${badges}</div>
-        </div>
-      </div>`;
+//     slide.innerHTML = `
+//       <div class="team-card">
+//         <div class="team-image">
+//           <img
+//             src="./assets/team/${member.imageId}"
+//             alt="Foto di ${member.name}, ${member.role} – M&amp;M Consulting"
+//             loading="lazy"
+//             width="160"
+//             height="190">
+//         </div>
+//         <div class="team-text">
+//           <h3>${member.name}</h3>
+//           <span class="team-role">${member.role}</span>
+//           <p>${member.description}</p>
+//           <div class="team-badges">${badges}</div>
+//         </div>
+//       </div>`;
 
-    track.appendChild(slide);
-  });
+//     track.appendChild(slide);
+//   });
+export function logicTeamCarousel(){
 
   /* ── Carousel logic ── */
+  const track = $("#teamTrack");
   const slides = $$(".team-slide", track.parentElement);
   const total  = slides.length;
   let idx      = 0;
@@ -88,3 +90,4 @@ export async function initTeam() {
 
   _startTimer();
 }
+//}

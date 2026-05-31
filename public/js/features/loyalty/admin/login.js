@@ -1,18 +1,11 @@
 import { $ } from "../../../core/dom.js";
-
+import { setLoading } from "../../../core/loyaltyUtils.js";
 const adminLoginForm = $("#adminLoginForm");
 const adminEmailEl = $("#adminEmail");
 const adminPassEl = $("#adminPassword");
 const loginSubmitBtn = $("#loginSubmitBtn");
 const loginError = $("#loginError");
 const loginErrorText = $("#loginErrorText");
-
-function setLoading(btn, on) {
-    if (!btn) return;
-
-    btn.disabled = on;
-    btn.classList.toggle("loading", on);
-}
 
 adminLoginForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
