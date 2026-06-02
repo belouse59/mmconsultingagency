@@ -38,7 +38,7 @@ export function initReveal() {
 }
 
 function initWhatsAppFloat() {
-  if (window.innerWidth > 768) return;
+  if (window.innerWidth > 1400) return;
 
   const waButton = $(".wa-float");
   const footer = $("#footer") || $("#blog-link");
@@ -48,7 +48,7 @@ function initWhatsAppFloat() {
 
   const floatObserver = new IntersectionObserver(
     ([entry]) => {
-      console.log("I will toggle is-raised")
+      console.log("I will toggle is-raised");
       waButton.classList.toggle("is-raised", entry.isIntersecting);
     },
     {

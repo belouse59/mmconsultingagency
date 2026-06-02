@@ -3825,9 +3825,9 @@ abbr[title] {
         font-size: 0.72rem;
     }
 
-    .provider-grid {
-       /* grid-template-columns: repeat(2, 1fr);*/
-    }
+    /* .provider-grid {
+        grid-template-columns: repeat(2, 1fr);
+    } */
     .provider-card img {
         width: 80px;
         height: 80px;
@@ -3846,7 +3846,7 @@ abbr[title] {
     }
 
   .wa-float.is-raised {
-    bottom: max(72px, calc(env(safe-area-inset-bottom) + 12px));
+    bottom: max(89px, calc(env(safe-area-inset-bottom) + 12px));
   }
 
 
