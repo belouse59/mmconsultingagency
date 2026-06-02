@@ -1,7 +1,7 @@
 "use strict";
 
-const { query } = require("../db");
-const { makeError } = require("../utils/errorHandler");
+const { query } = require("../../db");
+const { makeError } = require("../../utils/errorHandler");
 
 /* ─────────────────────────────────────────────
    MAPPER

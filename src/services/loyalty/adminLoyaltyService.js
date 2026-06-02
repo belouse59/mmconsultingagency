@@ -1,9 +1,9 @@
 "use strict";
 
-const customerRepo   = require("../../repositories/customersRepository");
-const offerRepo      = require("../../repositories/offersRepository");
-const redemptionRepo = require("../../repositories/redemptionsRepository");
-const partnerRepo    = require("../../repositories/partnersRepository");
+const customerRepo   = require("../../repositories/loyalty/customersRepository");
+const offerRepo      = require("../../repositories/loyalty/offersRepository");
+const redemptionRepo = require("../../repositories/loyalty/redemptionsRepository");
+const partnerRepo    = require("../../repositories/loyalty/partnersRepository");
 const { hashPassword } = require("../../utils/argon2");
 
 /* ─────────────────────────────────────────────

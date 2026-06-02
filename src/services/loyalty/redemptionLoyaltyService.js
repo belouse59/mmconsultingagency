@@ -5,9 +5,9 @@ const crypto = require("crypto");
 const { redisClient: redis } = require("../../utils/redis");
 const { verifyQrToken } = require("../qrService");
 
-const redemptionRepo = require("../../repositories/redemptionsRepository");
-const offerRepo = require("../../repositories/offersRepository");
-const customerRepo = require("../../repositories/customersRepository");
+const redemptionRepo = require("../../repositories/loyalty/redemptionsRepository");
+const offerRepo = require("../../repositories/loyalty/offersRepository");
+const customerRepo = require("../../repositories/loyalty/customersRepository");
 
 /* ─────────────────────────────────────────────────────────────
    QR VALIDATION + PREVALIDATION

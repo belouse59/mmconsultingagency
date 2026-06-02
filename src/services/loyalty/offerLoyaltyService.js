@@ -1,6 +1,6 @@
 "use strict";
 
-const offerRepo = require("../../repositories/offersRepository");
+const offerRepo = require("../../repositories/loyalty/offersRepository");
 const { makeError } = require("../../utils/errorHandler");
 const crypto = require("crypto");
 

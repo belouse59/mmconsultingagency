@@ -1,7 +1,7 @@
 "use strict";
 
 const partnerRepo =
-  require("../../repositories/partnersRepository");
+  require("../../repositories/loyalty/partnersRepository");
 
 const {
   hashPassword,

@@ -1,8 +1,8 @@
 "use strict";
 
-const { query } = require("../db");
-const { makeError } = require("../utils/errorHandler");
-const { appendRow, getSheetValues } = require("../services/sheetsService");
+const { query } = require("../../db");
+const { makeError } = require("../../utils/errorHandler");
+const { appendRow, getSheetValues } = require("../../services/sheetsService");
 
 const SHEET = {
   OFFERS: "Offers",

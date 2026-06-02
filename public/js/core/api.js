@@ -30,7 +30,7 @@ export async function postForm(payload) {
     });
     if (!res.ok) return { success: false, message: `Errore ${res.status}` };
     const data = await res.json();
-    return { success: data.status === "success", message: data.message || "" };
+    return { success: data.success, message: data.message || "" };
   } catch {
     return { success: false, message: "Errore di connessione. Riprova." };
   }

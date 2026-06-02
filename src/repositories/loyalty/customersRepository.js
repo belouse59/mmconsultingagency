@@ -1,13 +1,13 @@
 "use strict";
 
 const { query } =
-    require("../db");
+    require("../../db");
 
 const {
     appendRow,
     getSheetValues,
 } =
-    require("../services/sheetsService");
+    require("../../services/sheetsService");
 
 const SHEET = {
     CUSTOMERS:

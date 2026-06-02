@@ -1,10 +1,15 @@
 const { Resend } = require("resend");
 const { loadTemplate } = require("../utils/templateLoader");
 const { getLocalTimestamp } = require("../utils/dateFormat");
+const {
+    generateToken,
+} = require("../services/tokenService");
+
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-async function sendVerificationEmail(email, token) {
+async function sendVerificationEmail(email) {
+    const token = generateToken(email);
     const verifyUrl =
         `${process.env.APP_URL}/api/contact/verify?token=${token}`;
 
