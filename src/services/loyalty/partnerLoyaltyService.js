@@ -1,132 +1,437 @@
-"use strict"
+"use strict";
 
-const partnerRepo = require("../../repositories/partnersRepository");
-const { hashPassword, verifyPassword } = require("../../utils/argon2");
-const { makeError } = require("../../utils/errorHandler");
-const { clean } = require("../../utils/sanitizer");
+const partnerRepo =
+  require("../../repositories/partnersRepository");
 
-async function getPartners() {
-  const result = await partnerRepo.findPartners();
-  if (!result) throw makeError("Partner non trovato.", 404);
-  return result.rows.map((row) => ({
-            id: row.id,
-            name: row.name,
-            category: row.category,
-            address: row.address,
-            passwordHash: row.password_hash,
-            mustChangePassword: row.must_change_password,
-            active: row.active,
-            createdAt: row.created_at,
-        }));
+const {
+  hashPassword,
+  verifyPassword,
+} =
+  require("../../utils/argon2");
+
+const {
+  makeError,
+} =
+  require("../../utils/errorHandler");
+
+const {
+  clean,
+} =
+  require("../../utils/sanitizer");
+
+/* ─────────────────────────────────────────────
+   HELPERS
+───────────────────────────────────────────── */
+
+function normalizePartnerId(
+  value = ""
+) {
+
+  return clean(
+    value
+  )
+    .toLowerCase()
+    .trim()
+    .replace(
+      /\s+/g,
+      "-"
+    );
+
 }
 
-async function createPartner({ id, name, category, address, tempPassword }) {
-  if (!id?.trim() || !name?.trim() || !tempPassword) {
+function validatePassword(
+  password,
+  field =
+    "password"
+) {
+
+  if (
+    !password ||
+    password.length < 8
+  ) {
+
+    throw makeError(
+
+      field ===
+      "temp"
+
+        ? "La password temporanea deve avere almeno 8 caratteri."
+
+        : "La nuova password deve avere almeno 8 caratteri.",
+
+      400
+
+    );
+
+  }
+
+}
+
+/* ─────────────────────────────────────────────
+   GET PARTNERS
+───────────────────────────────────────────── */
+
+async function getPartners() {
+
+  const partners =
+    await partnerRepo
+      .findPartners();
+
+  return partners.map(
+    (
+      partner
+    ) => ({
+
+      id:
+        partner.id,
+
+      name:
+        partner.name,
+
+      category:
+        partner.category,
+
+      address:
+        partner.address,
+
+      active:
+        partner.active,
+
+      mustChangePassword:
+        Boolean(
+          partner.mustChangePassword
+        ),
+
+      createdAt:
+        partner.createdAt,
+
+    })
+  );
+
+}
+
+/* ─────────────────────────────────────────────
+   CREATE PARTNER
+───────────────────────────────────────────── */
+
+async function createPartner({
+
+  id,
+
+  name,
+
+  category,
+
+  address,
+
+  tempPassword,
+
+}) {
+
+  if (
+    !id?.trim()
+    ||
+    !name?.trim()
+    ||
+    !tempPassword
+  ) {
+
     throw makeError(
       "ID, nome e password temporanea sono obbligatori.",
       400
     );
+
   }
 
-  const cleanId = clean(id).toLowerCase().replace(/\s+/g, "-");
+  validatePassword(
+    tempPassword,
+    "temp"
+  );
 
-  /* ─────────────────────────────────────────────
-     1. CHECK EXISTING PARTNER (DB IS SOURCE OF TRUTH)
-  ───────────────────────────────────────────── */
-  const existing = await partnerRepo.findPartnerById(cleanId);
-
-  if (existing.rowCount > 0) {
-    throw makeError("Un partner con questo ID esiste già.", 409);
-  }
-
-  /* ─────────────────────────────────────────────
-     2. VALIDATE PASSWORD
-  ───────────────────────────────────────────── */
-  if (tempPassword.length < 8) {
-    throw makeError(
-      "La password temporanea deve avere almeno 8 caratteri.",
-      400
+  const partnerId =
+    normalizePartnerId(
+      id
     );
-  }
 
-  const hash = await hashPassword(tempPassword);
+  const passwordHash =
+    await hashPassword(
+      tempPassword
+    );
 
-  const nowIso = new Date().toISOString();
-
-  /* ─────────────────────────────────────────────
-     3. INSERT INTO POSTGRES (SOURCE OF TRUTH)
-  ───────────────────────────────────────────── */
-  let result = await partnerRepo.createPartner(cleanId, clean(name), clean(category || "Generico"), clean(address || ""), hash);
-
-  /* ─────────────────────────────────────────────
-     5. RESPONSE
-  ───────────────────────────────────────────── */
-  return {
-    success: true,
-    partnerId: cleanId,
-  };
-}
-
-async function loginPartner({ partnerId, password }) {
-  if (!partnerId?.trim() || !password) throw makeError("Credenziali non valide.", 401);
-
-  /* Partners loaded from JSON file — avoids a Sheets call on every login */
-  let partner = null;
   try {
-    const result = await partnerRepo.findPartnerById(partnerId.trim());
-    if (result.rows.length) partner = result.rows[0];
-  } catch (e) {
-    console.log(e);
-    throw makeError("Servizio temporaneamente non disponibile.", 503);
+
+    await partnerRepo
+      .createPartner({
+
+        id:
+          partnerId,
+
+        name:
+          clean(
+            name
+          ),
+
+        category:
+          clean(
+            category ||
+            "Generico"
+          ),
+
+        address:
+          clean(
+            address ||
+            ""
+          ),
+
+        passwordHash,
+
+      });
+
   }
 
-  const match = await verifyPassword(password, partner);
+  catch (
+    err
+  ) {
 
-  if (!partner || !match) throw makeError("Credenziali non valide.", 401);
+    if (
+      err.code ===
+      "23505"
+    ) {
 
-  if (!partner.active) throw makeError("Account sospeso.", 403);
+      throw makeError(
+        "Un partner con questo ID esiste già.",
+        409
+      );
+
+    }
+
+    throw err;
+
+  }
 
   return {
-    success: true,
-    partnerId: partner.id,
-    name: partner.name,
-    mustChangePassword: partner.mustChangePassword === true
+
+    success:
+      true,
+
+    partnerId,
+
   };
+
 }
 
-/* ─────────────────────────────────────────────────────────────
-   PARTNER — SET PASSWORD (first login flow)
-───────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────
+   LOGIN
+───────────────────────────────────────────── */
 
-async function setPartnerPassword({ partnerId, newPassword }) {
-  if (!newPassword || newPassword.length < 8) {
-    throw makeError("La nuova password deve avere almeno 8 caratteri.", 400);
+async function loginPartner({
+
+  partnerId,
+
+  password,
+
+}) {
+
+  if (
+    !partnerId?.trim()
+    ||
+    !password
+  ) {
+
+    throw makeError(
+      "Credenziali non valide.",
+      401
+    );
+
   }
 
-  const partner = await partnerRepo.findPartnerById(partnerId);
-  if (!partner) throw makeError("Partner non trovato.", 404);
+  const partner =
+    await partnerRepo
+      .findPartnerById(
 
-  const hash = await hashPassword(newPassword);
-  const updated = { ...partner, passwordHash: hash, mustChangePassword: false };
-  let result = await partnerRepo.updatePartnerById(partnerId, updated);
-  return { success: true };
+        normalizePartnerId(
+          partnerId
+        )
+
+      );
+
+  if (
+    !partner
+  ) {
+
+    throw makeError(
+      "Credenziali non valide.",
+      401
+    );
+
+  }
+
+  const match =
+    await verifyPassword(
+      password,
+      partner.passwordHash
+    );
+
+  if (
+    !match
+  ) {
+
+    throw makeError(
+      "Credenziali non valide.",
+      401
+    );
+
+  }
+
+  if (
+    !partner.active
+  ) {
+
+    throw makeError(
+      "Account sospeso.",
+      403
+    );
+
+  }
+
+  return {
+
+    success:
+      true,
+
+    partnerId:
+      partner.id,
+
+    name:
+      partner.name,
+
+    mustChangePassword:
+      Boolean(
+        partner.mustChangePassword
+      ),
+
+  };
+
 }
 
-/* ─────────────────────────────────────────────────────────────
-   PARTNER — UPDATE ACTIVE STATUS (admin)
-───────────────────────────────────────────────────────────── */
-async function setPartnerActive(partnerId, active) {
-  const partner = await partnerRepo.findPartnerById(partnerId);
-  if (!partner) throw makeError("Partner non trovato.", 404);
-  const updated = { ...partner.rows[0], active };
-  let result = await partnerRepo.updatePartnerById(partnerId, updated);
-  return { success: true };
+/* ─────────────────────────────────────────────
+   SET PASSWORD
+───────────────────────────────────────────── */
+
+async function setPartnerPassword({
+
+  partnerId,
+
+  newPassword,
+
+}) {
+
+  validatePassword(
+    newPassword
+  );
+
+  const partner =
+    await partnerRepo
+      .findPartnerById(
+        partnerId
+      );
+
+  if (
+    !partner
+  ) {
+
+    throw makeError(
+      "Partner non trovato.",
+      404
+    );
+
+  }
+
+  await partnerRepo
+    .updatePartnerPassword({
+
+      partnerId,
+
+      passwordHash:
+        await hashPassword(
+          newPassword
+        ),
+
+      mustChangePassword:
+        false,
+
+    });
+
+  return {
+
+    success:
+      true,
+
+  };
+
 }
+
+/* ─────────────────────────────────────────────
+   ADMIN
+───────────────────────────────────────────── */
+
+async function setPartnerActive(
+
+  partnerId,
+
+  active
+
+) {
+
+  const partner =
+    await partnerRepo
+      .findPartnerById(
+        partnerId
+      );
+
+  if (
+    !partner
+  ) {
+
+    throw makeError(
+      "Partner non trovato.",
+      404
+    );
+
+  }
+
+  await partnerRepo
+    .setPartnerActive(
+
+      partnerId,
+
+      Boolean(
+        active
+      )
+
+    );
+
+  return {
+
+    success:
+      true,
+
+  };
+
+}
+
+/* ───────────────────────────────────────────── */
 
 module.exports = {
+
   getPartners,
-  loginPartner,
-  setPartnerPassword,
+
   createPartner,
+
+  loginPartner,
+
+  setPartnerPassword,
+
   setPartnerActive,
-}
+
+};

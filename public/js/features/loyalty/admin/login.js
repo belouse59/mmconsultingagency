@@ -34,14 +34,14 @@ adminLoginForm?.addEventListener("submit", async (e) => {
             body: JSON.stringify({ email, password }),
         });
 
-        const data = await res.json();
+        const { data, success, message } = await res.json();
 
-        if (res.ok && data.success) {
+        if (res.ok && success) {
             window.location.href = "/loyalty/admin/dashboard";
             return;
         }
 
-        loginErrorText.textContent = data.message || "Credenziali non valide.";
+        loginErrorText.textContent = message || "Credenziali non valide.";
     } catch {
         loginErrorText.textContent = "Errore di connessione. Riprova.";
         loginError.classList.add("visible");

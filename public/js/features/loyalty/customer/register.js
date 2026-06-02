@@ -87,13 +87,13 @@ form.addEventListener("submit", async (e) => {
       body:        JSON.stringify({ full_name, identifier, password }),
     });
  
-    const data = await res.json();
+    const {data, success, message} = await res.json();
  
-    if (res.ok && data.success) {
+    if (res.ok && success) {
       showSuccess(successBox, errorBox);
       setTimeout(() => window.location.replace("/loyalty/customer/dashboard"), 1200);
     } else {
-      showError(data.message || "Errore durante la registrazione. Riprova.", errorText, errorBox);
+      showError(message || "Errore durante la registrazione. Riprova.", errorText, errorBox);
       setLoading(submitBtn, false);
     }
   } catch {

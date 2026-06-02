@@ -49,14 +49,6 @@ function _sign(payload) {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   CUSTOMER ID
-   Stable UUID stored in Sheets. Never rotates. Never in QR.
-───────────────────────────────────────────────────────────── */
-function generateCustomerId() {
-  return `c-${Date.now()}-${crypto.randomBytes(8).toString("hex")}`;
-}
-
-/* ─────────────────────────────────────────────────────────────
    QR TOKEN GENERATION
    Called fresh on every GET /api/loyalty/qr/:customerId
    Returns a short-lived signed token.
@@ -166,7 +158,6 @@ function getQrTtl() {
 }
 
 module.exports = {
-  generateCustomerId,
   generateQrToken,
   verifyQrToken,
   generateQrImage,

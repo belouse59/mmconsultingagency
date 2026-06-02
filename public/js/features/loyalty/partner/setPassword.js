@@ -75,14 +75,14 @@ form.addEventListener("submit", async (e) => {
       body:        JSON.stringify({ newPassword, confirmPassword }),
     });
 
-    const data = await res.json();
+    const { data, success, message } = await res.json();
 
-    if (res.ok && data.success) {
+    if (res.ok && success) {
       showSuccess();
       /* Short delay so user reads the success message before redirect */
       setTimeout(() => window.location.replace("/loyalty/partner/scan"), 1500);
     } else {
-      showError(data.message || "Errore durante l'aggiornamento della password. Riprova.");
+      showError(message || "Errore durante l'aggiornamento della password. Riprova.");
       setLoading(false);
     }
   } catch {

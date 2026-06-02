@@ -1,21 +1,15 @@
-"use strict"
+"use strict";
 
-const { appendRow, getSheetValues } = require ("../services/sheetsService");
-const { query }                     = require ("../db");
-const { makeError }                 = require ("../utils/errorHandler");
+const { query } = require("../db");
+const { makeError } = require("../utils/errorHandler");
+const { appendRow, getSheetValues } = require("../services/sheetsService");
+
 const SHEET = {
-  CUSTOMERS:   "Customers",
-  REDEMPTIONS: "Redemptions",
-  OFFERS:      "Offers",
+  OFFERS: "Offers",
 };
-const crypto = require("crypto");
 
-
-async function getOffers() {
+async function findOffers() {
   try {
-    /* ─────────────────────────────────────────────
-       1. READ FROM POSTGRES (PRIMARY SOURCE)
-    ───────────────────────────────────────────── */
     const result = await query(`
       SELECT
         id,
@@ -28,25 +22,10 @@ async function getOffers() {
       ORDER BY created_at DESC
     `);
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      title: row.title,
-      description: row.description || "",
-      partnerId: row.partner_id,
-      active: row.active,
-      createdAt: row.created_at,
-    }));
-
+    return result.rows.map(mapOffer);
   } catch (err) {
-    console.error(
-      "[readOffers] Postgres failed, falling back to Sheets:",
-      err.message
-    );
+    console.error("[offerRepo] Postgres failed, fallback Sheets:", err.message);
 
-    /* ─────────────────────────────────────────────
-       2. FALLBACK TO GOOGLE SHEETS
-       Temporary migration safety
-    ───────────────────────────────────────────── */
     const rows = await getSheetValues(SHEET.OFFERS);
 
     return rows.slice(1).map((r) => ({
@@ -60,37 +39,61 @@ async function getOffers() {
   }
 }
 
-async function getActiveOffers() {
-  const activeOffers = await query(
-        `SELECT *
-         FROM offers 
-         WHERE active = $1`,
-        [true]
-      );
-      return activeOffers;
-}
- 
-async function getPartnerOffers(partnerId) {
-  const offers = await query(
-        `SELECT *
-         FROM offers 
-         WHERE (partner_id = $1 OR partner_id = $2) AND active = $3)`,
-        [partnerId, "Globale", true]
-      );
-      return offers;
+/* ─────────────────────────────────────────────
+   ACTIVE OFFERS
+───────────────────────────────────────────── */
+async function findActiveOffers() {
+  const result = await query(
+    `
+    SELECT
+      id,
+      title,
+      description,
+      partner_id,
+      active,
+      created_at
+    FROM offers
+    WHERE active = $1
+    ORDER BY created_at DESC
+    `,
+    [true]
+  );
+
+  return result.rows.map(mapOffer);
 }
 
-async function createOffer({ title, description, partnerId }) {
+/* ─────────────────────────────────────────────
+   OFFERS BY PARTNER
+───────────────────────────────────────────── */
+async function findActiveOffersByPartner(partnerId) {
+  const result = await query(
+    `
+    SELECT
+      id,
+      title,
+      description,
+      partner_id,
+      active,
+      created_at
+    FROM offers
+    WHERE (partner_id = $1 OR partner_id = $2)
+      AND active = $3
+    ORDER BY created_at DESC
+    `,
+    [partnerId, "Globale", true]
+  );
+
+  return result.rows.map(mapOffer);
+}
+
+/* ─────────────────────────────────────────────
+   CREATE OFFER
+───────────────────────────────────────────── */
+async function createOffer({ id, title, description, partnerId }) {
   if (!title?.trim()) {
-    throw makeError("Il titolo dell'offerta è obbligatorio.", 400);
+    throw makeError("Il titolo è obbligatorio.", 400);
   }
 
-  const id = `offer-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
-  const nowIso = new Date().toISOString();
- 
-    /* ─────────────────────────────────────────────
-     1. WRITE TO POSTGRES (SOURCE OF TRUTH)
-  ───────────────────────────────────────────── */
   await query(
     `
     INSERT INTO offers (
@@ -103,36 +106,49 @@ async function createOffer({ title, description, partnerId }) {
     )
     VALUES ($1, $2, $3, $4, $5, NOW())
     `,
-    [
+    [id, title, description || "", partnerId, true]
+  );
+
+  try {
+    await appendRow(SHEET.OFFERS, [
       id,
       title,
-      description,
+      description || "",
       partnerId,
-      true,
-    ]
-  );
-  /* ─────────────────────────────────────────────
-     2. WRITE TO GOOGLE SHEETS (LEGACY SYNC)
-     Do NOT block main flow if it fails
-  ───────────────────────────────────────────── */
-  await appendRow(SHEET.OFFERS, [
+      "true",
+      new Date().toISOString(),
+    ]);
+  } catch (err) {
+    console.error("[offerRepo] Sheet sync failed:", err.message);
+  }
+
+  return mapOffer({
     id,
     title,
     description,
-    partnerId,
-    "true",
-    nowIso,
-  ]);
- 
+    partner_id: partnerId,
+    active: true,
+    created_at: new Date(),
+  });
+}
+
+/* ─────────────────────────────────────────────
+   MAPPER (IMPORTANT CONSISTENCY FIX)
+───────────────────────────────────────────── */
+function mapOffer(row) {
   return {
-    success: true,
-    offer:   { id, title: title, description: description, partnerId: partnerId, active: true, createdAt: nowIso },
+    id: row.id,
+    title: row.title,
+    description: row.description || "",
+    partnerId: row.partner_id,
+    active: row.active,
+    createdAt: row.created_at,
   };
 }
 
-async function updateOffers(id, newValues) {
-    console.log(id, newValues);
-    return true;
-}
-
-module.exports = { getOffers, createOffer, getActiveOffers, getPartnerOffers, updateOffers };
+module.exports = {
+  findOffers,
+  findActiveOffers,
+  findActiveOffersByPartner,
+  createOffer,
+};

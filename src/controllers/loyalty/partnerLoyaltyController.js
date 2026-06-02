@@ -1,173 +1,509 @@
-const redemptionLoyaltyService = require("../../services/loyalty/redemptionLoyaltyService");
-const partnerLoyaltyService = require("../../services/loyalty/partnerLoyaltyService");
-const offerLoyaltyService = require("../../services/loyalty/offerLoyaltyService");
-const { clean } = require("../../utils/sanitizer");
-const { establishSession, destroySession } = require("../../services/sessionService");
-const { handleError } = require("./helper")
+"use strict";
 
-/* ─────────────────────────────────────────────────────────────
-   PARTNER — LOGIN
-───────────────────────────────────────────────────────────── */
-async function loginPartner(req, res) {
-  const { partnerId, password } = req.body;
+const redemptionLoyaltyService =
+  require("../../services/loyalty/redemptionLoyaltyService");
 
-  const result = await partnerLoyaltyService.loginPartner({
-    partnerId: clean(partnerId || ""),
-    password,
-  });
-  await establishSession(req, {
-    loyaltyPartner: {
-      id: result.partnerId,
-      name: result.name,
-      mustChangePassword: result.mustChangePassword,
-    },
-  });
-  const {success, ...safe} = result;
-  res.json({
-    success,
-    message: "Accesso effettuato.",
-    partner: safe
-  });
-}
+const partnerLoyaltyService =
+  require("../../services/loyalty/partnerLoyaltyService");
 
-/* ─────────────────────────────────────────────────────────────
-   PARTNER — SET PASSWORD (first-login flow)
-───────────────────────────────────────────────────────────── */
-async function setPartnerPassword(req, res) {
-  try {
-    const { newPassword, confirmPassword } = req.body;
- 
-    if (!newPassword || newPassword.length < 8) {
-      return res.status(400).json({ success: false, message: "La nuova password deve avere almeno 8 caratteri." });
+const offerLoyaltyService =
+  require("../../services/loyalty/offerLoyaltyService");
+
+const {
+  clean,
+} =
+  require("../../utils/sanitizer");
+
+const {
+  establishSession,
+  destroySession,
+} =
+  require("../../services/sessionService");
+
+const {
+  asyncHandler,
+} =
+  require("./helper");
+
+/* ─────────────────────────────────────────────
+   HELPERS
+───────────────────────────────────────────── */
+
+async function createPartnerSession(
+  req,
+  partner
+) {
+
+  await establishSession(
+    req,
+    {
+      loyaltyPartner: {
+
+        id:
+          partner.partnerId,
+
+        name:
+          partner.name,
+
+        mustChangePassword:
+          Boolean(
+            partner.mustChangePassword
+          ),
+
+      },
     }
-    if (newPassword !== confirmPassword) {
-      return res.status(400).json({ success: false, message: "Le password non coincidono." });
+  );
+
+}
+
+function validatePasswordChange(
+  newPassword,
+  confirmPassword
+) {
+
+  if (
+    !newPassword ||
+    newPassword.length < 8
+  ) {
+    const err =
+      new Error(
+        "La nuova password deve avere almeno 8 caratteri."
+      );
+
+    err.statusCode =
+      400;
+
+    throw err;
+  }
+
+  if (
+    newPassword !==
+    confirmPassword
+  ) {
+
+    const err =
+      new Error(
+        "Le password non coincidono."
+      );
+
+    err.statusCode =
+      400;
+
+    throw err;
+
+  }
+
+}
+
+/* ─────────────────────────────────────────────
+   LOGIN
+───────────────────────────────────────────── */
+
+const loginPartner =
+  asyncHandler(
+    async (
+      req,
+      res
+    ) => {
+
+      const result =
+        await partnerLoyaltyService
+          .loginPartner({
+
+            partnerId:
+              clean(
+                req.body
+                  ?.partnerId || ""
+              ),
+
+            password:
+              req.body
+                ?.password,
+
+          });
+
+      await createPartnerSession(
+        req,
+        result
+      );
+
+      return res
+        .json({
+
+          success:
+            true,
+
+          data: {
+
+            partnerId:
+              result.partnerId,
+
+            name:
+              result.name,
+
+            mustChangePassword:
+              Boolean(
+                result.mustChangePassword
+              ),
+
+          },
+
+        });
+
     }
- 
-    const partnerId = req.session.loyaltyPartner.id;
-    await partnerLoyaltyService.setPartnerPassword({ partnerId, newPassword });
- 
-    /* Clear mustChangePassword flag from session */
-    req.session.loyaltyPartner.mustChangePassword = false;
-    req.session.save(() =>
-      res.json({ success: true, message: "Password aggiornata con successo." })
-    );
-  } catch (err) {
-    handleError(res, err);
-  }
-}
+  );
 
-/* ─────────────────────────────────────────────────────────────
-   PARTNER — LOGOUT
-───────────────────────────────────────────────────────────── */
-async function logoutPartner(req, res) {
-  try {
-    await destroySession(req, res);
+/* ─────────────────────────────────────────────
+   SET PASSWORD
+───────────────────────────────────────────── */
 
-    res.json({
-      success: true,
-      message: "Logout effettuato.",
-    });
-  } catch (err) {
-    handleError(res, err);
-  }
-}
+const setPartnerPassword =
+  asyncHandler(
+    async (
+      req,
+      res
+    ) => {
 
-/* ─────────────────────────────────────────────────────────────
-   PARTNER — SESSION CHECK
-───────────────────────────────────────────────────────────── */
-function partnerSession(req, res) {
-  if (!req.session?.loyaltyPartner) {
-    return res.status(401).json({ success: false, message: "Non autenticato." });
-  }
-  res.json({
-    success: true,
-    partnerId: req.session.loyaltyPartner.id,
-    name: req.session.loyaltyPartner.name,
-    mustChangePassword: req.session.loyaltyPartner.mustChangePassword || false,
-  });
+      const {
+        newPassword,
+        confirmPassword,
+      } =
+        req.body;
 
-}
+      validatePasswordChange(
+        newPassword,
+        confirmPassword
+      );
 
-/* ─────────────────────────────────────────────────────────────
-   PARTNER — OFFERS
-───────────────────────────────────────────────────────────── */
-async function getPartnerOffers(req, res) {
-  try {
-    const partnerId = req.session.loyaltyPartner.id;
-    const result    = await offerLoyaltyService.getPartnerOffers(partnerId);
-    let offers = null;
-    if(result.rows.length) offers = result.rows; 
-    return res.json({ success: true, data: offers });
-  } catch (err) {
-    handleError(res, err);
-  }
-}
+      const partnerId =
+        req.session
+          ?.loyaltyPartner
+          ?.id;
 
-/* ─────────────────────────────────────────────────────────────
-   PARTNER — PREVALIDATE QR
-   Validates token + returns customer name + per-offer eligibility.
-   Does NOT redeem anything.
-───────────────────────────────────────────────────────────── */
-async function prevalidateQr(req, res) {
-  try {
-    const { token }   = req.body;
-    const partnerId   = req.session.loyaltyPartner.id;
- 
-    if (!token) {
-      return res.status(400).json({ success: false, message: "Token mancante." });
+      await partnerLoyaltyService
+        .setPartnerPassword({
+
+          partnerId,
+
+          newPassword,
+
+        });
+
+      await establishSession(
+        req,
+        {
+          loyaltyPartner: {
+
+            ...req.session
+              .loyaltyPartner,
+
+            mustChangePassword:
+              false,
+
+          },
+        }
+      );
+
+      return res
+        .json({
+
+          success:
+            true,
+
+          message:
+            "Password aggiornata con successo.",
+
+        });
+
     }
- 
-    const result = await redemptionLoyaltyService.prevalidateQr({
-      token:     clean(token),
-      partnerId,
-    });
+  );
 
- 
-    return res.json(result);
-  } catch (err) {
-    handleError(res, err);
-  }
-}
+/* ─────────────────────────────────────────────
+   LOGOUT
+───────────────────────────────────────────── */
 
-/* ─────────────────────────────────────────────────────────────
-   PARTNER - REDEEM QR
-───────────────────────────────────────────────────────────── */
-async function redeemQr(req, res) {
-  try {
-    const { token, offerId, idempotencyKey } = req.body;
-    const partnerId = req.session.loyaltyPartner.id;
- 
-    if (!token) {
-      return res.status(400).json({ success: false, message: "Token mancante." });
+const logoutPartner =
+  asyncHandler(
+    async (
+      req,
+      res
+    ) => {
+
+      await destroySession(
+        req,
+        res
+      );
+
+      return res
+        .status(204)
+        .end();
+
     }
-    if (!offerId) {
-      return res.status(400).json({ success: false, message: "Seleziona un'offerta prima di procedere." });
-    }
- 
-    const result = await redemptionLoyaltyService.redeemOffer({
-      token:          clean(token),
-      offerId:        clean(offerId),
-      partnerId,
-      idempotencyKey: idempotencyKey ? clean(idempotencyKey) : null,
-    });
- 
-    const status = result.success ? 200 : 409;
-    return res.status(status).json(result);
-  } catch (err) {
-    handleError(res, err);
-  }
-}
+  );
 
-/* ─────────────────────────────────────────────────────────────
-   EXPORTS
-───────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────
+   SESSION
+───────────────────────────────────────────── */
+
+const partnerSession =
+  asyncHandler(
+    async (
+      req,
+      res
+    ) => {
+
+      const partner =
+        req.session
+          ?.loyaltyPartner;
+
+      if (
+        !partner
+      ) {
+
+        return res
+          .status(401)
+          .json({
+
+            success:
+              false,
+
+            message:
+              "Non autenticato.",
+
+          });
+
+      }
+
+      return res
+        .json({
+
+          success:
+            true,
+
+          data: {
+
+            partnerId:
+              partner.id,
+
+            name:
+              partner.name,
+
+            mustChangePassword:
+              Boolean(
+                partner.mustChangePassword
+              ),
+
+          },
+
+        });
+
+    }
+  );
+
+/* ─────────────────────────────────────────────
+   OFFERS
+───────────────────────────────────────────── */
+
+const getPartnerOffers =
+  asyncHandler(
+    async (
+      req,
+      res
+    ) => {
+
+      const partnerId =
+        req.session
+          ?.loyaltyPartner
+          ?.id;
+
+      const offers =
+        await offerLoyaltyService
+          .getPartnerOffers(
+            partnerId
+          );
+
+      return res
+        .json({
+
+          success:
+            true,
+
+          data:
+            offers ||
+            [],
+
+        });
+
+    }
+  );
+
+/* ─────────────────────────────────────────────
+   PREVALIDATE
+───────────────────────────────────────────── */
+
+const prevalidateQr =
+  asyncHandler(
+    async (
+      req,
+      res
+    ) => {
+
+      const token =
+        clean(
+          req.body
+            ?.token || ""
+        );
+
+      if (
+        !token
+      ) {
+
+        return res
+          .status(400)
+          .json({
+
+            success:
+              false,
+
+            message:
+              "Token mancante.",
+
+          });
+
+      }
+
+      const result =
+        await redemptionLoyaltyService
+          .prevalidateQr({
+
+            token,
+
+            partnerId:
+              req.session
+                .loyaltyPartner
+                .id,
+
+          });
+
+      return res
+        .json(
+          result
+        );
+
+    }
+  );
+
+/* ─────────────────────────────────────────────
+   REDEEM
+───────────────────────────────────────────── */
+
+const redeemQr =
+  asyncHandler(
+    async (
+      req,
+      res
+    ) => {
+
+      const {
+        token,
+        offerId,
+        idempotencyKey,
+      } =
+        req.body;
+
+      if (
+        !token
+      ) {
+
+        return res
+          .status(400)
+          .json({
+
+            success:
+              false,
+
+            message:
+              "Token mancante.",
+
+          });
+
+      }
+
+      if (
+        !offerId
+      ) {
+
+        return res
+          .status(400)
+          .json({
+
+            success:
+              false,
+
+            message:
+              "Seleziona un'offerta.",
+
+          });
+
+      }
+
+      const result =
+        await redemptionLoyaltyService
+          .redeemOffer({
+
+            token:
+              clean(
+                token
+              ),
+
+            offerId:
+              clean(
+                offerId
+              ),
+
+            partnerId:
+              req.session
+                .loyaltyPartner
+                .id,
+
+            idempotencyKey:
+              idempotencyKey
+                ? clean(
+                    idempotencyKey
+                  )
+                : null,
+
+          });
+
+      return res
+        .status(
+          result.success
+            ? 200
+            : 409
+        )
+        .json(
+          result
+        );
+
+    }
+  );
+
+/* ───────────────────────────────────────────── */
+
 module.exports = {
+
   loginPartner,
+
   setPartnerPassword,
+
   logoutPartner,
+
   partnerSession,
+
   getPartnerOffers,
+
   prevalidateQr,
-  redeemQr
-}
+
+  redeemQr,
+
+};

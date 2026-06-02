@@ -47,8 +47,8 @@ async function hashPassword(password) {
  * Always performs Argon2 verification even if user does not exist,
  * reducing username enumeration timing attacks.
  */
-async function verifyPassword(password, user) {
-  const hashToCheck = user?.password_hash || DUMMY_HASH;
+async function verifyPassword(password, password_hash) {
+  const hashToCheck = password_hash || DUMMY_HASH;
 
   try {
     return await argon2.verify(hashToCheck, password);

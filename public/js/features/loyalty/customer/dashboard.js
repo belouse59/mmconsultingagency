@@ -103,8 +103,8 @@ async function loadQr() {
  
     if (!res.ok) throw new Error("QR fetch failed");
  
-    const data = await res.json();
-    if (!data.success || !data.qrImage) throw new Error("Invalid QR response");
+    const { data, success, message } = await res.json();
+    if (!success || !data.qrImage) throw new Error("Invalid QR response");
  
     _ttlMs       = data.ttl || 300000;
     _qrExpiresAt = Date.now() + _ttlMs;
@@ -171,8 +171,8 @@ async function loadOffers() {
     const res    = await fetch("/api/loyalty/customer/offers", { credentials: "same-origin" });
     if (!res.ok) throw new Error("Offers fetch failed");
  
-    const data   = await res.json();
-    const offers = data.data || [];
+    const { data, success, message }   = await res.json();
+    const offers = data || [];
  
     offersLoading.style.display = "none";
  
@@ -234,7 +234,7 @@ qrRetryBtn.addEventListener("click", loadQr);
       window.location.replace("/loyalty/customer/login.html");
       return;
     }
-    const data = await res.json();
+    const {data, success} = await res.json();
  
     const name = data.full_name || "Utente";
     welcomeNameEl.textContent = `Ciao, ${name} 👋`;

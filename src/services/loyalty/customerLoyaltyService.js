@@ -1,11 +1,22 @@
-"use strict"
+"use strict";
 
-const customerRepo                        = require("../../repositories/customersRepository");
-const { hashPassword, verifyPassword }    = require("../../utils/argon2");
-const { generateCustomerId }              = require("../qrService");
-const { makeError }                       = require("../../utils/errorHandler");
-const { clean }                           = require("../../utils/sanitizer");
+const customerRepo =
+  require("../../repositories/customersRepository");
 
+const {
+  hashPassword,
+  verifyPassword,
+} =
+  require("../../utils/argon2");
+
+const { generateUUID } = require("../../utils/generateUUID");
+
+const {
+  makeError,
+} =
+  require("../../utils/errorHandler");
+
+/* ───────────────────────────────────────────── */
 
 async function getCustomers() {
   return customerRepo.findCustomers();
@@ -15,94 +26,290 @@ async function getActiveCustomers() {
   return customerRepo.findActiveCustomers();
 }
 
-async function getCustomerByIdentifier(identfier) {
-  return customerRepo.findCustomerByIdentifier(identfier);
+async function getCustomerByIdentifier(
+  identifier
+) {
+  return customerRepo
+    .findCustomerByIdentifier(
+      normalizeIdentifier(
+        identifier
+      )
+    );
 }
 
-/* ─────────────────────────────────────────────────────────────
-   CUSTOMER — REGISTER
-───────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────
+   REGISTER
+────────────────────────────────────────────── */
 
-/**
- * Register a new customer.
- * Returns { success: true, customerId } or throws with a safe message.
- */
-async function register({ full_name, identifier, password }) {
-  if (!full_name?.trim() || !identifier?.trim() || !password) {
-    throw makeError("Tutti i campi sono obbligatori.", 400);
+async function register({
+  full_name,
+  identifier,
+  password,
+}) {
+
+  validateRegisterInput({
+    full_name,
+    identifier,
+    password,
+  });
+
+  const normalized =
+    normalizeIdentifier(
+      identifier
+    );
+
+  const identifierType =
+    detectIdentifierType(
+      normalized
+    );
+
+  const hash =
+    await hashPassword(
+      password
+    );
+
+  try {
+
+    const customer =
+      await customerRepo
+        .createCustomer({
+
+          id:
+            generateUUID(),
+
+          full_name,
+
+          identifier:
+            normalized,
+
+          identifierType,
+
+          password:
+            hash,
+
+          active:
+            true,
+        });
+
+    return {
+      customerId:
+        customer.id,
+
+      full_name:
+        customer.full_name,
+    };
+
   }
 
-  if (password.length < 8) {
-    throw makeError("La password deve avere almeno 8 caratteri.", 400);
+  catch (err) {
+
+    if (
+      isDuplicateError(
+        err
+      )
+    ) {
+
+      throw makeError(
+        "Utente già registrato.",
+        409
+      );
+
+    }
+
+    throw err;
+
   }
 
-  const normalized = normalizeIdentifier(identifier);
-  const hash = await hashPassword(password);
-  const customerId = generateCustomerId();
-  const nowIso = new Date().toISOString();
-
-  const identifierType = detectIdentifierType(normalized);
-
-  /* ─────────────────────────────────────────────
-     1. INSERT (DB IS SOURCE OF TRUTH)
-     Handles race conditions via UNIQUE constraint
-  ───────────────────────────────────────────── */
-  const result = await customerRepo.createCustomer(customerId, clean(full_name), normalized, identifierType, hash, true);
-  /* ─────────────────────────────────────────────
-     3. RESPONSE
-  ───────────────────────────────────────────── */
-  return result;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   CUSTOMER - LOGIN
-───────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────
+   LOGIN
+────────────────────────────────────────────── */
 
-/**
- * Authenticate a customer.
- * Returns { success: true, customerId, full_name } or throws.
- * Uses constant-time comparison to prevent timing attacks.
- */
-async function login({ identifier, password }) {
-  if (!identifier?.trim() || !password) {
-    throw makeError("Credenziali non valide.", 401);
+async function login({
+  identifier,
+  password,
+}) {
+
+  if (
+    !identifier ||
+    !password
+  ) {
+    throw makeError(
+      "Credenziali non valide.",
+      401
+    );
   }
 
-  const normalized = normalizeIdentifier(identifier);
-  const customer  = await customerRepo.findCustomerByIdentifier(normalized);
-  const match = await verifyPassword(password, customer);
+  const customer =
+    await customerRepo
+      .findCustomerByIdentifier(
+        normalizeIdentifier(
+          identifier
+        )
+      );
 
-  if (!customer || !match) throw makeError("Credenziali non valide.", 401);
+  if (
+    !customer
+  ) {
 
+    throw makeError(
+      "Credenziali non valide.",
+      401
+    );
 
-  if (!customer.active) throw makeError("Account sospeso. Contatta il supporto.", 403);
+  }
+
+  const valid =
+    await verifyPassword(
+      password,
+      customer.password
+    );
+
+  if (
+    !valid
+  ) {
+
+    throw makeError(
+      "Credenziali non valide.",
+      401
+    );
+
+  }
+
+  if (
+    !customer.active
+  ) {
+
+    throw makeError(
+      "Account sospeso.",
+      403
+    );
+
+  }
 
   return {
-    success:    true,
-    customerId: customer.id,
-    full_name:  customer.full_name,
+
+    customerId:
+      customer.id,
+
+    full_name:
+      customer.full_name,
+
   };
+
 }
 
-/* ─────────────────────────────────────────────────────────────
-   HELPERS
-───────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────
+   VALIDATION
+────────────────────────────────────────────── */
 
-function normalizeIdentifier(identifier) {
-  const trimmed = identifier.trim().toLowerCase();
-  return trimmed.includes("@")
-    ? trimmed
-    : trimmed.replace(/[^\d+]/g, "");
+function validateRegisterInput(
+  data
+) {
+
+  if (
+    !data.full_name?.trim()
+  ) {
+    throw makeError(
+      "Nome obbligatorio",
+      400
+    );
+  }
+
+  if (
+    !data.identifier?.trim()
+  ) {
+    throw makeError(
+      "Email o telefono obbligatorio",
+      400
+    );
+  }
+
+  if (
+    !data.password
+  ) {
+    throw makeError(
+      "Password obbligatoria",
+      400
+    );
+  }
+
+  if (
+    data.password
+      .length
+    < 8
+  ) {
+    throw makeError(
+      "Password troppo corta",
+      400
+    );
+  }
+
 }
 
-function detectIdentifierType(identifier) {
-  return identifier.includes("@") ? "email" : "phone";
+/* ───────────────────────────────────────────── */
+
+function normalizeIdentifier(
+  identifier
+) {
+
+  const value =
+    identifier
+      .trim()
+      .toLowerCase();
+
+  if (
+    value.includes("@")
+  ) {
+    return value;
+  }
+
+  return value
+    .replace(
+      /^[+]/,
+      "+"
+    )
+    .replace(
+      /[^\d+]/g,
+      ""
+    );
+
 }
+
+/* ───────────────────────────────────────────── */
+
+function detectIdentifierType(
+  identifier
+) {
+  return identifier
+    .includes("@")
+    ? "email"
+    : "phone";
+}
+
+function isDuplicateError(
+  err
+) {
+
+  return (
+    err.code ===
+    "ER_DUP_ENTRY"
+
+    ||
+
+    err.code ===
+    "23505"
+  );
+
+}
+
+/* ───────────────────────────────────────────── */
 
 module.exports = {
   register,
   login,
   getCustomers,
   getCustomerByIdentifier,
-  getActiveCustomers
+  getActiveCustomers,
 };

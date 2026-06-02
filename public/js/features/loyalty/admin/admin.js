@@ -301,7 +301,7 @@ async function _loadRedemptions() {
         <td>${_esc(r.customerId)}</td>
         <td>${_esc(r.partnerId)}</td>
         <td>${_esc(r.offerId)}</td>
-        <td style="color:var(--text-secondary);font-size:0.8rem;">${_fmtDate(r.createdAt)}</td>
+        <td style="color:var(--text-secondary);font-size:0.8rem;">${_fmtDate(r.redeemedAt)}</td>
       </tr>
     `).join("");
   } catch {

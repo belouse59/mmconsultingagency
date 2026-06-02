@@ -44,17 +44,17 @@ form.addEventListener("submit", async (e) => {
       body:        JSON.stringify({ partnerId, password }),
     });
  
-    const data = await res.json();
+    const { data, success, message } = await res.json();
  
-    if (res.ok && data.success) {
+    if (res.ok && success) {
       /* First-login flow — must set a new password */
-      if (data.partner.mustChangePassword) {
+      if (data.mustChangePassword) {
         window.location.replace("/loyalty/partner/set-password");
       } else {
         safeRedirect("/loyalty/partner/scan");
       }
     } else {
-      showError(data.message || "Credenziali non valide. Riprova.", errorText, errorBox);
+      showError(message || "Credenziali non valide. Riprova.", errorText, errorBox);
       passwordEl.value = "";
       passwordEl.focus();
       setLoading(submitBtn,false);

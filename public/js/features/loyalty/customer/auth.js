@@ -42,12 +42,12 @@ form.addEventListener("submit", async (e) => {
       body:        JSON.stringify({ identifier, password }),
     });
 
-    const data = await res.json();
+    const {data, success, message} = await res.json();
 
-    if (res.ok && data.success) {
+    if (res.ok && success) {
       safeRedirect("/loyalty/customer/dashboard");
     } else {
-      showError(data.message || "Credenziali non valide. Riprova.", errorText, errorBox);
+      showError(message || "Credenziali non valide. Riprova.", errorText, errorBox);
       passwordEl.value = "";
       passwordEl.focus();
       setLoading(submitBtn, false);
