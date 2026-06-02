@@ -135,7 +135,7 @@ async function redeemOffer({ token, offerId, partnerId, idempotencyKey } = {}) {
     /* 3. LOAD DATA VIA REPOS */
     const [customer, offer] = await Promise.all([
       customerRepo.findCustomerById(customerId),
-      offerRepo.findOfferByIdAndPartner(offerId, partnerId),
+      offerRepo.findActiveOfferById(offerId),
     ]);
 
     if (!customer) {
@@ -164,11 +164,11 @@ async function redeemOffer({ token, offerId, partnerId, idempotencyKey } = {}) {
 
     /* 4. INSERT REDEMPTION (DB GUARANTEE UNIQUE INDEX) */
     const redemption = await redemptionRepo.createRedemption({
+      id: idempotencyKey,
       customerId,
       partnerId,
       offerId,
       usedToken: token,
-      idempotencyKey: idempotencyKey || null,
     });
 
     return {

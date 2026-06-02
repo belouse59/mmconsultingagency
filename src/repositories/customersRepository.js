@@ -172,6 +172,36 @@ async function findCustomerByIdentifier(
 
 }
 
+async function findCustomerById(
+    id
+) {
+
+    const result = await query(
+        `
+ SELECT
+ id,
+ full_name,
+ identifier,
+ identifier_type,
+ password_hash,
+ active,
+ created_at
+
+ FROM customers
+
+ WHERE id=$1
+
+ LIMIT 1
+ `,
+        [
+            id
+        ]
+    );
+
+    return mapCustomer(result.rows[0]);
+
+}
+
 /* ───────────────────────────────────────────── */
 
 async function findActiveCustomers() {
@@ -257,5 +287,6 @@ module.exports = {
     createCustomer,
     findCustomers,
     findCustomerByIdentifier,
+    findCustomerById,
     findActiveCustomers,
 };

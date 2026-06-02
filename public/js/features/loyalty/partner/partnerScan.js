@@ -421,7 +421,7 @@ confirmRedeemBtn.addEventListener("click", async () => {
     const res = await fetch("/api/loyalty/partner/redeem", {
       method:      "POST",
       credentials: "same-origin",
-      headers:     { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
+      headers:     { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest", "Idempotency-Key": idempotencyKey },
       body:        JSON.stringify({
         token:   _pendingToken,
         offerId,

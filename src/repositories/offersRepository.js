@@ -87,6 +87,31 @@ async function findActiveOffersByPartner(partnerId) {
 }
 
 /* ─────────────────────────────────────────────
+   ACTIVE OFFERS
+───────────────────────────────────────────── */
+async function findActiveOfferById(id) {
+  const result = await query(
+    `
+    SELECT
+      id,
+      title,
+      description,
+      partner_id,
+      active,
+      created_at
+    FROM offers
+    WHERE id = $1
+    AND active = $2
+    `,
+    [id, true]
+  );
+
+  const offer = result.rows.map(mapOffer);
+  
+  return offer.length ? offer[0] : [];
+}
+
+/* ─────────────────────────────────────────────
    CREATE OFFER
 ───────────────────────────────────────────── */
 async function createOffer({ id, title, description, partnerId }) {
@@ -150,5 +175,6 @@ module.exports = {
   findOffers,
   findActiveOffers,
   findActiveOffersByPartner,
+  findActiveOfferById,
   createOffer,
 };
