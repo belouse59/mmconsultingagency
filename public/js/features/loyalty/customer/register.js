@@ -87,17 +87,22 @@ form.addEventListener("submit", async (e) => {
       body:        JSON.stringify({ full_name, identifier, password }),
     });
  
-    const {data, success, message} = await res.json();
+    const { data, success, message, token } = await res.json();
  
     if (res.ok && success) {
       showSuccess(successBox, errorBox);
-      setTimeout(() => window.location.replace("/loyalty/customer/dashboard"), 1200);
+      setTimeout(
+        () => window.location.href=`${window.location.origin}/api/loyalty/customer/registration/success?token=${token}`
+        , 1200
+      );
     } else {
       showError(message || "Errore durante la registrazione. Riprova.", errorText, errorBox);
-      setLoading(submitBtn, false);
     }
   } catch {
     showError("Errore di connessione. Controlla la rete e riprova.", errorText, errorBox);
+    
+  }
+  finally {
     setLoading(submitBtn, false);
   }
 });

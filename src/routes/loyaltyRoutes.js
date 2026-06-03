@@ -20,6 +20,7 @@
  *   POST   /customer/register
  *   POST   /customer/login
  *   POST   /customer/logout
+ *   GET    /customer/verify
  *   GET    /customer/session
  *   GET    /customer/qr
  *   GET    /customer/offers
@@ -39,12 +40,13 @@
  *   POST   /admin/offers
  */
 
-const express = require("express");
-const rateLimit = require("express-rate-limit");
+const express      = require("express");
+const rateLimit    = require("express-rate-limit");
 
-const adminCtrl = require("../controllers/loyalty/adminLoyaltyController");
+const adminCtrl    = require("../controllers/loyalty/adminLoyaltyController");
 const customerCtrl = require("../controllers/loyalty/customerLoyaltyController");
-const partnerCtrl = require("../controllers/loyalty/partnerLoyaltyController");
+const partnerCtrl  = require("../controllers/loyalty/partnerLoyaltyController");
+const verifCtrl    = require("../controllers/verificationController");
 
 const {
     requireCustomerAPI,
@@ -232,6 +234,15 @@ customerRouter.post(
     validate(),
     customerCtrl.registerCustomer
 );
+
+customerRouter.get(
+    "/verify", verifCtrl.verifyCustomer
+);
+
+customerRouter.get(
+    "/registration/success", customerCtrl.successPage
+);
+
 
 customerRouter.post(
     "/login",

@@ -33,6 +33,8 @@ function mapCustomer(row) {
         password: row.password_hash,
         active: row.active,
         createdAt: row.created_at,
+        verified: row.verified,
+        verifiedAt: row.verified_at
     };
 
 }
@@ -71,7 +73,8 @@ async function createCustomer({ id, full_name, identifier, identifierType, passw
  identifier_type,
  password_hash,
  active,
- created_at
+ created_at,
+ verified
  `,
             [
                 id,
@@ -87,6 +90,26 @@ async function createCustomer({ id, full_name, identifier, identifierType, passw
     syncCustomerToSheets(customer);
     return customer;
 
+}
+
+/* ───────────────────────────────────────────── */
+
+async function markVerified(id) {
+  const result = await query(
+    `
+    UPDATE customers
+    SET
+      verified = true,
+      active = true,
+      verified_at = NOW(),
+      updated_at = NOW()
+    WHERE id = $1
+    RETURNING *
+    `,
+    [id]
+  );
+
+  return mapCustomer(result.rows[0]);
 }
 
 /* ───────────────────────────────────────────── */
@@ -155,7 +178,9 @@ async function findCustomerByIdentifier(
  identifier_type,
  password_hash,
  active,
- created_at
+ created_at,
+ verified,
+ verified_at
 
  FROM customers
 
@@ -285,6 +310,7 @@ function syncCustomerToSheets(
 
 module.exports = {
     createCustomer,
+    markVerified,
     findCustomers,
     findCustomerByIdentifier,
     findCustomerById,

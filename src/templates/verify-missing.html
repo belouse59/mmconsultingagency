@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Richiesta non valida | M&M Consulting</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background: linear-gradient(180deg, #F9F9F7 0%, #F4F4F1 100%);
+            font-family: Arial, sans-serif;
+            color: #1A1A2E;
+        }
+
+        .wrap {
+            max-width: 620px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            border: 1px solid #E8E8E4;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 12px 32px rgba(10, 22, 40, 0.08);
+        }
+
+        .header {
+            background: #0A1628;
+            padding: 32px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #D4A017;
+            font-size: 22px;
+        }
+
+        .header p {
+            margin-top: 8px;
+            color: rgba(255, 255, 255, .60);
+            font-size: 13px;
+        }
+
+        .body {
+            padding: 42px 36px;
+            text-align: center;
+        }
+
+        .status-line {
+            width: 80px;
+            height: 4px;
+            margin: 0 auto 32px;
+            border-radius: 999px;
+            background: #D4A017;
+        }
+
+        h2 {
+            margin: 0 0 18px;
+            font-size: 32px;
+            color: #0A1628;
+        }
+
+        .lead {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #4B5563;
+        }
+
+        .message {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #6B7280;
+            max-width: 500px;
+            margin: 16px auto 0;
+        }
+
+        .cta {
+            display: inline-block;
+            margin-top: 36px;
+            background: #D4A017;
+            color: #0A1628;
+            text-decoration: none;
+            font-weight: 700;
+            padding: 14px 28px;
+            border-radius: 8px;
+        }
+
+        .footer {
+            background: #F9F9F7;
+            border-top: 1px solid #E4E4E0;
+            padding: 18px 32px;
+            color: #9CA3AF;
+            font-size: 12px;
+            text-align: center;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="wrap">
+
+        <div class="header">
+            <h1>M&amp;M Consulting</h1>
+            <p>Consulenza energetica e ottimizzazione dei costi</p>
+        </div>
+
+        <div class="body">
+
+
+            <div class="status-line"></div>
+
+            <h2>Richiesta non valida</h2>
+
+            <p class="lead">
+                Non sono presenti informazioni sufficienti per completare la verifica.
+            </p>
+
+            <p class="message">
+                Ti invitiamo ad aprire nuovamente l'email ricevuta e utilizzare il
+                collegamento originale contenuto nel messaggio.
+            </p>
+
+            <a href="{{APP_URL}}" class="cta">
+            Torna al sito
+        </a>
+
+
+        </div>
+
+        <div class="footer">
+            M&amp;M Consulting · Via Industriale 120, 98120 Messina ME
+        </div>
+
+    </div>
+
+</body>
+
+</html>

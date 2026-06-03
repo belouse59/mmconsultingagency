@@ -1,8 +1,9 @@
 "use strict";
 
-const contactService = require("../services/form/contactService");
+const contactService    = require("../services/form/contactService");
 const newsletterService = require("../services/form/newsletterService");
-const simulatorService = require("../services/form/simulatorService");
+const simulatorService  = require("../services/form/simulatorService");
+const { verifyToken }   = require("../services/tokenService");
 
 async function submitForm(req, res) {
   try {
@@ -47,6 +48,47 @@ async function submitForm(req, res) {
   }
 }
 
+async function verifyEmail(req, res) {
+  const { token } = req.query;
+
+  const result = verifyToken(token);
+
+  if (!result) {
+    const html = loadTemplate(
+      "verify-error.html",
+      {
+        APP_URL: process.env.APP_URL
+      }
+    );
+
+    return res.status(400).send(html);
+  }
+  let updated = false;
+  try {
+    updated = await markEmailVerified(
+      process.env.SHEET_NAME_CONTACT,
+      result.email
+    );
+  } catch (err) {
+    console.error(err);
+  }
+
+  if (!updated) {
+    return res.status(404).send(
+      loadTemplate("verify-missing.html", {
+        APP_URL: process.env.APP_URL
+      })
+    );
+  }
+
+  return res.send(
+    loadTemplate("verify-success.html", {
+      APP_URL: process.env.APP_URL
+    })
+  );
+}
+
 module.exports = {
-  submitForm
+  submitForm,
+  verifyEmail
 };

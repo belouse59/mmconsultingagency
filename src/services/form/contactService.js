@@ -101,7 +101,7 @@ async function submit(data = {}) {
 
     if (!contact.verified) {
         try {
-            await sendVerificationEmail(email);
+            await sendVerificationEmail(email, "form", contact.firstName);
         } catch (err) {
             console.error(
                 "[contactService/sendVerification]",
@@ -123,6 +123,7 @@ async function submit(data = {}) {
         energyType,
         preferredContactTime,
         message,
+        formType: "contact"
     }).catch(console.error);
 
     /* -----------------------------

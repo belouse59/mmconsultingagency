@@ -14,6 +14,8 @@ const {
     clean,
 } = require("../../utils/sanitizer");
 
+const { sendVerificationEmail } = require("../../services/emailService");
+
 async function subscribe(data = {}) {
 
     if (
@@ -31,23 +33,31 @@ async function subscribe(data = {}) {
             .trim()
             .toLowerCase();
 
-    // let contact =
-    //     await contactRepo.findByEmail(email);
 
-    // if (!contact) {
-
-    //     contact =
-    //         await contactRepo.createContact({
-    //             email,
-    //             firstName: null,
-    //             lastName: null,
-    //             phone: null,
-    //         });
-    // }
-
-    await newsletterRepo.subscribe(
+    const contactNewsletters = await newsletterRepo.subscribe(
         email
     );
+    const contact =
+         await contactRepo.findByEmail(email);
+
+        /* -----------------------------
+       EMAIL VERIFICATION
+    ----------------------------- */
+
+    if (!contactNewsletters?.verified && !contact?.verified) {
+        try {
+            await sendVerificationEmail(email, "form", "");
+        } catch (err) {
+            console.error(
+                "[contactService/sendVerification]",
+                err
+            );
+        }
+    } else if(contactNewsletters?.verified || contact?.verified) {
+        if(contactNewsletters && !contactNewsletters?.verified) newsletterRepo.markVerified(contactNewsletters.id);
+        if(contact && !contact?.verified) contactRepo.markVerified(contact.id);
+    }
+
 
     return {
         success: true,

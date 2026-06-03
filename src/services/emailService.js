@@ -8,15 +8,16 @@ const {
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-async function sendVerificationEmail(email) {
+async function sendVerificationEmail(email, route, name) {
     const token = generateToken(email);
     const verifyUrl =
-        `${process.env.APP_URL}/api/contact/verify?token=${token}`;
+        `${process.env.APP_URL}/api/${route}/verify?token=${token}`;
 
     const html = loadTemplate(
         "verification-email.html",
         {
-            VERIFY_URL: verifyUrl
+            VERIFY_URL: verifyUrl,
+            FULL_NAME: name
         }
     );
 
@@ -38,14 +39,14 @@ async function notifyNewLead(data) {
     const html = loadTemplate("new-lead-email.html", {
       DATE: getLocalTimestamp() || "",
 
-      FIRSTNAME: data.firstname || "",
-      LASTNAME: data.lastname || "",
+      FIRSTNAME: data.firstName || "",
+      LASTNAME: data.lastName || "",
       EMAIL: data.email || "",
 
       PHONE: data.phone || "Non fornito",
       ENERGY_TYPE: data.energyType || "Non specificato",
-      CONTACT_TIME: data.contactTime || "Non specificato",
-      MESSAGE: data.messageForm || "Nessun messaggio",
+      CONTACT_TIME: data.preferredContactTime || "Non specificato",
+      MESSAGE: data.message || "Nessun messaggio",
       FORM_TYPE: data.formType || "contact",
     });
 

@@ -26,6 +26,9 @@ const {
   asyncHandler,
 } =
   require("./helper");
+const { loadTemplate } = require("../../utils/templateLoader");
+
+const { generateToken, verifyToken } = require("../../services/tokenService")
 
 /* ─────────────────────────────────────────────
    HELPERS
@@ -94,31 +97,65 @@ const registerCustomer =
             payload
           );
 
-      await createCustomerSession(
-        req,
-        customer
-      );
+      if (customer) {
+        const token = generateToken(customer.identifier);
+        return res
+          .status(201)
+          .json({
 
-      return res
-        .status(201)
-        .json({
+            success: true,
 
-          success: true,
+            data: {
 
-          data: {
+              customerId:
+                customer.customerId,
 
-            customerId:
-              customer.customerId,
+              full_name:
+                customer.full_name,
 
-            full_name:
-              customer.full_name,
+            },
+            token
 
-          },
+          });
+      } else {
+        return res
+          .status(403)
+          .json({
+            success: false,
+            message: "Errore durante la registrazione. Riprova."
 
-        });
+          });
+
+      }
 
     }
   );
+
+async function successPage(
+  req,
+  res
+) {
+
+  const { token } = req.query;
+
+  const { email } = verifyToken(token);
+
+
+  const customer =
+    await customerLoyaltyService
+      .getCustomerByIdentifier(email);
+
+  const html =
+    loadTemplate(
+      "register-customer.html",
+      {
+        FULL_NAME: customer.full_name,
+        APP_URL: process.env.APP_URL
+      }
+    );
+
+  return res.send(html);
+}
 
 /* ─────────────────────────────────────────────
    LOGIN
@@ -324,6 +361,8 @@ const getOffers =
 module.exports = {
 
   registerCustomer,
+
+  successPage,
 
   loginCustomer,
 

@@ -88,7 +88,8 @@ async function handleContact(data) {
     try {
       mailSent = await sendVerificationEmail(
         data.email,
-        token
+        token,
+        
       );
     } catch (err) {
       console.error(err);

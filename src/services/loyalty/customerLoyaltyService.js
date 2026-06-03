@@ -16,6 +16,8 @@ const {
 } =
   require("../../utils/errorHandler");
 
+  const { sendVerificationEmail } = require("../../services/emailService");
+
 /* ───────────────────────────────────────────── */
 
 async function getCustomers() {
@@ -88,8 +90,9 @@ async function register({
             hash,
 
           active:
-            true,
+            false,
         });
+        await sendVerificationEmail(customer.identifier,"loyalty/customer", customer.full_name);
 
     return {
       customerId:
@@ -97,6 +100,9 @@ async function register({
 
       full_name:
         customer.full_name,
+        
+      identifier: 
+        customer.identifier
     };
 
   }

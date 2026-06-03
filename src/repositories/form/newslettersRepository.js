@@ -17,7 +17,7 @@ function mapNewsletter(row) {
     };
 }
 
-async function findByContactId(contactId) {
+async function findByEmail(email) {
     const result = await query(
         `
         SELECT *
@@ -25,7 +25,7 @@ async function findByContactId(contactId) {
         WHERE email = $1
         LIMIT 1
         `,
-        [contactId]
+        [email]
     );
 
     return mapNewsletter(result.rows[0]);
@@ -41,12 +41,16 @@ async function subscribe(email) {
             id,
             email,
             subscribed,
-            subscribed_at
+            subscribed_at,
+            verified,
+            verified_at
         )
         VALUES (
             $1,
             $2,
             true,
+            NOW(),
+            false,
             NOW()
         )
         ON CONFLICT (email)
@@ -81,8 +85,26 @@ async function unsubscribe(contactId) {
     return mapNewsletter(result.rows[0]);
 }
 
+async function markVerified(id) {
+  const result = await query(
+    `
+    UPDATE newsletter_subscriptions
+    SET
+      verified = true,
+      verified_at = NOW(),
+      updated_at = NOW()
+    WHERE id = $1
+    RETURNING *
+    `,
+    [id]
+  );
+
+  return mapNewsletter(result.rows[0]);
+}
+
 module.exports = {
-    findByContactId,
+    findByEmail,
     subscribe,
     unsubscribe,
+    markVerified
 };

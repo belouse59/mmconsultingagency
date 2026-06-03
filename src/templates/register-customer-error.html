@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Richiesta non completata | M&M Consulting</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background: linear-gradient(180deg, #F9F9F7 0%, #F4F4F1 100%);
+            font-family: Arial, sans-serif;
+            color: #1A1A2E;
+        }
+
+        .wrap {
+            max-width: 680px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            border: 1px solid #E8E8E4;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 12px 32px rgba(10, 22, 40, 0.08);
+        }
+
+        .header {
+            background: #0A1628;
+            padding: 34px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #D4A017;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            color: rgba(255, 255, 255, .60);
+            font-size: 13px;
+            letter-spacing: .02em;
+        }
+
+        .body {
+            padding: 48px 40px;
+            text-align: center;
+        }
+
+        .status-line {
+            width: 90px;
+            height: 4px;
+            background: #8B2C2C;
+            border-radius: 999px;
+            margin: 0 auto 36px;
+        }
+
+        h2 {
+            margin: 0 0 18px;
+            color: #0A1628;
+            font-size: 34px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .lead {
+            max-width: 520px;
+            margin: 0 auto 32px;
+            font-size: 17px;
+            line-height: 1.8;
+            color: #4B5563;
+        }
+
+        .info-box {
+            background: #F9F9F7;
+            border: 1px solid #ECECE8;
+            border-radius: 10px;
+            padding: 28px;
+            margin: 36px auto;
+            text-align: left;
+        }
+
+        .info-box h3 {
+            margin: 0 0 18px;
+            color: #0A1628;
+            font-size: 18px;
+        }
+
+        .info-box p {
+            margin: 0 0 16px;
+            color: #4B5563;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .info-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .actions {
+            margin-top: 36px;
+        }
+
+        .cta-primary {
+            display: inline-block;
+            padding: 14px 30px;
+            border-radius: 8px;
+            background: #D4A017;
+            color: #0A1628;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            margin-right: 12px;
+        }
+
+        .cta-secondary {
+            display: inline-block;
+            padding: 14px 30px;
+            border-radius: 8px;
+            border: 1px solid #D4A017;
+            color: #0A1628;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            background: #FFFFFF;
+        }
+
+        .note {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #ECECE8;
+            color: #6B7280;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .footer {
+            background: #F9F9F7;
+            border-top: 1px solid #E4E4E0;
+            padding: 18px 32px;
+            text-align: center;
+            color: #9CA3AF;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 640px) {
+
+            .body {
+                padding: 36px 24px;
+            }
+
+            h2 {
+                font-size: 28px;
+            }
+
+            .cta-primary,
+            .cta-secondary {
+                display: block;
+                margin: 12px 0;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="wrap">
+
+        <div class="header">
+            <h1>M&amp;M Consulting</h1>
+            <p>Consulenza energetica e ottimizzazione dei costi</p>
+        </div>
+
+        <div class="body">
+
+            <div class="status-line"></div>
+
+            <h2>Richiesta non completata</h2>
+
+            <p class="lead">
+                Non è stato possibile elaborare la tua richiesta in questo momento.
+            </p>
+
+            <div class="info-box">
+
+                <h3>Cosa è successo?</h3>
+
+                <p>
+                    Si è verificato un problema tecnico durante l'invio delle informazioni.
+                </p>
+
+                <p>
+                    Nessuna azione è stata registrata e la richiesta potrebbe non essere stata ricevuta correttamente
+                    dal nostro sistema.
+                </p>
+
+                <p>
+                    Ti invitiamo a riprovare tra qualche minuto oppure a contattarci direttamente se il problema dovesse
+                    persistere.
+                </p>
+
+            </div>
+
+            <div class="actions">
+
+                <a href="{{APP_URL}}" class="cta-primary">
+                    Torna al sito
+                </a>
+
+                <a href="{{APP_URL}}/contatti" class="cta-secondary">
+                    Contattaci
+                </a>
+
+            </div>
+
+            <div class="note">
+                Se il problema persiste, il nostro team sarà lieto di assisterti direttamente.
+            </div>
+
+        </div>
+
+        <div class="footer">
+            M&amp;M Consulting · Via Industriale 120, 98120 Messina ME
+            <br>
+            Consulenza professionale per famiglie e imprese.
+        </div>
+
+    </div>
+
+</body>
+
+</html>

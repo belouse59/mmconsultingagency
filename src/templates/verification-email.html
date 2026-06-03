@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #1A1A2E;
+            background: #F9F9F7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .wrap {
+            max-width: 580px;
+            margin: 32px auto;
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #E4E4E0;
+            overflow: hidden;
+        }
+
+        .header {
+            background: #0A1628;
+            padding: 28px 32px;
+        }
+
+        .header h1 {
+            color: #D4A017;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 13px;
+            margin: 6px 0 0;
+        }
+
+        .body {
+            padding: 32px;
+        }
+
+        .intro {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #1A1A2E;
+            margin-bottom: 24px;
+        }
+
+        .highlight {
+            background: #F9F9F7;
+            border-left: 4px solid #D4A017;
+            border-radius: 6px;
+            padding: 18px 20px;
+            margin: 24px 0;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #1A1A2E;
+        }
+
+        .cta-container {
+            text-align: center;
+            margin: 32px 0;
+        }
+
+        .cta {
+            display: inline-block;
+            background: #D4A017;
+            color: #0A1628 !important;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 15px;
+            padding: 14px 30px;
+            border-radius: 7px;
+        }
+
+        .link-box {
+            margin-top: 28px;
+            padding: 14px;
+            background: #F9F9F7;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #6B7A8D;
+            line-height: 1.6;
+            word-break: break-all;
+        }
+
+        .footer {
+            background: #F9F9F7;
+            padding: 16px 32px;
+            font-size: 12px;
+            color: #9CA3AF;
+            border-top: 1px solid #E4E4E0;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrap">
+
+        <div class="header">
+            <h1>Conferma il tuo indirizzo email</h1>
+            <p>M&amp;M Consulting · {{DATE}}</p>
+        </div>
+
+        <div class="body">
+
+            <div class="intro">
+                Ciao <b>{{FULL_NAME}} </b>👋
+                <br><br>
+                Abbiamo ricevuto una richiesta tramite il sito di
+                <strong>M&amp;M Consulting</strong>.
+                <br><br>
+                Per garantire la sicurezza dei tuoi dati e confermare che
+                l'indirizzo email inserito sia corretto, ti chiediamo di
+                completare la verifica cliccando sul pulsante qui sotto.
+            </div>
+
+            <div class="highlight">
+                Una volta confermata l'email, potremo elaborare la tua richiesta
+                e contattarti utilizzando i recapiti che hai fornito.
+            </div>
+
+            <div class="cta-container">
+                <a href="{{VERIFY_URL}}" class="cta">
+                    Conferma la tua email
+                </a>
+            </div>
+
+            <div class="intro">
+                Se non hai effettuato alcuna richiesta sul nostro sito,
+                puoi ignorare questa email in tutta tranquillità.
+            </div>
+
+            <div class="link-box">
+                Se il pulsante non funziona, copia e incolla il seguente link
+                nel tuo browser:
+                <br><br>
+                {{VERIFY_URL}}
+            </div>
+
+        </div>
+
+        <div class="footer">
+            M&amp;M Consulting · Via Industriale 120, 98120 Messina ME
+            <br>
+            Questa email è stata inviata automaticamente a seguito di una
+            richiesta effettuata sul nostro sito web.
+        </div>
+
+    </div>
+
+</body>
+
+</html>

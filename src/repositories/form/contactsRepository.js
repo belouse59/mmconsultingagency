@@ -83,7 +83,7 @@ async function createContact({
   return mapContact(result.rows[0]);
 }
 
-async function markVerified(contactId) {
+async function markVerified(id) {
   const result = await query(
     `
     UPDATE contacts
@@ -94,7 +94,7 @@ async function markVerified(contactId) {
     WHERE id = $1
     RETURNING *
     `,
-    [contactId]
+    [id]
   );
 
   return mapContact(result.rows[0]);
