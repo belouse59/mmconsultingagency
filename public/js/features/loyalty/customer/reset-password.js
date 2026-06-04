@@ -1,0 +1,94 @@
+import { $ } from "../../../core/dom.js";
+import {
+  validate,
+  getStrength,
+  updateStrengthIndicator
+} from "../../../core/passwordChecker.js";
+
+import {
+  setLoading,
+  showError,
+  hideError,
+  showSuccess
+} from "../../../core/loyaltyUtils.js";
+
+const form          = $("#resetPasswordForm");
+const passwordEl    = $("#password");
+const confirmEl     = $("#confirmPassword");
+const submitBtn     = $("#submitBtn");
+const errorBox      = $("#resetError");
+const errorText     = $("#resetErrorText");
+const successBox    = $("#resetSuccess");
+
+/* ── Strength live update ── */
+passwordEl.addEventListener("input", () => {
+  hideError(errorBox);
+  updateStrengthIndicator(passwordEl.value);
+});
+
+/* ── Clear errors ── */
+[passwordEl, confirmEl].forEach(el =>
+  el.addEventListener("input", () => hideError(errorBox))
+);
+
+/* ── Submit ── */
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  hideError(errorBox);
+
+  const password = passwordEl.value;
+  const confirm  = confirmEl.value;
+
+  /* 1. passwordChecker validation */
+  const isValidPassword = validate(passwordEl, confirmEl);
+
+  if (!isValidPassword) return;
+
+  /* 2. extra safety check (defensive UX layer) */
+  if (password !== confirm) {
+    showError("Le password non coincidono.", errorText, errorBox);
+    return;
+  }
+
+  setLoading(submitBtn, true);
+
+  try {
+    const token = new URLSearchParams(window.location.search).get("token");
+
+    const res = await fetch("/api/loyalty/customer/reset-password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      credentials: "same-origin",
+      body: JSON.stringify({ token, password })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      showSuccess(successBox, errorBox);
+
+      setTimeout(() => {
+        window.location.href = "/loyalty/customer/login.html";
+      }, 1500);
+
+    } else {
+      showError(
+        data.message || "Errore durante il reset password.",
+        errorText,
+        errorBox
+      );
+    }
+
+  } catch (err) {
+    showError(
+      "Errore di connessione. Riprova più tardi.",
+      errorText,
+      errorBox
+    );
+  } finally {
+    setLoading(submitBtn, false);
+  }
+});
