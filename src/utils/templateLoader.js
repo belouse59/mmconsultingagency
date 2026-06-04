@@ -4,9 +4,9 @@ const path = require("path");
 const cache = new Map();
 
 function loadTemplate(filename, variables = {}, isEmail) {
-  const path = isEmail ? "templates/emails" : "templates"
+  const dir = isEmail ? "templates/emails" : "templates"
   if (!cache.has(filename)) {
-    const filePath = path.join(__dirname, "..", path, filename);
+    const filePath = path.join(__dirname, "..", dir, filename);
     cache.set(filename, fs.readFileSync(filePath, "utf8"));
   }
 
