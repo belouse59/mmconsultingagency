@@ -2,31 +2,32 @@ const { Resend } = require("resend");
 const { loadTemplate } = require("../utils/templateLoader");
 const { getLocalTimestamp } = require("../utils/dateFormat");
 const {
-    generateToken,
+  generateToken,
 } = require("../services/tokenService");
 
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendVerificationEmail(email, route, name) {
-    const token = generateToken(email);
-    const verifyUrl =
-        `${process.env.APP_URL}/api/${route}/verify?token=${token}`;
+  const token = generateToken(email);
+  const verifyUrl =
+    `${process.env.APP_URL}/api/${route}/verify?token=${token}`;
 
-    const html = loadTemplate(
-        "verification-email.html",
-        {
-            VERIFY_URL: verifyUrl,
-            FULL_NAME: name
-        }
-    );
+  const html = loadTemplate(
+    "verification-email.html",
+    {
+      VERIFY_URL: verifyUrl,
+      FULL_NAME: name
+    },
+    true
+  );
 
-    return resend.emails.send({
-        from: `${process.env.BRAND_NAME} <${process.env.RESEND_FROM_EMAIL}>`,
-        to: email,
-        subject: "Conferma la tua richiesta",
-        html
-    });
+  return resend.emails.send({
+    from: `${process.env.BRAND_NAME} <${process.env.RESEND_FROM_EMAIL}>`,
+    to: email,
+    subject: "Conferma la tua richiesta",
+    html
+  });
 }
 
 /**
@@ -48,7 +49,9 @@ async function notifyNewLead(data) {
       CONTACT_TIME: data.preferredContactTime || "Non specificato",
       MESSAGE: data.message || "Nessun messaggio",
       FORM_TYPE: data.formType || "contact",
-    });
+    },
+      true
+    );
 
     await resend.emails.send({
       from: `${process.env.BRAND_NAME} <${process.env.RESEND_FROM_EMAIL}>`,
@@ -87,7 +90,8 @@ async function notifySimulator(data) {
       GAS_KWH: data.gasValueKwh || 0,
       ESTIMATION_TYPE: data.estimationType || "unknown",
       FORM_TYPE: data.formType || "simulator",
-    });
+    }, true
+    );
 
     await resend.emails.send({
       from: `${process.env.BRAND_NAME} <${process.env.RESEND_FROM_EMAIL}>`,
@@ -104,7 +108,7 @@ async function notifySimulator(data) {
 }
 
 module.exports = {
-    sendVerificationEmail,
-    notifyNewLead,
-    notifySimulator,
+  sendVerificationEmail,
+  notifyNewLead,
+  notifySimulator,
 };
