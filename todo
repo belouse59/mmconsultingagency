@@ -1,3 +1,9 @@
 add blog section to builder page
 smf pending for now
+check router protection for verify and registration/success in loyaltyRoutes may be move them to their own router
+add password reset feature for customer and partner
+add change password feature for customer and partner once logged in
+add pagination in admin console
+think about redesign console in general to add users, newsletter list, contact request and simulator.
+
 add section about the fidelity program
