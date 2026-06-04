@@ -380,6 +380,26 @@ textarea {
 
 .loyalty-field--full { grid-column: 1 / -1; }
 
+.loyalty-password-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -0.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.loyalty-forgot-password {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--brand-primary);
+  text-decoration: none;
+  transition: opacity .2s ease;
+}
+
+.loyalty-forgot-password:hover {
+  opacity: .75;
+  text-decoration: underline;
+}
+
 /* ═══════════════════════════════════════════════════════════
    ERROR / SUCCESS MESSAGES
 ═══════════════════════════════════════════════════════════ */
