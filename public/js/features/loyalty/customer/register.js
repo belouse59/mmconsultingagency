@@ -71,7 +71,7 @@ confirmPassEl.addEventListener("input", () => hideError(errorBox));
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   hideError(errorBox);
-  if (!validateName() && !validate(passwordEl, confirmPassEl)) return;
+  if (!validateName() || !validate(passwordEl, confirmPassEl)) return;
  
   const full_name  = fullNameEl.value.trim();
   const identifier = identifierEl.value.trim();
