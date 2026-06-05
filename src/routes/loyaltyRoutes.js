@@ -21,6 +21,7 @@
  *   POST   /customer/login
  *   POST   /customer/logout
  *   GET    /customer/verify
+  *  GET    /customer/success
  *   GET    /customer/session
  *   GET    /customer/qr
  *   GET    /customer/offers
