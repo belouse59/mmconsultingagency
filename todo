@@ -7,3 +7,14 @@ add pagination in admin console
 think about redesign console in general to add users, newsletter list, contact request and simulator.
 
 add section about the fidelity program
+
+change verify?token move to static register-verification.html create sessionStorage.setItem(url, full_name)
+in register-verification.html getItem and with JS update html.
+to control a bit the UI from direct access
+  const name = sessionStorage.getItem("registrationName");
+
+  if (name) {
+    title.textContent = `Grazie ${name}!`;
+  } else {
+    title.textContent = "Registrazione completata";
+  }
