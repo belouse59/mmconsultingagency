@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Richiesta ricevuta | M&M Consulting</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background: linear-gradient(180deg, #F9F9F7 0%, #F4F4F1 100%);
+            font-family: Arial, sans-serif;
+            color: #1A1A2E;
+        }
+
+        .wrap {
+            max-width: 680px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            border: 1px solid #E8E8E4;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 12px 32px rgba(10, 22, 40, 0.08);
+        }
+
+        .header {
+            background: #0A1628;
+            padding: 34px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #D4A017;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            color: rgba(255, 255, 255, .60);
+            font-size: 13px;
+            letter-spacing: .02em;
+        }
+
+        .body {
+            padding: 48px 40px;
+            text-align: center;
+        }
+
+        .status-line {
+            width: 90px;
+            height: 4px;
+            background: #D4A017;
+            border-radius: 999px;
+            margin: 0 auto 36px;
+        }
+
+        h2 {
+            margin: 0 0 18px;
+            color: #0A1628;
+            font-size: 34px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .lead {
+            max-width: 520px;
+            margin: 0 auto 32px;
+            font-size: 17px;
+            line-height: 1.8;
+            color: #4B5563;
+        }
+
+        .info-box {
+            background: #F9F9F7;
+            border: 1px solid #ECECE8;
+            border-radius: 10px;
+            padding: 28px;
+            margin: 36px auto;
+            text-align: left;
+        }
+
+        .info-box h3 {
+            margin: 0 0 18px;
+            color: #0A1628;
+            font-size: 18px;
+        }
+
+        .step {
+            display: flex;
+            margin-bottom: 18px;
+            align-items: flex-start;
+        }
+
+        .step:last-child {
+            margin-bottom: 0;
+        }
+
+        .number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #D4A017;
+            color: #0A1628;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-right: 14px;
+        }
+
+        .step-text {
+            color: #4B5563;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        .note {
+            margin-top: 36px;
+            padding-top: 28px;
+            border-top: 1px solid #ECECE8;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #6B7280;
+        }
+
+        .cta {
+            display: inline-block;
+            margin-top: 36px;
+            padding: 14px 30px;
+            border-radius: 8px;
+            background: #D4A017;
+            color: #0A1628;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .footer {
+            background: #F9F9F7;
+            border-top: 1px solid #E4E4E0;
+            padding: 18px 32px;
+            text-align: center;
+            color: #9CA3AF;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 640px) {
+            .body {
+                padding: 36px 24px;
+            }
+
+            h2 {
+                font-size: 28px;
+            }
+
+            .info-box {
+                padding: 22px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="wrap">
+
+        <div class="header">
+            <h1>M&amp;M Consulting</h1>
+            <p>Consulenza energetica e ottimizzazione dei costi</p>
+        </div>
+
+        <div class="body">
+
+            <div class="status-line"></div>
+
+            <h2>Richiesta ricevuta</h2>
+
+            <p class="lead">
+                Ciao <b id="customerName">Cliente</b> 👋
+                <br>
+                Grazie per aver inviato la tua richiesta.
+                Abbiamo ricevuto correttamente le informazioni fornite e siamo pronti a prenderla in carico.
+            </p>
+
+            <div class="info-box">
+
+                <h3>Prossimo passaggio</h3>
+
+                <div class="step">
+                    <div class="number">1</div>
+                    <div class="step-text">
+                        Entro pochi minuti riceverai un'email di conferma all'indirizzo indicato durante la
+                        registrazione.
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="number">2</div>
+                    <div class="step-text">
+                        Apri l'email e clicca sul pulsante di conferma per verificare il tuo indirizzo email.
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="number">3</div>
+                    <div class="step-text">
+                        Una volta completata la verifica, il team M&amp;M Consulting potrà elaborare la tua richiesta e
+                        contattarti.
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="note">
+                Se non trovi l'email entro pochi minuti, verifica anche la cartella
+                <strong>Spam</strong>, <strong>Promozioni</strong> o <strong>Posta indesiderata</strong>.
+            </div>
+
+            <a href="/" id="returnHome" class="cta">
+                Torna al sito
+            </a>
+
+        </div>
+
+        <div class="footer">
+            M&amp;M Consulting · Via Industriale 120, 98120 Messina ME
+            <br>
+            Consulenza professionale per famiglie e imprese.
+        </div>
+
+    </div>
+<script type="module" src="/js/features/loyalty/customer/register-success.js"></script>
+</body>
+
+</html>

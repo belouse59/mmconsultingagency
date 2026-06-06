@@ -112,9 +112,7 @@ const registerCustomer =
 
               full_name:
                 customer.full_name,
-
-            },
-            token
+            }
 
           });
       } else {
@@ -130,32 +128,6 @@ const registerCustomer =
 
     }
   );
-
-async function successPage(
-  req,
-  res
-) {
-
-  const { token } = req.query;
-
-  const { email } = verifyToken(token);
-
-
-  const customer =
-    await customerLoyaltyService
-      .getCustomerByIdentifier(email);
-
-  const html =
-    loadTemplate(
-      "register-customer.html",
-      {
-        FULL_NAME: customer.full_name,
-        APP_URL: process.env.APP_URL
-      }
-    );
-
-  return res.send(html);
-}
 
 /* ─────────────────────────────────────────────
    LOGIN
@@ -361,8 +333,6 @@ const getOffers =
 module.exports = {
 
   registerCustomer,
-
-  successPage,
 
   loginCustomer,
 

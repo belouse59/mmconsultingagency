@@ -30,6 +30,26 @@ async function sendVerificationEmail(email, route, name) {
   });
 }
 
+async function sendCustomerPasswordReset({customer, token, expiresAt}) {
+  const resetUrl = `${process.env.APP_URL}/api/loyalty/customer/reset-password?token=${token}`;
+
+  const html = loadTemplate(
+    "forgot-password-email.html",
+    {
+      RESET_LINK: resetUrl,
+      YEAR: new Date().YEAR
+    },
+    true
+  );
+
+  return resend.emails.send({
+    from: `${process.env.BRAND_NAME} <${process.env.RESEND_FROM_EMAIL}>`,
+    to: customer.identifier,
+    subject: "Conferma la tua richiesta",
+    html
+  });
+}
+
 /**
  * Send notification when a new contact form is submitted.
  * Fails silently — never blocks API response.
@@ -109,6 +129,7 @@ async function notifySimulator(data) {
 
 module.exports = {
   sendVerificationEmail,
+  sendCustomerPasswordReset,
   notifyNewLead,
   notifySimulator,
 };

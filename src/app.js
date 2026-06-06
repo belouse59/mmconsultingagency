@@ -12,12 +12,13 @@
  */
 
 require("dotenv").config();
-const CSP_CONFIG = require("./config/csp");
-const express    = require("express");
-const path       = require("path");
-const helmet     = require("helmet");
-const cors       = require("cors");
-const morgan     = require("morgan");
+const CSP_CONFIG   = require("./config/csp");
+const express      = require("express");
+const path         = require("path");
+const helmet       = require("helmet");
+const cors         = require("cors");
+const morgan       = require("morgan");
+const cookieParser = require("cookie-parser");
 
 const { createSessionMiddleware } = require("./middleware/loyaltySession");
 
@@ -62,6 +63,7 @@ app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 /* ── Session ── (must be before any route that reads req.session) */
 app.set("trust proxy", 1);
 app.use(createSessionMiddleware());
+app.use(cookieParser());
 
 /* ── API routes ── */
 app.use("/api/partners",  partnerRoutes);

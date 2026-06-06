@@ -20,8 +20,10 @@
  *   POST   /customer/register
  *   POST   /customer/login
  *   POST   /customer/logout
+ *   POST   /customer/forgot-password
+ *   GET    /customer/reset-password
  *   GET    /customer/verify
-  *  GET    /customer/success
+ *   GET    /customer/success
  *   GET    /customer/session
  *   GET    /customer/qr
  *   GET    /customer/offers
@@ -46,6 +48,7 @@ const rateLimit    = require("express-rate-limit");
 
 const adminCtrl    = require("../controllers/loyalty/adminLoyaltyController");
 const customerCtrl = require("../controllers/loyalty/customerLoyaltyController");
+const passwordCtrl = require("../controllers/loyalty/passwordResetLoyaltyController");
 const partnerCtrl  = require("../controllers/loyalty/partnerLoyaltyController");
 const verifCtrl    = require("../controllers/verificationController");
 
@@ -146,6 +149,13 @@ createLimiter({
     },
 });
 
+const passwordResetLimiter =
+createLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: "Troppi tentativi. Riprova tra 15 minuti.",
+});
+
 const redeemLimiter =
 createLimiter({
     windowMs:
@@ -240,16 +250,31 @@ customerRouter.get(
     "/verify", verifCtrl.verifyCustomer
 );
 
-customerRouter.get(
-    "/registration/success", customerCtrl.successPage
-);
-
 
 customerRouter.post(
     "/login",
     authLimiter,
     validate(),
     customerCtrl.loginCustomer
+);
+
+customerRouter.post(
+  "/forgot-password",
+  passwordResetLimiter,
+  requireXHR,
+  passwordCtrl.forgotPassword
+);
+
+customerRouter.get(
+  "/reset-password",
+  passwordCtrl.resetPasswordPage
+);
+
+customerRouter.post(
+  "/reset-password",
+  authLimiter,
+  requireXHR,
+  passwordCtrl.resetPassword
 );
 
 customerRouter.post(

@@ -11,6 +11,8 @@ const {
 
 const { generateUUID } = require("../../utils/generateUUID");
 
+const passwordResetService = require("./passwordResetService")
+
 const {
   makeError,
 } =
@@ -127,6 +129,7 @@ async function register({
   }
 
 }
+
 
 /* ─────────────────────────────────────────────
    LOGIN

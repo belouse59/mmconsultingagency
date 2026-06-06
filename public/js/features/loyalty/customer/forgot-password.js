@@ -23,11 +23,13 @@ form.addEventListener("submit", async (e) => {
   errorBox.style.display = "none";
 
   try {
-    const res = await fetch("/api/auth/forgot-password", {
+    const res = await fetch("/api/loyalty/customer/forgot-password", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest"
       },
+      credentials: "same-origin",
       body: JSON.stringify({ identifier }),
     });
 

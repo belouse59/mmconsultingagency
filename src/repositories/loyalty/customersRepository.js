@@ -113,6 +113,25 @@ async function markVerified(id) {
 }
 
 /* ───────────────────────────────────────────── */
+async function updatePassword(data) {
+    const id = data.customerId;
+    const password_hash = data.passwordHash
+  const result = await query(
+    `
+    UPDATE customers
+    SET
+      password_hash = $2,
+      updated_at = NOW()
+    WHERE id = $1
+    RETURNING *
+    `,
+    [id, password_hash]
+  );
+
+  return mapCustomer(result.rows[0]);
+}
+
+/* ───────────────────────────────────────────── */
 
 async function findCustomers() {
     try {
@@ -311,6 +330,7 @@ function syncCustomerToSheets(
 module.exports = {
     createCustomer,
     markVerified,
+    updatePassword,
     findCustomers,
     findCustomerByIdentifier,
     findCustomerById,

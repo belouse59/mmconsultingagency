@@ -1,20 +1,9 @@
 add blog section to builder page
-smf pending for now
-check router protection for verify and registration/success in loyaltyRoutes may be move them to their own router
-add password reset feature for customer and partner
-add change password feature for customer and partner once logged in
+sms pending for now
+loyaltyRoutes may be move them to their own router
+add password reset feature for partner
 add pagination in admin console
 think about redesign console in general to add users, newsletter list, contact request and simulator.
 
 add section about the fidelity program
 
-change verify?token move to static register-verification.html create sessionStorage.setItem(url, full_name)
-in register-verification.html getItem and with JS update html.
-to control a bit the UI from direct access
-  const name = sessionStorage.getItem("registrationName");
-
-  if (name) {
-    title.textContent = `Grazie ${name}!`;
-  } else {
-    title.textContent = "Registrazione completata";
-  }

@@ -12,13 +12,13 @@ import {
   showSuccess
 } from "../../../core/loyaltyUtils.js";
 
-const form          = $("#resetPasswordForm");
-const passwordEl    = $("#password");
-const confirmEl     = $("#confirmPassword");
-const submitBtn     = $("#submitBtn");
-const errorBox      = $("#resetError");
-const errorText     = $("#resetErrorText");
-const successBox    = $("#resetSuccess");
+const form = $("#resetPasswordForm");
+const passwordEl = $("#password");
+const confirmEl = $("#confirmPassword");
+const submitBtn = $("#submitBtn");
+const errorBox = $("#resetError");
+const errorText = $("#resetErrorText");
+const successBox = $("#resetSuccess");
 
 /* ── Strength live update ── */
 passwordEl.addEventListener("input", () => {
@@ -37,7 +37,7 @@ form.addEventListener("submit", async (e) => {
   hideError(errorBox);
 
   const password = passwordEl.value;
-  const confirm  = confirmEl.value;
+  const confirm = confirmEl.value;
 
   /* 1. passwordChecker validation */
   const isValidPassword = validate(passwordEl, confirmEl);
@@ -53,17 +53,26 @@ form.addEventListener("submit", async (e) => {
   setLoading(submitBtn, true);
 
   try {
-    const token = new URLSearchParams(window.location.search).get("token");
+    const res = await fetch(
+      "/api/loyalty/customer/reset-password",
+      {
+        method: "POST",
 
-    const res = await fetch("/api/loyalty/customer/reset-password", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest"
-      },
-      credentials: "same-origin",
-      body: JSON.stringify({ token, password })
-    });
+        credentials: "same-origin",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+
+          "X-Requested-With":
+            "XMLHttpRequest",
+        },
+
+        body: JSON.stringify({
+          password,
+        }),
+      }
+    );
 
     const data = await res.json();
 
