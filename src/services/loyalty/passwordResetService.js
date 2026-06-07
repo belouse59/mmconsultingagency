@@ -8,6 +8,9 @@ const crypto =
 const customerRepo =
   require("../../repositories/loyalty/customersRepository");
 
+const partnerRepo =
+  require("../../repositories/loyalty/partnersRepository");
+
 const passwordResetRepo =
   require("../../repositories/loyalty/passwordResetRepository");
 
@@ -67,18 +70,27 @@ function createToken() {
 
 async function forgotPassword({
   identifier,
+  origin
 }) {
-
-  const customer =
+  let user;
+  if(origin === "customer") {
+     user =
     await customerRepo
-      .findCustomerByIdentifier(
-        identifier
-      );
+    .findCustomerByIdentifier(
+      identifier
+    );
+  } else {
+    user =
+    await partnerRepo
+    .findPartnerByIdentifier(
+      identifier
+    );
+  }
 
   /**
    * Always respond the same way (prevents enumeration)
    */
-  if (!customer) {
+  if (!user) {
     await new Promise(r => setTimeout(r, 1500));
     return;
   }
@@ -93,8 +105,8 @@ async function forgotPassword({
    * Invalidate previous active tokens
    */
   await passwordResetRepo
-    .invalidateCustomerTokens(
-      customer.id
+    .invalidateUserTokens(
+      user.id
     );
 
   /**
@@ -104,9 +116,10 @@ async function forgotPassword({
     await passwordResetRepo
       .createPasswordReset({
         id: generateUUID(),
-        customerId: customer.id,
+        userId: user.id,
         tokenHash,
         expiresAt,
+        origin
       });
 
   /**
@@ -114,9 +127,10 @@ async function forgotPassword({
    */
   await emailService
     .sendCustomerPasswordReset({
-      customer,
+      user,
       token: rawToken,
       expiresAt,
+      origin
     });
 
   return {
@@ -166,6 +180,7 @@ async function validateResetToken(
 async function resetPassword({
   token,
   password,
+  origin
 }) {
 
   if (!token || !password) {
@@ -214,11 +229,19 @@ async function resetPassword({
   /**
    * Update customer password
    */
-  await customerRepo
+  if( origin === "customer" ) {
+    await customerRepo
     .updatePassword({
-      customerId: resetRequest.customerId,
+      customerId: resetRequest.userId,
       passwordHash,
     });
+  } else {
+    await partnerRepo
+    .updatePassword({
+      partnerId: resetRequest.userId,
+      passwordHash,
+    });
+  }
 
   /**
    * Mark token as used (prevents replay)

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,85 +9,82 @@
   <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/loyalty.css">
 </head>
+
 <body>
 
-<div class="loyalty-shell">
+  <div class="loyalty-shell">
 
-  <header class="loyalty-topbar" role="banner">
-    <a href="/" class="loyalty-topbar-logo" aria-label="Torna alla homepage M&M Consulting">
-      <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
-      <span class="loyalty-topbar-brand">Partner</span>
-    </a>
-    <div class="loyalty-topbar-actions">
-      <span class="loyalty-topbar-user" id="topbarUserName" aria-live="polite"></span>
-      <button class="loyalty-topbar-logout" id="logoutBtn" aria-label="Esci dall'account">
-        Esci
-      </button>
-    </div>
-  </header>
-
-  <main class="loyalty-main" id="main-content">
-    <div class="loyalty-card loyalty-fade-in">
-
-      <div class="loyalty-auth-header">
-        <div class="loyalty-auth-icon" aria-hidden="true">🏪</div>
-        <h1 class="loyalty-auth-title">Accesso Partner</h1>
-        <p class="loyalty-auth-sub">
-          Accedi per scansionare i QR dei clienti e applicare gli sconti convenzionati.
-        </p>
-      </div>
-
-      <div class="loyalty-error" id="loginError" role="alert" aria-live="polite">
-        <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
-        <span id="loginErrorText"></span>
-      </div>
-
-      <form id="partnerLoginForm" novalidate>
-
-        <div class="loyalty-field">
-          <label for="partnerId">ID Partner</label>
-          <input
-            type="text"
-            id="partnerId"
-            name="partnerId"
-            placeholder="es. bar-centrale"
-            autocomplete="username"
-            required
-            aria-required="true">
-        </div>
-
-        <div class="loyalty-field">
-          <label for="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            placeholder="••••••••"
-            autocomplete="current-password"
-            required
-            aria-required="true">
-        </div>
-
-        <button type="submit" class="loyalty-btn-submit" id="submitBtn">
-          <span class="btn-label">Accedi</span>
-          <span class="btn-spinner" aria-hidden="true"></span>
+    <header class="loyalty-topbar" role="banner">
+      <a href="/" class="loyalty-topbar-logo" aria-label="Torna alla homepage M&M Consulting">
+        <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
+        <span class="loyalty-topbar-brand">Partner</span>
+      </a>
+      <div class="loyalty-topbar-actions">
+        <span class="loyalty-topbar-user" id="topbarUserName" aria-live="polite"></span>
+        <button class="loyalty-topbar-logout" id="logoutBtn" aria-label="Esci dall'account">
+          Esci
         </button>
+      </div>
+    </header>
 
-      </form>
+    <main class="loyalty-main" id="main-content">
+      <div class="loyalty-card loyalty-fade-in">
 
-      <p class="loyalty-auth-footer">
-        Non hai ancora accesso?
-        <a href="mailto:info@mmconsulting.it">Contatta M&amp;M Consulting</a>
-      </p>
+        <div class="loyalty-auth-header">
+          <div class="loyalty-auth-icon" aria-hidden="true">🏪</div>
+          <h1 class="loyalty-auth-title">Accesso Partner</h1>
+          <p class="loyalty-auth-sub">
+            Accedi per scansionare i QR dei clienti e applicare gli sconti convenzionati.
+          </p>
+        </div>
 
-    </div>
-  </main>
+        <div class="loyalty-error" id="loginError" role="alert" aria-live="polite">
+          <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
+          <span id="loginErrorText"></span>
+        </div>
 
-</div>
+        <form id="partnerLoginForm" novalidate>
 
-<script type="module" src="/js/features/loyalty/partner/login.js"></script>
+          <div class="loyalty-field">
+            <label for="identifier">Email o numero di telefono</label>
+            <input type="text" id="identifier" name="identifier" placeholder="mario@email.com oppure +39 333 000 0000"
+              autocomplete="username" inputmode="email" required aria-required="true">
+          </div>
+
+          <div class="loyalty-field">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password"
+              required aria-required="true">
+          </div>
+          <div class="loyalty-password-actions">
+            <a href="/loyalty/partner/forgot-password.html" class="loyalty-forgot-password">
+              Password dimenticata?
+            </a>
+          </div>
+
+          <button type="submit" class="loyalty-btn-submit" id="submitBtn">
+            <span class="btn-label">Accedi</span>
+            <span class="btn-spinner" aria-hidden="true"></span>
+          </button>
+
+        </form>
+
+        <p class="loyalty-auth-footer">
+          Non hai ancora accesso?
+          <a href="mailto:info@mmconsulting.it">Contatta M&amp;M Consulting</a>
+        </p>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script type="module" src="/js/features/loyalty/partner/login.js"></script>
 </body>
+
 </html>

@@ -247,7 +247,7 @@ async function loginPartner({
 
   const partner =
     await partnerRepo
-      .findPartnerById(
+      .findPartnerByIdentifier(
 
         normalizePartnerId(
           partnerId

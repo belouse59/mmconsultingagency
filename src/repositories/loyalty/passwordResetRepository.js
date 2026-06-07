@@ -8,7 +8,7 @@ const { query } =
 ───────────────────────────────────────────── */
 
 const TABLE =
-  "loyalty_customer_password_resets";
+  "loyalty_user_password_resets";
 
 /* ─────────────────────────────────────────────
    MAPPER
@@ -21,11 +21,12 @@ function mapPasswordReset(row) {
 
   return {
     id: row.password_reset_id,
-    customerId: row.customer_id,
+    userId: row.user_id,
     tokenHash: row.token_hash,
     expiresAt: row.expires_at,
     usedAt: row.used_at,
     createdAt: row.created_at,
+    type: row.type
   };
 
 }
@@ -36,36 +37,40 @@ function mapPasswordReset(row) {
 
 async function createPasswordReset({
   id,
-  customerId,
+  userId,
   tokenHash,
   expiresAt,
+  origin
 }) {
 
   const result =
     await query(
       `
-            INSERT INTO loyalty_customer_password_resets
+            INSERT INTO loyalty_password_resets
             (
                 password_reset_id,
-                customer_id,
+                user_id,
                 token_hash,
-                expires_at
+                expires_at,
+                type
             )
             VALUES
-            ($1, $2, $3, $4)
+            ($1, $2, $3, $4, $5)
             RETURNING
                 password_reset_id,
-                customer_id,
+                user_id,
                 token_hash,
                 expires_at,
                 used_at,
-                created_at
+                created_at,
+                type
             `,
       [
         id,
-        customerId,
+        userId,
         tokenHash,
         expiresAt,
+        origin
       ]
     );
 
@@ -84,12 +89,13 @@ async function findByTokenHash(tokenHash) {
       `
             SELECT
                 password_reset_id,
-                customer_id,
+                user_id,
                 token_hash,
                 expires_at,
                 used_at,
-                created_at
-            FROM loyalty_customer_password_resets
+                created_at,
+                type
+            FROM loyalty_password_resets
             WHERE token_hash = $1
             LIMIT 1
             `,
@@ -111,16 +117,17 @@ async function markUsed(id) {
   const result =
     await query(
       `
-            UPDATE loyalty_customer_password_resets
+            UPDATE loyalty_password_resets
             SET used_at = NOW()
             WHERE password_reset_id = $1
             RETURNING
                 password_reset_id,
-                customer_id,
+                user_id,
                 token_hash,
                 expires_at,
                 used_at,
-                created_at
+                created_at,
+                type
             `,
       [
         id,
@@ -135,17 +142,17 @@ async function markUsed(id) {
    INVALIDATE OLD TOKENS
 ───────────────────────────────────────────── */
 
-async function invalidateCustomerTokens(customerId) {
+async function invalidateUserTokens(userId) {
 
   await query(
     `
-        UPDATE loyalty_customer_password_resets
+        UPDATE loyalty_password_resets
         SET used_at = NOW()
-        WHERE customer_id = $1
+        WHERE user_id = $1
           AND used_at IS NULL
         `,
     [
-      customerId,
+      userId,
     ]
   );
 
@@ -157,5 +164,5 @@ module.exports = {
   createPasswordReset,
   findByTokenHash,
   markUsed,
-  invalidateCustomerTokens,
+  invalidateUserTokens,
 };

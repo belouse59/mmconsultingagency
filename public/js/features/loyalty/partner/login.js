@@ -16,7 +16,7 @@ import { $ } from "../../../core/dom.js";
 import { logout } from "../../../core/logout.js";
 import { setLoading, showError, hideError, safeRedirect } from "../../../core/loyaltyUtils.js";
 const form        = $("#partnerLoginForm");
-const partnerIdEl = $("#partnerId");
+const partnerIdEl = $("#identifier");
 const passwordEl  = $("#password");
 const submitBtn   = $("#submitBtn");
 const errorBox    = $("#loginError");

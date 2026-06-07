@@ -26,6 +26,12 @@ function mapPartner(
 
     name:
       row.name,
+    
+    identifier: 
+      row.identifier,
+
+    identifier_type: 
+      row.identifier_type,
 
     category:
       row.category,
@@ -84,7 +90,8 @@ async function createPartner({
         password_hash,
         must_change_password,
         active,
-        created_at
+        created_at,
+        updated_at
 
       )
 
@@ -97,6 +104,7 @@ async function createPartner({
         $5,
         TRUE,
         TRUE,
+        NOW(),
         NOW()
 
       )
@@ -200,6 +208,44 @@ async function findPartnerById(
 
 }
 
+async function findPartnerByIdentifier(
+  identifier
+) {
+
+  const result =
+    await query(
+
+      `
+      SELECT
+
+        id,
+        name,
+        identifier,
+        identifier_type,
+        category,
+        address,
+        password_hash,
+        must_change_password,
+        active,
+        created_at
+
+      FROM partners
+
+      WHERE identifier = $1
+      `,
+
+      [
+        identifier
+      ]
+
+    );
+
+  return mapPartner(
+    result.rows[0]
+  );
+
+}
+
 /* ─────────────────────────────────────────────
    PASSWORD UPDATE
 ───────────────────────────────────────────── */
@@ -224,7 +270,9 @@ async function updatePartnerPassword({
 
         password_hash = $1,
 
-        must_change_password = $2
+        must_change_password = $2,
+
+        updated_at = NOW()
 
       WHERE id = $3
 
@@ -292,6 +340,25 @@ async function setPartnerActive(
 }
 
 /* ───────────────────────────────────────────── */
+async function updatePassword(data) {
+    const id = data.partnerId;
+    const password_hash = data.passwordHash
+  const result = await query(
+    `
+    UPDATE partners
+    SET
+      password_hash = $2,
+      updated_at = NOW()
+    WHERE id = $1
+    RETURNING *
+    `,
+    [id, password_hash]
+  );
+
+  return mapPartner(result.rows[0]);
+}
+
+/* ───────────────────────────────────────────── */
 
 module.exports = {
 
@@ -301,8 +368,12 @@ module.exports = {
 
   findPartnerById,
 
+  findPartnerByIdentifier,
+
   updatePartnerPassword,
 
   setPartnerActive,
+
+  updatePassword
 
 };

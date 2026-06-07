@@ -1,7 +1,6 @@
 add blog section to builder page
 sms pending for now
 loyaltyRoutes may be move them to their own router
-add password reset feature for partner
 add pagination in admin console
 think about redesign console in general to add users, newsletter list, contact request and simulator.
 

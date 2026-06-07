@@ -1,4 +1,4 @@
-const customerLoyaltyService =
+const passwordResetService =
   require("../../services/loyalty/passwordResetService");
 
 const {
@@ -21,8 +21,9 @@ const forgotPassword =
       req,
       res
     ) => {
-
-      await customerLoyaltyService
+      let origin = req.baseUrl.split("/");
+      origin = origin[ origin.length - 1 ];
+      await passwordResetService
         .forgotPassword({
 
           identifier:
@@ -30,6 +31,7 @@ const forgotPassword =
               req.body
                 ?.identifier || ""
             ),
+            origin
 
         });
 
@@ -50,11 +52,6 @@ const forgotPassword =
    RESET PASSWORD
 ───────────────────────────────────────────── */
 
-//const path = require("path");
-
-const passwordResetService =
-  require("../../services/loyalty/passwordResetService");
-
 const resetPasswordPage =
   asyncHandler(
     async (
@@ -64,6 +61,9 @@ const resetPasswordPage =
 
       const token =
         req.query?.token;
+      
+      let origin = req.baseUrl.split("/");
+      origin = origin[ origin.length - 1 ];
 
       if (!token) {
         return res
@@ -92,7 +92,7 @@ const resetPasswordPage =
       );
 
       return res.redirect(
-        "/loyalty/customer/reset-password.html"
+        `/loyalty/${origin}/reset-password.html`
       );
 
     }
@@ -111,6 +111,9 @@ const resetPassword =
       const token =
         req.cookies
           ?.password_reset_token;
+      
+      let origin = req.baseUrl.split("/");
+      origin = origin[ origin.length - 1 ];
 
       if (!token) {
         return res
@@ -132,6 +135,9 @@ const resetPassword =
 
           password:
             req.body?.password,
+          
+          origin
+
 
         });
 

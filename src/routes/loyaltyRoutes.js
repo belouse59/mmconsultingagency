@@ -333,6 +333,25 @@ partnerRouter.post(
     partnerCtrl.setPartnerPassword
 );
 
+partnerRouter.post(
+  "/forgot-password",
+  passwordResetLimiter,
+  requireXHR,
+  passwordCtrl.forgotPassword
+);
+
+partnerRouter.get(
+  "/reset-password",
+  passwordCtrl.resetPasswordPage
+);
+
+partnerRouter.post(
+  "/reset-password",
+  authLimiter,
+  requireXHR,
+  passwordCtrl.resetPassword
+);
+
 partnerRouter.use(
     requirePartnerAPI
 );

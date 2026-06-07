@@ -30,8 +30,8 @@ async function sendVerificationEmail(email, route, name) {
   });
 }
 
-async function sendCustomerPasswordReset({customer, token, expiresAt}) {
-  const resetUrl = `${process.env.APP_URL}/api/loyalty/customer/reset-password?token=${token}`;
+async function sendCustomerPasswordReset({user, token, expiresAt, origin}) {
+  const resetUrl = `${process.env.APP_URL}/api/loyalty/${origin}/reset-password?token=${token}`;
 
   const html = loadTemplate(
     "forgot-password-email.html",
@@ -44,7 +44,7 @@ async function sendCustomerPasswordReset({customer, token, expiresAt}) {
 
   return resend.emails.send({
     from: `${process.env.BRAND_NAME} <${process.env.RESEND_FROM_EMAIL}>`,
-    to: customer.identifier,
+    to: user.identifier,
     subject: "Conferma la tua richiesta",
     html
   });
