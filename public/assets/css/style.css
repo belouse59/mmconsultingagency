@@ -13,7 +13,7 @@
    8.  Services Section
    9.  How It Works
    10. Stats / Results
-   11. loyalty program
+   11. loyalty preview
    12. Simulator
    13. Highlight / Comparison
    14. Team Carousel
@@ -1151,99 +1151,108 @@ abbr[title] {
 
 
 /* ==========================================================
-  11. PARTNER APPLICATION
+  11. LOYALTY PREVIEW
 ========================================================== */
 
-.partner-application{
-    padding:120px 0;
-    background:var(--bg-soft);
+.loyalty-preview {
+    padding: var(--sp-24) 0;
+    background: linear-gradient(
+        135deg,
+        var(--navy) 0%,
+        var(--navy-mid) 100%
+    );
+    position: relative;
+    overflow: hidden;
 }
 
-.partner-form-wrapper{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:60px;
-    align-items:center;
+.loyalty-preview::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(212,160,23,.12),
+            transparent 40%
+        );
 }
 
-.partner-eyebrow{
-    color:var(--gold);
-    font-weight:700;
-    letter-spacing:.12em;
-    font-size:.8rem;
+.loyalty-preview-wrapper {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 60px;
+    align-items: center;
 }
 
-.partner-info h2{
-    margin-top:16px;
-    margin-bottom:24px;
-    font-size:2.5rem;
-    line-height:1.2;
+.loyalty-badge {
+    display: inline-block;
+    background: rgba(212,160,23,.15);
+    color: var(--gold);
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    margin-bottom: 24px;
 }
 
-.partner-info p{
-    color:var(--text-secondary);
-    margin-bottom:32px;
+.loyalty-preview-content h2 {
+    color: white;
+    font-size: clamp(2rem,4vw,3rem);
+    line-height: 1.2;
+    margin-bottom: 24px;
 }
 
-.partner-info ul{
-    display:flex;
-    flex-direction:column;
-    gap:16px;
+.loyalty-preview-content p {
+    color: rgba(255,255,255,.75);
+    font-size: 1.05rem;
+    max-width: 600px;
 }
 
-.partner-info li{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    font-weight:600;
+.loyalty-preview-actions {
+    margin-top: 40px;
+    display: flex;
+    gap: 16px;
 }
 
-.partner-info li i{
-    color:var(--gold);
+.loyalty-preview-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(212,160,23,.2);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 40px;
+    text-align: center;
 }
 
-.partner-form{
-    background:white;
-    border-radius:24px;
-    padding:40px;
-    border:1px solid var(--border);
-    box-shadow:var(--shadow-lg);
+.qr-mockup {
+    width: 180px;
+    height: 180px;
+    margin: auto;
+    background: white;
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.form-group{
-    margin-bottom:20px;
+.qr-mockup i {
+    font-size: 5rem;
+    color: var(--navy);
 }
 
-.form-group label{
-    display:block;
-    margin-bottom:8px;
-    font-weight:600;
+.loyalty-preview-card h3 {
+    color: white;
+    margin-top: 24px;
+    margin-bottom: 12px;
 }
 
-.form-group input,
-.form-group textarea{
-    width:100%;
-    padding:14px 16px;
-    border:1px solid var(--border);
-    border-radius:12px;
-    background:#fff;
-    transition:.25s;
-}
-
-.form-group input:focus,
-.form-group textarea:focus{
-    outline:none;
-    border-color:var(--gold);
-    box-shadow:0 0 0 4px rgba(212,160,23,.15);
-}
-
-.partner-form textarea{
-    resize:vertical;
+.loyalty-preview-card p {
+    color: rgba(255,255,255,.65);
 }
 
 @media(max-width:900px){
 
-    .partner-form-wrapper{
+    .loyalty-preview-wrapper{
         grid-template-columns:1fr;
     }
 
