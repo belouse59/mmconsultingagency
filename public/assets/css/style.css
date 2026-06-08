@@ -1165,7 +1165,7 @@ abbr[title] {
     overflow: hidden;
 }
 
-.loyalty-preview::before {
+/*.loyalty-preview::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -1175,7 +1175,7 @@ abbr[title] {
             rgba(212,160,23,.12),
             transparent 40%
         );
-}
+}*/
 
 .loyalty-preview-wrapper {
     display: grid;
