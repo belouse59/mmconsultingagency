@@ -13,18 +13,18 @@
    8.  Services Section
    9.  How It Works
    10. Stats / Results
-   11. Simulator
-   12. Highlight / Comparison
-   13. Team Carousel
-   14. Approach / Methodology
-   15. Reviews
-   16. FAQ
-   17. Contact Form
-   18. Find Us / Map
-   19. Footer
-   20. WhatsApp Widget
-   21. Toast Notifications
-   22. Privacy Modal
+   11. loyalty program
+   12. Simulator
+   13. Highlight / Comparison
+   14. Team Carousel
+   15. Approach / Methodology
+   16. Reviews
+   17. FAQ
+   18. Contact Form
+   19. Find Us / Map
+   20. Footer
+   21. WhatsApp Widget
+   22. Toast Notifications
    23. Animations (@keyframes)
    24. Media Queries (consolidated)
 ============================================================ */
@@ -1150,8 +1150,108 @@ abbr[title] {
 }
 
 
+/* ==========================================================
+  11. PARTNER APPLICATION
+========================================================== */
+
+.partner-application{
+    padding:120px 0;
+    background:var(--bg-soft);
+}
+
+.partner-form-wrapper{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:60px;
+    align-items:center;
+}
+
+.partner-eyebrow{
+    color:var(--gold);
+    font-weight:700;
+    letter-spacing:.12em;
+    font-size:.8rem;
+}
+
+.partner-info h2{
+    margin-top:16px;
+    margin-bottom:24px;
+    font-size:2.5rem;
+    line-height:1.2;
+}
+
+.partner-info p{
+    color:var(--text-secondary);
+    margin-bottom:32px;
+}
+
+.partner-info ul{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.partner-info li{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-weight:600;
+}
+
+.partner-info li i{
+    color:var(--gold);
+}
+
+.partner-form{
+    background:white;
+    border-radius:24px;
+    padding:40px;
+    border:1px solid var(--border);
+    box-shadow:var(--shadow-lg);
+}
+
+.form-group{
+    margin-bottom:20px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:600;
+}
+
+.form-group input,
+.form-group textarea{
+    width:100%;
+    padding:14px 16px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:#fff;
+    transition:.25s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus{
+    outline:none;
+    border-color:var(--gold);
+    box-shadow:0 0 0 4px rgba(212,160,23,.15);
+}
+
+.partner-form textarea{
+    resize:vertical;
+}
+
+@media(max-width:900px){
+
+    .partner-form-wrapper{
+        grid-template-columns:1fr;
+    }
+
+}
+
+
 /* ============================================================
-   11. SIMULATOR
+   12. SIMULATOR
 ============================================================ */
 
 .simulator-section {
@@ -1966,7 +2066,7 @@ abbr[title] {
 
 
 /* ============================================================
-   12. HIGHLIGHT / COMPARISON
+   13. HIGHLIGHT / COMPARISON
 ============================================================ */
 
 .highlight {
@@ -2110,7 +2210,7 @@ abbr[title] {
 
 
 /* ============================================================
-   13. TEAM CAROUSEL
+   14. TEAM CAROUSEL
 ============================================================ */
 
 .team {
@@ -2257,7 +2357,7 @@ abbr[title] {
 
 
 /* ============================================================
-   14. APPROACH / METHODOLOGY
+   15. APPROACH / METHODOLOGY
 ============================================================ */
 
 .approach {
@@ -2304,7 +2404,7 @@ abbr[title] {
 
 
 /* ============================================================
-   15. REVIEWS
+   16. REVIEWS
 ============================================================ */
 
 .reviews {
@@ -2432,7 +2532,7 @@ abbr[title] {
 
 
 /* ============================================================
-   16. FAQ
+   17. FAQ
 ============================================================ */
 
 .faq {
@@ -2548,7 +2648,7 @@ abbr[title] {
 
 
 /* ============================================================
-   17. CONTACT FORM
+   18. CONTACT FORM
 ============================================================ */
 
 .contact {
@@ -2873,7 +2973,7 @@ abbr[title] {
 
 
 /* ============================================================
-   18. FIND US / MAP
+   19. FIND US / MAP
 ============================================================ */
 
 .find-us {
@@ -2899,7 +2999,7 @@ abbr[title] {
 
 
 /* ============================================================
-   19. FOOTER
+   20. FOOTER
 ============================================================ */
 
 .site-footer {
@@ -3115,7 +3215,7 @@ abbr[title] {
 
 
 /* ============================================================
-   20. WHATSAPP WIDGET
+   21. WHATSAPP WIDGET
 ============================================================ */
 
 .wa-float {
@@ -3323,7 +3423,7 @@ abbr[title] {
 
 
 /* ============================================================
-   21. TOAST NOTIFICATIONS
+   22. TOAST NOTIFICATIONS
 ============================================================ */
 
 .toast {
