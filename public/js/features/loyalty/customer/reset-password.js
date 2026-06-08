@@ -2,7 +2,8 @@ import { $ } from "../../../core/dom.js";
 import {
   validate,
   getStrength,
-  updateStrengthIndicator
+  updateStrengthIndicator,
+  enablePasswordReveal
 } from "../../../core/passwordChecker.js";
 
 import {
@@ -40,7 +41,7 @@ form.addEventListener("submit", async (e) => {
   const confirm = confirmEl.value;
 
   /* 1. passwordChecker validation */
-  const isValidPassword = validate(passwordEl, confirmEl);
+  const isValidPassword = validate(passwordEl, confirmEl, errorText, errorBox);
 
   if (!isValidPassword) return;
 
@@ -101,3 +102,6 @@ form.addEventListener("submit", async (e) => {
     setLoading(submitBtn, false);
   }
 });
+
+/* ── Password reveal toggle ── */
+enablePasswordReveal()

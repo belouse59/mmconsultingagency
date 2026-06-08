@@ -1,5 +1,6 @@
 import { $ } from "../../../core/dom.js";
 import { setLoading } from "../../../core/loyaltyUtils.js";
+import { enablePasswordReveal } from "../../../core/passwordChecker.js";
 const adminLoginForm = $("#adminLoginForm");
 const adminEmailEl = $("#adminEmail");
 const adminPassEl = $("#adminPassword");
@@ -64,3 +65,5 @@ adminLoginForm?.addEventListener("submit", async (e) => {
     // stay on register page
   }
 })();
+
+enablePasswordReveal();

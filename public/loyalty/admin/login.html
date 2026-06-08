@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,76 +8,73 @@
   <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/loyalty.css">
 </head>
+
 <body>
 
-<div class="loyalty-shell">
+  <div class="loyalty-shell">
 
-  <header class="loyalty-topbar" role="banner">
-    <a href="/" class="loyalty-topbar-logo" aria-label="Torna alla homepage M&M Consulting">
-      <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
-      <span class="loyalty-topbar-brand">Admin</span>
-    </a>
-  </header>
+    <header class="loyalty-topbar" role="banner">
+      <a href="/" class="loyalty-topbar-logo" aria-label="Torna alla homepage M&M Consulting">
+        <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
+        <span class="loyalty-topbar-brand">Admin</span>
+      </a>
+    </header>
 
-  <main class="loyalty-main">
+    <main class="loyalty-main">
 
-    <div class="loyalty-card loyalty-fade-in">
+      <div class="loyalty-card loyalty-fade-in">
 
-      <div class="loyalty-auth-header">
-        <div class="loyalty-auth-icon" aria-hidden="true">🔐</div>
-        <h1 class="loyalty-auth-title">Accesso Admin</h1>
-        <p class="loyalty-auth-sub">
-          Area riservata alla gestione della piattaforma Convenzioni.
-        </p>
-      </div>
-
-      <div class="loyalty-error" id="loginError" role="alert" aria-live="polite">
-        <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
-        <span id="loginErrorText"></span>
-      </div>
-
-      <form id="adminLoginForm" novalidate>
-
-        <div class="loyalty-field">
-          <label for="adminEmail">Email amministratore</label>
-          <input
-            type="email"
-            id="adminEmail"
-            name="email"
-            placeholder="admin@mmconsulting.it"
-            autocomplete="username"
-            required
-            aria-required="true">
+        <div class="loyalty-auth-header">
+          <div class="loyalty-auth-icon" aria-hidden="true">🔐</div>
+          <h1 class="loyalty-auth-title">Accesso Admin</h1>
+          <p class="loyalty-auth-sub">
+            Area riservata alla gestione della piattaforma Convenzioni.
+          </p>
         </div>
 
-        <div class="loyalty-field">
-          <label for="adminPassword">Password</label>
-          <input
-            type="password"
-            id="adminPassword"
-            name="password"
-            placeholder="••••••••"
-            autocomplete="current-password"
-            required
-            aria-required="true">
+        <div class="loyalty-error" id="loginError" role="alert" aria-live="polite">
+          <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
+          <span id="loginErrorText"></span>
         </div>
 
-        <button type="submit" class="loyalty-btn-submit" id="loginSubmitBtn">
-          <span class="btn-label">Accedi</span>
-          <span class="btn-spinner" aria-hidden="true"></span>
-        </button>
+        <form id="adminLoginForm" novalidate>
 
-      </form>
+          <div class="loyalty-field">
+            <label for="adminEmail">Email amministratore</label>
+            <input type="email" id="adminEmail" name="email" placeholder="admin@mmconsulting.it" autocomplete="username"
+              required aria-required="true">
+          </div>
 
-    </div>
+          <div class="loyalty-field">
+            <label for="adminPassword">Password</label>
+            <div class="password-wrapper">
+              <input type="password" id="adminPassword" name="password" placeholder="••••••••"
+                autocomplete="current-password" required aria-required="true">
+              <button type="button" class="password-toggle" data-target="password" aria-label="Mostra password">
+                🔒
+              </button>
+            </div>
+          </div>
 
-  </main>
+          <button type="submit" class="loyalty-btn-submit" id="loginSubmitBtn">
+            <span class="btn-label">Accedi</span>
+            <span class="btn-spinner" aria-hidden="true"></span>
+          </button>
 
-</div>
+        </form>
 
-<script type="module" src="/js/features/loyalty/admin/login.js"></script>
+      </div>
+
+    </main>
+
+  </div>
+
+  <script type="module" src="/js/features/loyalty/admin/login.js"></script>
 </body>
+
 </html>

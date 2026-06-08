@@ -400,6 +400,32 @@ textarea {
   text-decoration: underline;
 }
 
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 48px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  line-height: 1;
+}
+
+.password-toggle:hover {
+  opacity: 0.8;
+}
+
 /* ═══════════════════════════════════════════════════════════
    ERROR / SUCCESS MESSAGES
 ═══════════════════════════════════════════════════════════ */

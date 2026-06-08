@@ -13,7 +13,7 @@
 
 /* ── DOM refs ── */
 import { $ } from "../../../core/dom.js";
-import { validate, getStrength, updateStrengthIndicator } from "../../../core/passwordChecker.js";
+import { validate, getStrength, updateStrengthIndicator, enablePasswordReveal } from "../../../core/passwordChecker.js";
 import { logout } from "../../../core/logout.js";
 const form          = $("#setPasswordForm");
 const newPassEl     = $("#newPassword");
@@ -60,7 +60,7 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   hideError();
 
-  if (!validate(newPassEl, confirmPassEl)) return;
+  if (!validate(newPassEl, confirmPassEl, errorText, errorText)) return;
 
   const newPassword     = newPassEl.value;
   const confirmPassword = confirmPassEl.value;
@@ -90,3 +90,6 @@ form.addEventListener("submit", async (e) => {
     setLoading(false);
   }
 });
+
+/* ── Password reveal toggle ── */
+enablePasswordReveal();

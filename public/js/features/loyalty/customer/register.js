@@ -11,8 +11,8 @@
  */
 
 /* ── DOM refs ── */
-import { $ } from "../../../core/dom.js";
-import { validate, getStrength, updateStrengthIndicator } from "../../../core/passwordChecker.js";
+import { $, $$ } from "../../../core/dom.js";
+import { validate, getStrength, updateStrengthIndicator, enablePasswordReveal } from "../../../core/passwordChecker.js";
 import { setLoading, showError, hideError, showSuccess, safeRedirect } from "../../../core/loyaltyUtils.js";
 import { logout } from "../../../core/logout.js";
 const form = $("#registerForm");
@@ -71,7 +71,7 @@ confirmPassEl.addEventListener("input", () => hideError(errorBox));
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   hideError(errorBox);
-  if (!validateName() || !validate(passwordEl, confirmPassEl)) return;
+  if (!validateName() || !validate(passwordEl, confirmPassEl, errorText, errorBox)) return;
 
   const full_name = fullNameEl.value.trim();
   const identifier = identifierEl.value.trim();
@@ -146,3 +146,6 @@ function encode(data) {
     )
   );
 }
+
+/* ── Password reveal toggle ── */
+enablePasswordReveal()

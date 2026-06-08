@@ -12,6 +12,7 @@
 /* ── DOM refs ── */
 import { $ } from "../../../core/dom.js";
 import { logout } from "../../../core/logout.js";
+import { enablePasswordReveal } from "../../../core/passwordChecker.js";
 const form         = $("#loginForm");
 const identifierEl = $("#identifier");
 const passwordEl   = $("#password");
@@ -80,3 +81,6 @@ logout($logout, "/");
     // stay on login page
   }
 })();
+
+/* ── Password reveal toggle ── */
+enablePasswordReveal()
