@@ -12,15 +12,15 @@
  *   - Mobile-first layout, 5 breakpoints
  */
 
- /* ============================================================
+/* ============================================================
    1. RESET & CUSTOM PROPERTIES
 ============================================================ */
 *,
 *::before,
 *::after {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 /* ============================================================
@@ -28,45 +28,45 @@
 ============================================================ */
 
 html {
-    scroll-behavior: smooth;
-    -webkit-text-size-adjust: 100%;
-    font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  font-size: 16px;
 }
 
 body {
-    font-family: var(--loy-font-body);
-    color: var(--loy-text);
-    background: var(--bg);
-    line-height: 1.75;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
+  font-family: var(--loy-font-body);
+  color: var(--loy-text);
+  background: var(--bg);
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 img {
-    display: block;
-    max-width: 100%;
-    height: auto;
+  display: block;
+  max-width: 100%;
+  height: auto;
 }
 
 a {
-    color: inherit;
+  color: inherit;
 }
 
 ul,
 ol {
-    list-style: none;
+  list-style: none;
 }
 
 button {
-    font-family: inherit;
-    cursor: pointer;
+  font-family: inherit;
+  cursor: pointer;
 }
 
 input,
 select,
 textarea {
-    font-family: inherit;
+  font-family: inherit;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -75,52 +75,52 @@ textarea {
    works standalone on loyalty pages that may not load style.css
 ═══════════════════════════════════════════════════════════ */
 :root {
-  --loy-navy:          var(--navy,          #0A1628);
-  --loy-navy-light:    var(--navy-light,    #1E3A5F);
-  --loy-gold:          var(--gold,          #D4A017);
-  --loy-gold-dark:     var(--gold-dark,     #B8860B);
-  --loy-gold-glow:     var(--gold-glow,     rgba(212,160,23,0.12));
-  --loy-gold-border:   var(--gold-border,   rgba(212,160,23,0.25));
-  --loy-green:         var(--green,         #0F7A3C);
-  --loy-red:           #C0392B;
-  --loy-err-bg:        rgba(229,72,77,0.08);
-  --loy-err-border:    rgba(229,72,77,0.28);
-  --loy-text:          var(--text-primary,  #1A1A2E);
-  --loy-text-sec:      var(--text-secondary,#6B7A8D);
-  --loy-text-muted:    var(--text-muted,    #9CA3AF);
-  --loy-bg:            var(--bg,            #FFFFFF);
-  --loy-bg-soft:       var(--bg-soft,       #FAFAF8);
-  --loy-border:        var(--border,        #E4E4E0);
-  --loy-shadow-sm:     var(--shadow-sm,     0 2px 10px rgba(10,22,40,0.08));
-  --loy-shadow-md:     var(--shadow-md,     0 8px 28px rgba(10,22,40,0.10));
-  --loy-shadow-lg:     var(--shadow-lg,     0 20px 60px rgba(10,22,40,0.14));
-  --loy-r-md:          var(--r-md,          8px);
-  --loy-r-lg:          var(--r-lg,          12px);
-  --loy-r-xl:          var(--r-xl,          16px);
-  --loy-font-display:  var(--font-display,  'Montserrat', sans-serif);
-  --loy-font-body:     var(--font-body,     'Inter', sans-serif);
+  --loy-navy: var(--navy, #0A1628);
+  --loy-navy-light: var(--navy-light, #1E3A5F);
+  --loy-gold: var(--gold, #D4A017);
+  --loy-gold-dark: var(--gold-dark, #B8860B);
+  --loy-gold-glow: var(--gold-glow, rgba(212, 160, 23, 0.12));
+  --loy-gold-border: var(--gold-border, rgba(212, 160, 23, 0.25));
+  --loy-green: var(--green, #0F7A3C);
+  --loy-red: #C0392B;
+  --loy-err-bg: rgba(229, 72, 77, 0.08);
+  --loy-err-border: rgba(229, 72, 77, 0.28);
+  --loy-text: var(--text-primary, #1A1A2E);
+  --loy-text-sec: var(--text-secondary, #6B7A8D);
+  --loy-text-muted: var(--text-muted, #9CA3AF);
+  --loy-bg: var(--bg, #FFFFFF);
+  --loy-bg-soft: var(--bg-soft, #FAFAF8);
+  --loy-border: var(--border, #E4E4E0);
+  --loy-shadow-sm: var(--shadow-sm, 0 2px 10px rgba(10, 22, 40, 0.08));
+  --loy-shadow-md: var(--shadow-md, 0 8px 28px rgba(10, 22, 40, 0.10));
+  --loy-shadow-lg: var(--shadow-lg, 0 20px 60px rgba(10, 22, 40, 0.14));
+  --loy-r-md: var(--r-md, 8px);
+  --loy-r-lg: var(--r-lg, 12px);
+  --loy-r-xl: var(--r-xl, 16px);
+  --loy-font-display: var(--font-display, 'Montserrat', sans-serif);
+  --loy-font-body: var(--font-body, 'Inter', sans-serif);
 
-      /* ── Spacing scale (8px base) ── */
-    --sp-1: 4px;
-    --sp-2: 8px;
-    --sp-3: 12px;
-    --sp-4: 16px;
-    --sp-5: 20px;
-    --sp-6: 24px;
-    --sp-8: 32px;
-    --sp-10: 40px;
-    --sp-12: 48px;
-    --sp-16: 64px;
-    --sp-20: 80px;
-    --sp-24: 96px;
+  /* ── Spacing scale (8px base) ── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+  --sp-24: 96px;
 
-    /* ── Radius ── */
-    --r-sm: 4px;
-    --r-md: 8px;
-    --r-lg: 12px;
-    --r-xl: 16px;
-    --r-2xl: 24px;
-    --r-full: 9999px;
+  /* ── Radius ── */
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-2xl: 24px;
+  --r-full: 9999px;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -151,9 +151,9 @@ textarea {
   top: 0;
   z-index: 100;
   border-bottom: 1px solid var(--loy-gold-border);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.20);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.20);
   /* iOS safe area */
-  padding-left:  max(24px, env(safe-area-inset-left));
+  padding-left: max(24px, env(safe-area-inset-left));
   padding-right: max(24px, env(safe-area-inset-right));
 }
 
@@ -190,7 +190,7 @@ textarea {
 
 .loyalty-topbar-user {
   font-size: 0.8rem;
-  color: rgba(255,255,255,0.55);
+  color: rgba(255, 255, 255, 0.55);
   font-family: var(--loy-font-display);
   white-space: nowrap;
   overflow: hidden;
@@ -200,9 +200,9 @@ textarea {
 
 .loyalty-topbar-logout {
   font-size: 0.75rem;
-  color: rgba(255,255,255,0.55);
+  color: rgba(255, 255, 255, 0.55);
   background: transparent;
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 6px;
   padding: 5px 12px;
   cursor: pointer;
@@ -216,9 +216,9 @@ textarea {
 }
 
 .loyalty-topbar-logout:hover {
-  background: rgba(255,255,255,0.09);
+  background: rgba(255, 255, 255, 0.09);
   color: #fff;
-  border-color: rgba(255,255,255,0.35);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -268,8 +268,13 @@ textarea {
   box-shadow: var(--loy-shadow-sm);
 }
 
-.loyalty-card--wide { max-width: 680px; }
-.loyalty-card--full { max-width: 1100px; }
+.loyalty-card--wide {
+  max-width: 680px;
+}
+
+.loyalty-card--full {
+  max-width: 1100px;
+}
 
 /* ═══════════════════════════════════════════════════════════
    AUTH — login / register header
@@ -320,7 +325,9 @@ textarea {
   text-decoration: none;
 }
 
-.loyalty-auth-footer a:hover { text-decoration: underline; }
+.loyalty-auth-footer a:hover {
+  text-decoration: underline;
+}
 
 /* ═══════════════════════════════════════════════════════════
    FORM FIELDS
@@ -364,7 +371,9 @@ textarea {
   box-shadow: 0 0 0 3px var(--loy-gold-glow);
 }
 
-.loyalty-field input::placeholder { color: var(--loy-text-muted); }
+.loyalty-field input::placeholder {
+  color: var(--loy-text-muted);
+}
 
 .loyalty-field select {
   cursor: pointer;
@@ -376,9 +385,13 @@ textarea {
 }
 
 .loyalty-field select:valid,
-.loyalty-field select option:not([disabled]) { color: var(--loy-text); }
+.loyalty-field select option:not([disabled]) {
+  color: var(--loy-text);
+}
 
-.loyalty-field--full { grid-column: 1 / -1; }
+.loyalty-field--full {
+  grid-column: 1 / -1;
+}
 
 .loyalty-password-actions {
   display: flex;
@@ -410,20 +423,29 @@ textarea {
 }
 
 .password-toggle {
+  opacity: 0;
   position: absolute;
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
   border: none;
   background: transparent;
-  cursor: pointer;
+  cursor: default;
   font-size: 18px;
   padding: 4px;
   line-height: 1;
 }
 
-.password-toggle:hover {
+.password-toggle.reveal {
+  opacity: 1;
+  cursor: pointer;
+}
+.password-toggle.reveal:hover {
   opacity: 0.8;
+}
+
+.password-toggle img {
+  width: 20px;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -444,16 +466,23 @@ textarea {
   line-height: 1.45;
 }
 
-.loyalty-error.visible { display: flex; }
-.loyalty-error-icon    { flex-shrink: 0; font-size: 0.95rem; margin-top: 1px; }
+.loyalty-error.visible {
+  display: flex;
+}
+
+.loyalty-error-icon {
+  flex-shrink: 0;
+  font-size: 0.95rem;
+  margin-top: 1px;
+}
 
 .loyalty-success {
   display: none;
   align-items: flex-start;
   gap: 8px;
   padding: 10px 14px;
-  background: rgba(15,122,60,0.08);
-  border: 1px solid rgba(15,122,60,0.25);
+  background: rgba(15, 122, 60, 0.08);
+  border: 1px solid rgba(15, 122, 60, 0.25);
   border-radius: var(--loy-r-md);
   font-size: 0.85rem;
   color: var(--loy-green);
@@ -461,7 +490,9 @@ textarea {
   line-height: 1.45;
 }
 
-.loyalty-success.visible { display: flex; }
+.loyalty-success.visible {
+  display: flex;
+}
 
 /* ═══════════════════════════════════════════════════════════
    BUTTONS
@@ -492,7 +523,7 @@ textarea {
 .loyalty-btn-submit:hover:not(:disabled) {
   background: var(--loy-gold-dark);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(212,160,23,0.28);
+  box-shadow: 0 6px 20px rgba(212, 160, 23, 0.28);
 }
 
 .loyalty-btn-submit:disabled {
@@ -562,19 +593,27 @@ textarea {
   display: none;
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(0,0,0,0.18);
+  border: 2px solid rgba(0, 0, 0, 0.18);
   border-top-color: currentColor;
   border-radius: 50%;
   animation: loy-spin 0.7s linear infinite;
   position: absolute;
 }
 
-.loyalty-btn-redeem .btn-spinner { border-top-color: #fff; border-color: rgba(255,255,255,0.25); }
+.loyalty-btn-redeem .btn-spinner {
+  border-top-color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
 
 .loyalty-btn-submit.loading .btn-label,
-.loyalty-btn-redeem.loading .btn-label  { opacity: 0; }
+.loyalty-btn-redeem.loading .btn-label {
+  opacity: 0;
+}
+
 .loyalty-btn-submit.loading .btn-spinner,
-.loyalty-btn-redeem.loading .btn-spinner { display: block; }
+.loyalty-btn-redeem.loading .btn-spinner {
+  display: block;
+}
 
 /* Table action buttons */
 .loyalty-table-action {
@@ -591,10 +630,19 @@ textarea {
   min-width: 44px;
 }
 
-.loyalty-table-action:hover { opacity: 0.80; }
+.loyalty-table-action:hover {
+  opacity: 0.80;
+}
 
-.loyalty-table-action--danger  { background: rgba(229,72,77,0.12);  color: #C0392B; }
-.loyalty-table-action--success { background: rgba(15,122,60,0.12);  color: #0F7A3C; }
+.loyalty-table-action--danger {
+  background: rgba(229, 72, 77, 0.12);
+  color: #C0392B;
+}
+
+.loyalty-table-action--success {
+  background: rgba(15, 122, 60, 0.12);
+  color: #0F7A3C;
+}
 
 /* ═══════════════════════════════════════════════════════════
    PASSWORD STRENGTH INDICATOR
@@ -705,7 +753,7 @@ textarea {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgba(212,160,23,0.08) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(212, 160, 23, 0.08) 1px, transparent 1px);
   background-size: 24px 24px;
   pointer-events: none;
 }
@@ -725,7 +773,7 @@ textarea {
   background: #fff;
   padding: 12px;
   border-radius: var(--loy-r-lg);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   position: relative;
   z-index: 1;
 }
@@ -755,13 +803,15 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: rgba(229,72,77,0.08);
+  background: rgba(229, 72, 77, 0.08);
   border-radius: 8px;
   text-align: center;
   padding: 16px;
 }
 
-.loyalty-qr-error-icon { font-size: 1.8rem; }
+.loyalty-qr-error-icon {
+  font-size: 1.8rem;
+}
 
 .loyalty-qr-error-text {
   font-size: 0.8rem;
@@ -784,7 +834,7 @@ textarea {
 }
 
 .loyalty-qr-refresh-btn:hover {
-  background: rgba(192,57,43,0.08);
+  background: rgba(192, 57, 43, 0.08);
 }
 
 /* QR countdown timer */
@@ -799,7 +849,7 @@ textarea {
 .loyalty-qr-timer-bar {
   width: 100px;
   height: 3px;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -811,13 +861,15 @@ textarea {
   transition: width 1s linear, background-color 0.5s;
 }
 
-.loyalty-qr-timer-fill.expiring { background: #E5484D; }
+.loyalty-qr-timer-fill.expiring {
+  background: #E5484D;
+}
 
 .loyalty-qr-timer-text {
   font-family: var(--loy-font-display);
   font-size: 0.75rem;
   font-weight: 700;
-  color: rgba(255,255,255,0.50);
+  color: rgba(255, 255, 255, 0.50);
   min-width: 36px;
   text-align: right;
 }
@@ -831,7 +883,7 @@ textarea {
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--loy-text-sec);
-  background: rgba(212,160,23,0.08);
+  background: rgba(212, 160, 23, 0.08);
   border: 1px solid var(--loy-gold-border);
   border-radius: 20px;
   padding: 3px 10px;
@@ -857,7 +909,7 @@ textarea {
 
 .loyalty-offer-card:hover {
   border-color: var(--loy-gold-border);
-  box-shadow: 0 2px 10px rgba(10,22,40,0.06);
+  box-shadow: 0 2px 10px rgba(10, 22, 40, 0.06);
 }
 
 .loyalty-offer-icon {
@@ -872,7 +924,10 @@ textarea {
   flex-shrink: 0;
 }
 
-.loyalty-offer-info { flex: 1; min-width: 0; }
+.loyalty-offer-info {
+  flex: 1;
+  min-width: 0;
+}
 
 .loyalty-offer-title {
   font-family: var(--loy-font-display);
@@ -918,8 +973,17 @@ textarea {
   color: var(--loy-text-sec);
 }
 
-.loyalty-empty-icon { font-size: 2.2rem; display: block; margin-bottom: 10px; opacity: 0.5; }
-.loyalty-empty-text { font-size: 0.875rem; line-height: 1.6; }
+.loyalty-empty-icon {
+  font-size: 2.2rem;
+  display: block;
+  margin-bottom: 10px;
+  opacity: 0.5;
+}
+
+.loyalty-empty-text {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
 
 /* ═══════════════════════════════════════════════════════════
    PARTNER SCAN PAGE
@@ -943,8 +1007,14 @@ textarea {
 }
 
 /* Hide verbose Html5Qrcode UI elements */
-#loyalty-qr-reader__dashboard_section_csr span:first-child { display: none !important; }
-#loyalty-qr-reader__status_span { font-family: var(--loy-font-display) !important; font-size: 0.75rem !important; }
+#loyalty-qr-reader__dashboard_section_csr span:first-child {
+  display: none !important;
+}
+
+#loyalty-qr-reader__status_span {
+  font-family: var(--loy-font-display) !important;
+  font-size: 0.75rem !important;
+}
 
 /* Manual toggle button */
 .loyalty-manual-toggle {
@@ -1020,12 +1090,12 @@ textarea {
 }
 
 .loyalty-scan-result-badge.success {
-  background: rgba(15,122,60,0.10);
+  background: rgba(15, 122, 60, 0.10);
   color: var(--loy-green);
 }
 
 .loyalty-scan-result-badge.error {
-  background: rgba(229,72,77,0.10);
+  background: rgba(229, 72, 77, 0.10);
   color: var(--loy-red);
 }
 
@@ -1045,7 +1115,7 @@ textarea {
 /* Redemption receipt */
 .loyalty-receipt {
   margin-top: 10px;
-  border-top: 1px solid rgba(15,122,60,0.20);
+  border-top: 1px solid rgba(15, 122, 60, 0.20);
   padding-top: 10px;
   display: flex;
   flex-direction: column;
@@ -1122,7 +1192,9 @@ textarea {
   scrollbar-width: none;
 }
 
-.loyalty-admin-tabs::-webkit-scrollbar { display: none; }
+.loyalty-admin-tabs::-webkit-scrollbar {
+  display: none;
+}
 
 .loyalty-admin-tab {
   flex: 1;
@@ -1165,7 +1237,7 @@ textarea {
   text-align: left;
   padding: 10px 14px;
   background: var(--loy-navy);
-  color: rgba(255,255,255,0.55);
+  color: rgba(255, 255, 255, 0.55);
   font-family: var(--loy-font-display);
   font-size: 0.68rem;
   font-weight: 700;
@@ -1181,8 +1253,13 @@ textarea {
   vertical-align: middle;
 }
 
-.loyalty-table tr:last-child td { border-bottom: none; }
-.loyalty-table tr:hover td      { background: var(--loy-bg-soft); }
+.loyalty-table tr:last-child td {
+  border-bottom: none;
+}
+
+.loyalty-table tr:hover td {
+  background: var(--loy-bg-soft);
+}
 
 /* Status badge */
 .loyalty-badge {
@@ -1197,9 +1274,20 @@ textarea {
   white-space: nowrap;
 }
 
-.loyalty-badge--active   { background: rgba(15,122,60,0.10);  color: #0F7A3C; }
-.loyalty-badge--inactive { background: rgba(229,72,77,0.10);  color: #C0392B; }
-.loyalty-badge--pending  { background: rgba(212,160,23,0.10); color: #B8860B; }
+.loyalty-badge--active {
+  background: rgba(15, 122, 60, 0.10);
+  color: #0F7A3C;
+}
+
+.loyalty-badge--inactive {
+  background: rgba(229, 72, 77, 0.10);
+  color: #C0392B;
+}
+
+.loyalty-badge--pending {
+  background: rgba(212, 160, 23, 0.10);
+  color: #B8860B;
+}
 
 /* Add form grid */
 .loyalty-add-form {
@@ -1224,7 +1312,10 @@ textarea {
   margin-bottom: 7px;
 }
 
-.loyalty-skeleton-line:last-child { width: 60%; margin-bottom: 0; }
+.loyalty-skeleton-line:last-child {
+  width: 60%;
+  margin-bottom: 0;
+}
 
 /* ═══════════════════════════════════════════════════════════
    ANIMATION
@@ -1235,17 +1326,31 @@ textarea {
 }
 
 @keyframes loy-shimmer {
-  0%   { background-position:  200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @keyframes loy-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes loy-fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0);   }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1253,6 +1358,7 @@ textarea {
 ═══════════════════════════════════════════════════════════ */
 
 @media (prefers-reduced-motion: reduce) {
+
   .loyalty-skeleton,
   .loyalty-qr-skeleton,
   .loyalty-qr-timer-fill,
@@ -1269,31 +1375,81 @@ textarea {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --loy-bg:       #0E1420;
-    --loy-bg-soft:  #131C2C;
-    --loy-text:     #F0F2F5;
+    --loy-bg: #0E1420;
+    --loy-bg-soft: #131C2C;
+    --loy-text: #F0F2F5;
     --loy-text-sec: #9EB0C5;
-    --loy-border:   rgba(255,255,255,0.08);
+    --loy-border: rgba(255, 255, 255, 0.08);
   }
 
-  .loyalty-card                  { background: #131C2C; border-color: rgba(255,255,255,0.08); }
-  .loyalty-auth-title            { color: #F0F2F5; }
+  .loyalty-card {
+    background: #131C2C;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .loyalty-auth-title {
+    color: #F0F2F5;
+  }
+
   .loyalty-field input,
   .loyalty-field select,
-  .loyalty-offer-select          { background: #172030; color: #F0F2F5; border-color: rgba(255,255,255,0.08); }
+  .loyalty-offer-select {
+    background: #172030;
+    color: #F0F2F5;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
   .loyalty-field input:focus,
   .loyalty-field select:focus,
-  .loyalty-offer-select:focus    { background: #1A2840; }
-  .loyalty-table th              { background: #0A1628; }
-  .loyalty-table td              { border-color: rgba(255,255,255,0.06); }
-  .loyalty-table tr:hover td     { background: #172030; }
-  .loyalty-stat-card             { background: #131C2C; border-color: rgba(255,255,255,0.08); }
-  .loyalty-offer-card            { background: #172030; border-color: rgba(255,255,255,0.08); }
-  .loyalty-admin-tabs            { background: #172030; border-color: rgba(255,255,255,0.08); }
-  .loyalty-scan-result           { background: #172030; border-color: rgba(255,255,255,0.08); }
-  .loyalty-welcome               { color: #F0F2F5; }
-  .loyalty-skeleton              { background: linear-gradient(90deg, #1a2030 25%, #222d40 50%, #1a2030 75%); background-size: 200% 100%; }
-  .loyalty-qr-skeleton           { background: linear-gradient(90deg, #1a2030 25%, #222d40 50%, #1a2030 75%); background-size: 200% 100%; }
+  .loyalty-offer-select:focus {
+    background: #1A2840;
+  }
+
+  .loyalty-table th {
+    background: #0A1628;
+  }
+
+  .loyalty-table td {
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .loyalty-table tr:hover td {
+    background: #172030;
+  }
+
+  .loyalty-stat-card {
+    background: #131C2C;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .loyalty-offer-card {
+    background: #172030;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .loyalty-admin-tabs {
+    background: #172030;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .loyalty-scan-result {
+    background: #172030;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .loyalty-welcome {
+    color: #F0F2F5;
+  }
+
+  .loyalty-skeleton {
+    background: linear-gradient(90deg, #1a2030 25%, #222d40 50%, #1a2030 75%);
+    background-size: 200% 100%;
+  }
+
+  .loyalty-qr-skeleton {
+    background: linear-gradient(90deg, #1a2030 25%, #222d40 50%, #1a2030 75%);
+    background-size: 200% 100%;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1302,31 +1458,72 @@ textarea {
 
 /* ── 480px+ ── */
 @media (min-width: 480px) {
-  .loyalty-card { padding: 36px 32px; }
-  .loyalty-qr-wrapper img  { width: 248px; height: 248px; }
-  .loyalty-qr-skeleton     { width: 248px; height: 248px; }
-  .loyalty-qr-error        { width: 248px; height: 248px; }
+  .loyalty-card {
+    padding: 36px 32px;
+  }
+
+  .loyalty-qr-wrapper img {
+    width: 248px;
+    height: 248px;
+  }
+
+  .loyalty-qr-skeleton {
+    width: 248px;
+    height: 248px;
+  }
+
+  .loyalty-qr-error {
+    width: 248px;
+    height: 248px;
+  }
 }
 
 /* ── 640px+ ── */
 @media (min-width: 640px) {
-  .loyalty-main     { padding: 36px 24px 64px; }
-  .loyalty-stats-grid { grid-template-columns: repeat(4, 1fr); }
-  .loyalty-qr-wrapper img { width: 260px; height: 260px; }
-  .loyalty-qr-skeleton    { width: 260px; height: 260px; }
-  .loyalty-qr-error       { width: 260px; height: 260px; }
-  .loyalty-qr-timer-bar   { width: 120px; }
+  .loyalty-main {
+    padding: 36px 24px 64px;
+  }
+
+  .loyalty-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .loyalty-qr-wrapper img {
+    width: 260px;
+    height: 260px;
+  }
+
+  .loyalty-qr-skeleton {
+    width: 260px;
+    height: 260px;
+  }
+
+  .loyalty-qr-error {
+    width: 260px;
+    height: 260px;
+  }
+
+  .loyalty-qr-timer-bar {
+    width: 120px;
+  }
 }
 
 /* ── 768px+ ── */
 @media (min-width: 768px) {
-  .loyalty-main { padding: 40px 32px 72px; }
+  .loyalty-main {
+    padding: 40px 32px 72px;
+  }
 }
 
 /* ── 1024px+ desktop ── */
 @media (min-width: 1024px) {
-  .loyalty-topbar { padding: 0 40px; }
-  .loyalty-main   { padding: 48px 40px 80px; }
+  .loyalty-topbar {
+    padding: 0 40px;
+  }
+
+  .loyalty-main {
+    padding: 48px 40px 80px;
+  }
 
   .loyalty-dashboard-grid {
     display: grid;
@@ -1336,19 +1533,58 @@ textarea {
     align-items: start;
   }
 
-  .loyalty-qr-wrapper img { width: 280px; height: 280px; }
-  .loyalty-qr-skeleton    { width: 280px; height: 280px; }
-  .loyalty-qr-error       { width: 280px; height: 280px; }
+  .loyalty-qr-wrapper img {
+    width: 280px;
+    height: 280px;
+  }
+
+  .loyalty-qr-skeleton {
+    width: 280px;
+    height: 280px;
+  }
+
+  .loyalty-qr-error {
+    width: 280px;
+    height: 280px;
+  }
 }
 
 /* ── Small mobile ── */
 @media (max-width: 380px) {
-  .loyalty-card              { padding: 20px 14px; }
-  .loyalty-add-form          { grid-template-columns: 1fr; }
-  .loyalty-add-form .loyalty-field--full { grid-column: 1; }
-  .loyalty-topbar-user       { display: none; }
-  .loyalty-admin-tab         { min-width: 64px; padding: 7px 8px; font-size: 0.68rem; }
-  .loyalty-qr-wrapper img    { width: 200px; height: 200px; }
-  .loyalty-qr-skeleton       { width: 200px; height: 200px; }
-  .loyalty-qr-error          { width: 200px; height: 200px; }
+  .loyalty-card {
+    padding: 20px 14px;
+  }
+
+  .loyalty-add-form {
+    grid-template-columns: 1fr;
+  }
+
+  .loyalty-add-form .loyalty-field--full {
+    grid-column: 1;
+  }
+
+  .loyalty-topbar-user {
+    display: none;
+  }
+
+  .loyalty-admin-tab {
+    min-width: 64px;
+    padding: 7px 8px;
+    font-size: 0.68rem;
+  }
+
+  .loyalty-qr-wrapper img {
+    width: 200px;
+    height: 200px;
+  }
+
+  .loyalty-qr-skeleton {
+    width: 200px;
+    height: 200px;
+  }
+
+  .loyalty-qr-error {
+    width: 200px;
+    height: 200px;
+  }
 }

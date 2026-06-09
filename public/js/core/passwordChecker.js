@@ -64,11 +64,29 @@ export function enablePasswordReveal({
   timeout = 5000,
 } = {}) {
   const timers = new WeakMap();
+  const inputsPassword = $$('input[type="password"]');
+  inputsPassword.forEach(input => {
+    input.addEventListener('keyup',() => {
+      if(input.value.length > 0) {
+        input.nextElementSibling.classList.add("reveal");
+        input.nextElementSibling.disabled = false; 
+      } else {
+        input.nextElementSibling.classList.remove("reveal");
+        input.nextElementSibling.disabled = true; 
+      }
+    })
+  })
 
   $$(selector).forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", () => {changeIconPassword(btn)});
+  });
+
+
+  function changeIconPassword(btn){
       const wrapper = btn.closest(".password-wrapper");
       const input = wrapper?.querySelector('input[type="password"], input[type="text"]');
+      const img = btn.querySelector("img");
+
 
       if (!input) return;
 
@@ -80,18 +98,20 @@ export function enablePasswordReveal({
 
       if (isHidden) {
         input.type = "text";
-        btn.textContent = "🔓";
+        img.src = "/assets/images/eye-solid-full.svg";
+        btn.setAttribute("aria-label", "Nascondi password");
 
         const timer = setTimeout(() => {
           input.type = "password";
-          btn.textContent = "🔒";
+          img.src = "/assets/images/eye-slash-solid-full.svg";
+          btn.setAttribute("aria-label", "Mostra password");
         }, timeout);
 
         timers.set(input, timer);
       } else {
         input.type = "password";
-        btn.textContent = "🔒";
+        img.src = "/assets/images/eye-slash-solid-full.svg";
+        btn.setAttribute("aria-label", "Mostra password");
       }
-    });
-  });
+    }
 }

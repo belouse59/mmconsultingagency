@@ -58,8 +58,14 @@
 
           <div class="loyalty-field">
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password"
-              required aria-required="true">
+            <div class="password-wrapper">
+
+              <input type="password" id="password" name="password" placeholder="••••••••"
+                autocomplete="current-password" required aria-required="true">
+              <button type="button" class="password-toggle" data-target="password" aria-label="Mostra password">
+                <img src="../../assets/images/eye-slash-solid-full.svg" alt="" aria-hidden="true">
+              </button>
+            </div>
           </div>
           <div class="loyalty-password-actions">
             <a href="/loyalty/partner/forgot-password.html" class="loyalty-forgot-password">
