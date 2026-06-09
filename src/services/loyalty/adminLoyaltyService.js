@@ -23,7 +23,7 @@ function safe(row) {
 
 async function getCustomers() {
   const rows = await customerRepo.findCustomers();
-  return rows.map(safe);
+  return rows;
 }
 
 /* ─────────────────────────────────────────────

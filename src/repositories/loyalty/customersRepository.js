@@ -3,6 +3,9 @@
 const { query } =
     require("../../db");
 
+const { paginate } =
+    require("../paginationHelper");
+
 const {
     appendRow,
     getSheetValues,
@@ -30,7 +33,6 @@ function mapCustomer(row) {
         full_name: row.full_name,
         identifier: row.identifier,
         identifierType: row.identifier_type,
-        password: row.password_hash,
         active: row.active,
         createdAt: row.created_at,
         verified: row.verified,
@@ -133,53 +135,61 @@ async function updatePassword(data) {
 
 /* ───────────────────────────────────────────── */
 
-async function findCustomers() {
-    try {
-        const result = await query(
-            `
- SELECT
- id,
- full_name,
- identifier,
- identifier_type,
- password_hash,
- active,
- created_at
+// async function findCustomers() {
+//     try {
+//         const result = await query(
+//             `
+//  SELECT
+//  id,
+//  full_name,
+//  identifier,
+//  identifier_type,
+//  password_hash,
+//  active,
+//  created_at
 
- FROM customers
+//  FROM customers
 
- ORDER BY
- created_at DESC
- `
-        );
+//  ORDER BY
+//  created_at DESC
+//  `
+//         );
 
-        return result
-            .rows
-            .map(mapCustomer);
+//         return result
+//             .rows
+//             .map(mapCustomer);
 
-    }
+//     }
 
-    catch (err) {
+//     catch (err) {
 
-        if (
-            !ENABLE_SHEETS_FALLBACK
-        ) {
+//         if (
+//             !ENABLE_SHEETS_FALLBACK
+//         ) {
 
-            throw err;
+//             throw err;
 
-        }
+//         }
 
-        const rows =
-            await getSheetValues(
-                SHEET.CUSTOMERS
-            );
+//         const rows =
+//             await getSheetValues(
+//                 SHEET.CUSTOMERS
+//             );
 
-        return rows
-            .slice(1)
-            .map(mapSheetCustomer);
+//         return rows
+//             .slice(1)
+//             .map(mapSheetCustomer);
 
-    }
+//     }
 
+// }
+
+async function findCustomers(options) {
+    return paginate({
+        table: "customers",
+        mapper: mapCustomer,
+        ...options
+    })
 }
 
 /* ───────────────────────────────────────────── */
