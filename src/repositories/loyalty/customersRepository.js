@@ -185,11 +185,15 @@ async function updatePassword(data) {
 // }
 
 async function findCustomers(options) {
-    return paginate({
-        table: "customers",
-        mapper: mapCustomer,
-        ...options
-    })
+    try {
+        return paginate({
+            table: "customers",
+            mapper: mapCustomer,
+            ...options
+        })
+    } catch(err) {
+        console.error("[offerRepo] Postgres failed, fallback Sheets:", err.message);
+    }
 }
 
 /* ───────────────────────────────────────────── */

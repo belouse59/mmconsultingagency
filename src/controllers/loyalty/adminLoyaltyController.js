@@ -110,7 +110,7 @@ async function adminGetCustomers(req, res) {
 
     return res.json({
       success: true,
-      data: customers,
+      ...customers
     });
 
   } catch (err) {
@@ -189,7 +189,7 @@ async function adminGetOffers(req, res) {
 
     return res.json({
       success: true,
-      data: offers,
+      ...offers,
     });
 
   } catch (err) {

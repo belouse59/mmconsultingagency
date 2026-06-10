@@ -686,6 +686,7 @@
 /* Floating "Member" badge above card */
 .ec-card-badge-top {
     position: absolute;
+    z-index: 1;
     top: -14px;
     left: 50%;
     transform: translateX(-50%);
