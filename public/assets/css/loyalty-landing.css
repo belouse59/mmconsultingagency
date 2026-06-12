@@ -1244,10 +1244,10 @@
         justify-content: center;
     }
 
-    .lc-hero-visual {
+    /*.lc-hero-visual {
         display: none;
-        /* On very small screens the card visual adds no value
+         On very small screens the card visual adds no value
            and hurts layout — matches the pattern of .hero-panel--image
-           on mobile in style.css */
-    }
+           on mobile in style.css 
+    }*/
 }
