@@ -33,6 +33,7 @@ function mapCustomer(row) {
         full_name: row.full_name,
         identifier: row.identifier,
         identifierType: row.identifier_type,
+        password: row.password_hash,
         active: row.active,
         createdAt: row.created_at,
         verified: row.verified,
