@@ -44,7 +44,7 @@
     );
     border: 1px solid var(--gold-border);
     border-radius: var(--r-2xl);
-    padding: var(--sp-8) var(--sp-6);
+    padding: var(--sp-4) var(--sp-6);
     position: relative;
     overflow: hidden;
     /* Specular gloss */
@@ -348,18 +348,18 @@
 
 /* Wrap needed for floating badge + notification pills */
 .member-card--hero-wrap {
-    position: relative;
-    /* Outer padding so floating pills aren't clipped */
-    padding: 20px 24px 28px 20px;
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .75rem;
 }
 
 /* "Member Card" badge above the card */
 .member-card__badge {
-    position: absolute;
-    top: 4px;
-    left: 50%;
-    transform: translateX(-50%);
+    align-self: flex-start;
+    text-align: end;
+    margin-bottom: var(--sp-2);
+    transform: none;
     background: var(--gold);
     color: var(--navy);
     font-family: var(--font-display);
@@ -367,20 +367,20 @@
     font-weight: 800;
     letter-spacing: 0.10em;
     text-transform: uppercase;
-    padding: 4px 16px;
+    padding: var(--sp-1) var(--sp-4);
     border-radius: var(--r-full);
     white-space: nowrap;
     box-shadow: var(--shadow-gold);
     animation: mc-fade-up 0.5s var(--ease) both;
-    z-index: 2;
 }
+
 
 /* Redemption confirmation pill below the card */
 .member-card__notification {
-    position: absolute;
-    bottom: 8px;
-    right: 4px;
+    align-self: flex-end;
     background: var(--green);
+    margin-right: var(--sp-2);
+    margin-top: var(--sp-6);
     color: #fff;
     font-family: var(--font-display);
     font-size: 0.68rem;
@@ -393,7 +393,6 @@
     display: flex;
     align-items: center;
     gap: var(--sp-2);
-    z-index: 2;
 }
 
 .member-card__notification::before {
