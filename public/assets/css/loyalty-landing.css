@@ -1125,10 +1125,10 @@
 
     /* Reuse .hero-trust responsive handling (it already flex-wraps) */
 
-    .lc-hero-visual {
+    /* .lc-hero-visual {
         height: 420px;
         order: -1;
-    }
+    } */
 
     .lc-hero-visual::before {
         clip-path: polygon(0 0, 100% 0, 100% 14%, 0 0);
@@ -1187,9 +1187,9 @@
         justify-content: center;
     }
 
-    .lc-hero-visual {
+    /* .lc-hero-visual {
         height: 340px;
-    }
+    } */
 
     .lc-steps {
         grid-template-columns: 1fr;
