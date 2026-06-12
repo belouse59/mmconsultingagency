@@ -472,23 +472,104 @@
                 </div>
 
             </div>
+      <div class="member-card--hero-wrap">
 
-            <div class="loyalty-preview-card">
+        
+        <!-- Card: .member-card + .member-card--hero -->
+        <div class="member-card member-card--hero">
+          <!-- Badge above card -->
+          <div class="member-card__badge">Member Card</div>
 
-                <div class="qr-mockup">
+          <div class="member-card__header">
+            <span class="member-card__brand">M&amp;M · Energy Club</span>
+            <div class="member-card__chip"></div>
+          </div>
 
-                    <i class="fa-solid fa-qrcode"></i>
+          <!-- QR (decorative SVG — not functional) -->
+          <div class="member-card__qr">
+            <svg
+              width="108"
+              height="108"
+              viewBox="0 0 108 108"
+              xmlns="http://www.w3.org/2000/svg"
+              role="img"
+              aria-label="QR code decorativo membro"
+            >
+              <!-- Top-left finder -->
+              <rect x="4"  y="4"  width="30" height="30" rx="4" fill="#0A1628"/>
+              <rect x="8"  y="8"  width="22" height="22" rx="3" fill="white"/>
+              <rect x="13" y="13" width="12" height="12" rx="2" fill="#0A1628"/>
+              <!-- Top-right finder -->
+              <rect x="74" y="4"  width="30" height="30" rx="4" fill="#0A1628"/>
+              <rect x="78" y="8"  width="22" height="22" rx="3" fill="white"/>
+              <rect x="83" y="13" width="12" height="12" rx="2" fill="#0A1628"/>
+              <!-- Bottom-left finder -->
+              <rect x="4"  y="74" width="30" height="30" rx="4" fill="#0A1628"/>
+              <rect x="8"  y="78" width="22" height="22" rx="3" fill="white"/>
+              <rect x="13" y="83" width="12" height="12" rx="2" fill="#0A1628"/>
+              <!-- Data modules -->
+              <rect x="42" y="4"  width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="51" y="4"  width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="60" y="4"  width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="42" y="13" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="60" y="13" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="51" y="22" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="42" y="22" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="4"  y="42" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="13" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="22" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="4"  y="51" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="22" y="60" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="4"  y="60" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="13" y="60" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="42" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="51" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="60" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="42" y="51" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="60" y="51" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="42" y="60" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="51" y="60" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="74" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="83" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="92" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="74" y="51" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="92" y="60" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="83" y="60" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="42" y="74" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="51" y="83" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="60" y="74" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="74" y="74" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="83" y="83" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="92" y="74" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="92" y="92" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="74" y="92" width="6" height="6" rx="1" fill="#0A1628"/>
+              <rect x="60" y="92" width="6" height="6" rx="1" fill="#0A1628"/>
+            </svg>
+          </div>
 
-                </div>
-
-                <h3>QR Code Sicuro</h3>
-
-                <p>
-                    Rinnovato automaticamente ogni 5 minuti.
-                </p>
-
+          <!-- Timer -->
+          <div class="member-card__timer">
+            <div class="member-card__timer-track">
+              <div class="member-card__timer-fill"></div>
             </div>
+            <span class="member-card__timer-label" id="lcCardTimer">3:42 rimasti</span>
+          </div>
 
+          <!-- Identity -->
+          <div class="member-card__identity">
+            <div class="member-card__name">Mario Rossi</div>
+            <div class="member-card__meta">
+              <span class="member-card__dot"></span>
+              Cliente M&amp;M · Attivo
+            </div>
+          </div>
+
+          <!-- Notification pill -->
+          <div class="member-card__notification">Sconto — Bar Centrale</div>
+        </div>
+
+
+      </div>
         </div>
 
     </div>
