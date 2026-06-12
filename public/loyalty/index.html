@@ -1,11 +1,45 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+
+  <!-- ===== BASE SEO HEAD (matches home.html pattern) ===== -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#060D1A">
+
+  <!-- Theme / Geo -->
+  <meta name="theme-color" content="#0A1628">
   <meta name="geo.region" content="IT-ME">
   <meta name="geo.placename" content="Messina">
+  <meta name="geo.position" content="38.1938;15.5540">
+  <meta name="ICBM" content="38.1938,15.5540">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16.png">
+  <link rel="apple-touch-icon" href="/assets/images/icon-192.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  >
+
+  <!-- Design system (all tokens, buttons, nav, footer, reveal, dark mode) -->
+  <link rel="stylesheet" href="/assets/css/style.css">
+
+  <!-- Member card component -->
+  <link rel="stylesheet" href="/assets/css/member-card.css">
+
+  <!-- Loyalty landing page styles -->
+  <link rel="stylesheet" href="/assets/css/loyalty-landing.css">
 
   <!-- SEO -->
   <title>M&M Energy Club | Convenzioni Esclusive per Clienti M&M Consulting — Messina</title>
@@ -18,7 +52,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.mmconsulting.it/loyalty/">
   <meta property="og:title" content="M&M Energy Club — Convenzioni Esclusive a Messina">
-  <meta property="og:description" content="Diventa cliente M&M Consulting e risparmia sulla bolletta. Poi risparmia ancora: sconti esclusivi presso oltre 25 partner selezionati a Messina.">
+  <meta property="og:description" content="Diventa cliente M&M Consulting, risparmia sulla bolletta e accedi a sconti esclusivi presso oltre 25 partner a Messina.">
   <meta property="og:image" content="https://www.mmconsulting.it/assets/images/og-energy-club.jpg">
   <meta property="og:locale" content="it_IT">
   <meta property="og:site_name" content="M&M Consulting">
@@ -28,103 +62,154 @@
   <meta name="twitter:title" content="M&M Energy Club — Convenzioni Esclusive a Messina">
   <meta name="twitter:description" content="QR code personale. Sconti esclusivi. Solo per clienti M&M Consulting.">
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "M&M Energy Club",
+    "description": "Programma di convenzioni esclusivo per clienti M&M Consulting a Messina.",
+    "url": "https://www.mmconsulting.it/loyalty/",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "M&M Consulting",
+      "url": "https://www.mmconsulting.it"
+    }
+  }
+  </script>
 
-  <!-- Icons -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  >
-
-  <!-- Design system (tokens, buttons, layout helpers) -->
-  <link rel="stylesheet" href="/assets/css/style.css">
-
-  <!-- This page's stylesheet -->
-  <link rel="stylesheet" href="/assets/css/loyalty-landing.css">
 </head>
 
-<body class="ec-page">
+<!-- loyalty-page-body adds padding-top: --nav-h to clear fixed header -->
+<body class="loyalty-page-body">
+
 
 <!-- ═══════════════════════════════════════════════════════════
      NAVIGATION
+     Exact replica of home.html nav. Classes from style.css.
+     Active state driven by JS scroll observer (same as home).
 ═══════════════════════════════════════════════════════════ -->
-<header class="ec-nav" role="banner">
-  <div class="ec-nav-inner">
+<header class="site-header" role="banner">
+  <nav class="nav" aria-label="Navigazione principale">
 
     <!-- Logo -->
-    <a href="/" class="ec-nav-logo" aria-label="M&M Consulting — torna alla homepage">
-      <img
-        src="/assets/images/logo.png"
-        alt="Logo M&M Consulting"
-        width="48"
-        height="32"
-        onerror="this.style.display='none'"
-      >
-      <div class="ec-nav-wordmark">
-        <span class="ec-nav-brand">M&amp;M Consulting</span>
-        <span class="ec-nav-sub">Energy Club</span>
-      </div>
-    </a>
-
-    <!-- Desktop links -->
-    <ul class="ec-nav-links" role="list">
-      <li><a href="#come-funziona" class="ec-nav-link">Come funziona</a></li>
-      <li><a href="#vantaggi"      class="ec-nav-link">Vantaggi</a></li>
-      <li><a href="#partner"       class="ec-nav-link">Diventa Partner</a></li>
-      <li><a href="#faq"           class="ec-nav-link">FAQ</a></li>
-      <li><a href="/"              class="ec-nav-link">← Torna al sito</a></li>
-    </ul>
-
-    <!-- CTA row -->
-    <div class="ec-nav-cta">
-      <a href="/loyalty/customer/login.html" class="ec-nav-login">Accedi</a>
-      <a href="/loyalty/customer/register.html" class="btn btn-gold ec-nav-register">
-        Registrati Gratis
+    <div class="nav-logo">
+      <a href="/" aria-label="M&M Consulting – torna alla homepage">
+        <img
+          src="/assets/images/logo.png"
+          alt="Logo M&M Consulting"
+          width="60"
+          height="40"
+        >
       </a>
     </div>
 
-    <!-- Burger -->
+    <!-- Desktop links -->
+    <ul class="nav-links" role="list">
+      <li>
+        <a href="#come-funziona" class="nav-link" data-target="come-funziona">
+          Come funziona
+        </a>
+      </li>
+      <li>
+        <a href="#vantaggi" class="nav-link" data-target="vantaggi">
+          Vantaggi
+        </a>
+      </li>
+      <li>
+        <a href="#partner" class="nav-link" data-target="partner">
+          Diventa Partner
+        </a>
+      </li>
+      <li>
+        <a href="#faq" class="nav-link" data-target="faq">
+          FAQ
+        </a>
+      </li>
+      <li>
+        <a href="/" class="nav-link">
+          ← Sito M&amp;M
+        </a>
+      </li>
+    </ul>
+
+    <!-- CTA -->
+    <div class="nav-cta">
+      <a
+        href="/loyalty/customer/register.html"
+        class="btn btn-gold nav-cta-btn"
+      >
+        <i class="fa fa-bolt" aria-hidden="true"></i>
+        <span class="nav-cta-text">Registrati Gratis</span>
+      </a>
+    </div>
+
+    <!-- Mobile burger -->
     <button
-      class="ec-nav-burger"
-      id="ecBurger"
+      class="nav-burger"
+      id="navBurger"
       aria-label="Apri menu"
       aria-expanded="false"
-      aria-controls="ecMobileMenu"
+      aria-controls="mobileMenu"
     >
       <span></span>
       <span></span>
       <span></span>
     </button>
 
-  </div>
-</header>
+  </nav>
 
-<!-- Mobile menu drawer -->
-<div
-  class="ec-mobile-menu"
-  id="ecMobileMenu"
-  role="dialog"
-  aria-modal="true"
-  aria-label="Menu mobile"
->
-  <ul role="list">
-    <li><a href="#come-funziona" class="ec-mobile-link">Come funziona</a></li>
-    <li><a href="#vantaggi"      class="ec-mobile-link">Vantaggi</a></li>
-    <li><a href="#partner"       class="ec-mobile-link">Diventa Partner</a></li>
-    <li><a href="#faq"           class="ec-mobile-link">FAQ</a></li>
-    <li><a href="/loyalty/customer/login.html" class="ec-mobile-link">Accedi all'area clienti</a></li>
-    <li>
-      <a href="/loyalty/customer/register.html" class="ec-mobile-link ec-mobile-link--cta">
-        Registrati Gratis
-      </a>
-    </li>
-  </ul>
-</div>
+  <!-- Mobile menu — exact structure from home.html -->
+  <div
+    class="mobile-menu"
+    id="mobileMenu"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Menu mobile"
+  >
+    <ul role="list">
+      <li>
+        <a href="#come-funziona" class="mobile-link" data-target="come-funziona">
+          Come funziona
+        </a>
+      </li>
+      <li>
+        <a href="#vantaggi" class="mobile-link" data-target="vantaggi">
+          Vantaggi
+        </a>
+      </li>
+      <li>
+        <a href="#partner" class="mobile-link" data-target="partner">
+          Diventa Partner
+        </a>
+      </li>
+      <li>
+        <a href="#faq" class="mobile-link" data-target="faq">
+          FAQ
+        </a>
+      </li>
+      <li>
+        <a href="/loyalty/customer/login.html" class="mobile-link">
+          Accedi all'area clienti
+        </a>
+      </li>
+      <li>
+        <a href="/" class="mobile-link">
+          ← Torna al sito M&amp;M
+        </a>
+      </li>
+      <li>
+        <a
+          href="/loyalty/customer/register.html"
+          class="mobile-link mobile-link--cta"
+        >
+          Registrati Gratis
+        </a>
+      </li>
+    </ul>
+  </div>
+
+</header>
 
 
 <main>
@@ -132,50 +217,51 @@
 <!-- ═══════════════════════════════════════════════════════════
      HERO
 ═══════════════════════════════════════════════════════════ -->
-<section class="ec-hero" aria-labelledby="ecHeroHeading">
+<section class="lc-hero" aria-labelledby="lcHeroHeading">
 
-  <!-- Left: copy panel -->
-  <div class="ec-hero-left">
-    <div class="ec-hero-copy">
+  <!-- Left: editorial dark panel -->
+  <div class="lc-hero-panel">
+    <div class="lc-hero-inner">
 
-      <p class="ec-hero-eyebrow" aria-hidden="true">
-        <span class="ec-eyebrow-line"></span>
+      <p class="hero-eyebrow lc-eyebrow" aria-hidden="true">
+        <span class="eyebrow-line"></span>
         M&amp;M Energy Club · Messina
       </p>
 
-      <h1 class="ec-hero-heading" id="ecHeroHeading">
+      <h1 class="lc-hero-heading" id="lcHeroHeading">
         Risparmia sulla bolletta.<br>
         Poi risparmia su<br>
-        <mark>tutto il resto.</mark>
+        <mark class="hero-highlight">tutto il resto.</mark>
       </h1>
 
-      <p class="ec-hero-sub">
+      <p class="lc-hero-sub">
         Sei cliente M&amp;M Consulting? L'Energy Club è il tuo beneficio esclusivo:
         un QR code personale che sblocca sconti e convenzioni presso oltre 25 attività
         selezionate a Messina — bar, ristoranti, palestre, negozi.
       </p>
 
-      <ul class="ec-hero-trust" role="list" aria-label="Garanzie del programma">
-        <li class="ec-hero-trust-item">
+      <!-- Trust row — reuses .hero-trust / .hero-trust-item from style.css -->
+      <ul class="hero-trust" role="list" aria-label="Garanzie del programma">
+        <li class="hero-trust-item">
           <i class="fa fa-check-circle" aria-hidden="true"></i>
           Gratuito per i clienti M&amp;M
         </li>
-        <li class="ec-hero-trust-item">
+        <li class="hero-trust-item">
           <i class="fa fa-check-circle" aria-hidden="true"></i>
-          QR dinamico · rinnovo ogni 5 min
+          QR sicuro · rinnovo ogni 5 min
         </li>
-        <li class="ec-hero-trust-item">
+        <li class="hero-trust-item">
           <i class="fa fa-check-circle" aria-hidden="true"></i>
           Nessuna app da installare
         </li>
       </ul>
 
-      <div class="ec-hero-actions">
-        <a href="/loyalty/customer/register.html" class="btn btn-gold ec-hero-btn-primary">
+      <div class="lc-hero-actions">
+        <a href="/loyalty/customer/register.html" class="btn btn-gold btn-submit">
           Accedi all'Energy Club
-          <i class="fa fa-arrow-right" aria-hidden="true"></i>
+          <i class="fa fa-arrow-right lc-hero-btn-arrow" aria-hidden="true"></i>
         </a>
-        <a href="#come-funziona" class="ec-hero-btn-secondary">
+        <a href="#come-funziona" class="btn btn-ghost">
           Scopri come funziona
         </a>
       </div>
@@ -183,34 +269,36 @@
     </div>
   </div>
 
-  <!-- Right: card visual -->
-  <div class="ec-hero-right" aria-hidden="true">
-    <div class="ec-hero-visual-stage">
-      <div class="ec-card-wrap">
+  <!-- Right: card visual panel -->
+  <div class="lc-hero-visual" aria-hidden="true">
+    <div class="lc-hero-visual-inner">
 
-        <!-- Floating: "Member Card" badge -->
-        <div class="ec-card-badge-top">Member Card</div>
+      <!--
+        member-card component — --hero variant
+        See member-card.css for full component docs.
+      -->
+      <div class="member-card--hero-wrap">
 
-        <!-- Floating: partner count pill -->
-        <div class="ec-card-stat-pill"><strong>25+</strong> partner attivi</div>
+        <!-- Badge above card -->
+        <div class="member-card__badge">Member Card</div>
 
-        <!-- The card -->
-        <div class="ec-member-card">
+        <!-- Card: .member-card + .member-card--hero -->
+        <div class="member-card member-card--hero">
 
-          <div class="ec-card-header">
-            <span class="ec-card-brand">M&amp;M · Energy Club</span>
-            <div class="ec-card-chip" aria-hidden="true"></div>
+          <div class="member-card__header">
+            <span class="member-card__brand">M&amp;M · Energy Club</span>
+            <div class="member-card__chip"></div>
           </div>
 
-          <!-- QR Code (decorative SVG) -->
-          <div class="ec-card-qr-frame">
+          <!-- QR (decorative SVG — not functional) -->
+          <div class="member-card__qr">
             <svg
               width="108"
               height="108"
               viewBox="0 0 108 108"
               xmlns="http://www.w3.org/2000/svg"
-              aria-label="QR code decorativo del membro"
               role="img"
+              aria-label="QR code decorativo membro"
             >
               <!-- Top-left finder -->
               <rect x="4"  y="4"  width="30" height="30" rx="4" fill="#0A1628"/>
@@ -224,17 +312,14 @@
               <rect x="4"  y="74" width="30" height="30" rx="4" fill="#0A1628"/>
               <rect x="8"  y="78" width="22" height="22" rx="3" fill="white"/>
               <rect x="13" y="83" width="12" height="12" rx="2" fill="#0A1628"/>
-              <!-- Data modules — row A -->
+              <!-- Data modules -->
               <rect x="42" y="4"  width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="51" y="4"  width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="60" y="4"  width="6" height="6" rx="1" fill="#0A1628"/>
-              <!-- Data modules — row B -->
               <rect x="42" y="13" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="60" y="13" width="6" height="6" rx="1" fill="#0A1628"/>
-              <!-- Data modules — row C -->
               <rect x="51" y="22" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="42" y="22" width="6" height="6" rx="1" fill="#0A1628"/>
-              <!-- Left edge data -->
               <rect x="4"  y="42" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="13" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="22" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
@@ -242,7 +327,6 @@
               <rect x="22" y="60" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="4"  y="60" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="13" y="60" width="6" height="6" rx="1" fill="#0A1628"/>
-              <!-- Centre cluster -->
               <rect x="42" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="51" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="60" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
@@ -250,14 +334,12 @@
               <rect x="60" y="51" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="42" y="60" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="51" y="60" width="6" height="6" rx="1" fill="#0A1628"/>
-              <!-- Right-column data -->
               <rect x="74" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="83" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="92" y="42" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="74" y="51" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="92" y="60" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="83" y="60" width="6" height="6" rx="1" fill="#0A1628"/>
-              <!-- Bottom-right data -->
               <rect x="42" y="74" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="51" y="83" width="6" height="6" rx="1" fill="#0A1628"/>
               <rect x="60" y="74" width="6" height="6" rx="1" fill="#0A1628"/>
@@ -270,32 +352,35 @@
             </svg>
           </div>
 
-          <!-- Timer bar -->
-          <div class="ec-card-timer-row">
-            <div class="ec-card-timer-bar">
-              <div class="ec-card-timer-fill"></div>
+          <!-- Timer -->
+          <div class="member-card__timer">
+            <div class="member-card__timer-track">
+              <div class="member-card__timer-fill"></div>
             </div>
-            <span class="ec-card-timer-label">3:42 rimasti</span>
+            <span class="member-card__timer-label" id="lcCardTimer">3:42 rimasti</span>
           </div>
 
           <!-- Identity -->
-          <div class="ec-card-name">Mario Rossi</div>
-          <div class="ec-card-meta">
-            <span class="ec-card-dot"></span>
-            Cliente M&amp;M · Attivo
+          <div class="member-card__identity">
+            <div class="member-card__name">Mario Rossi</div>
+            <div class="member-card__meta">
+              <span class="member-card__dot"></span>
+              Cliente M&amp;M · Attivo
+            </div>
           </div>
 
         </div>
 
-        <!-- Floating: redemption notification -->
-        <div class="ec-card-notification">Sconto applicato — Bar Centrale</div>
+        <!-- Notification pill -->
+        <div class="member-card__notification">Sconto — Bar Centrale</div>
 
       </div>
+
     </div>
   </div>
 
-  <!-- Scroll hint -->
-  <div class="ec-scroll-hint" id="ecScrollHint" aria-hidden="true">
+  <!-- Scroll hint (same pattern as homepage) -->
+  <div class="lc-scroll-hint" id="lcScrollHint" aria-hidden="true">
     <i class="fa fa-chevron-down"></i>
   </div>
 
@@ -305,27 +390,27 @@
 <!-- ═══════════════════════════════════════════════════════════
      STATS STRIP
 ═══════════════════════════════════════════════════════════ -->
-<div class="ec-stats-strip" role="region" aria-label="Numeri chiave del programma">
-  <div class="ec-stats-grid">
+<div class="lc-stats-strip" role="region" aria-label="Numeri chiave del programma">
+  <div class="lc-stats-grid">
 
-    <div class="ec-stat-item ec-reveal">
-      <div class="ec-stat-value" data-counter="1200" data-suffix="+">1200+</div>
-      <div class="ec-stat-label">Clienti iscritti</div>
+    <div class="lc-stat-item reveal">
+      <div class="lc-stat-value" data-counter="1200" data-suffix="+">1200+</div>
+      <div class="lc-stat-label">Clienti iscritti</div>
     </div>
 
-    <div class="ec-stat-item ec-reveal ec-reveal-d1">
-      <div class="ec-stat-value" data-counter="25" data-suffix="+">25+</div>
-      <div class="ec-stat-label">Partner aderenti</div>
+    <div class="lc-stat-item reveal reveal-delay-1">
+      <div class="lc-stat-value" data-counter="25" data-suffix="+">25+</div>
+      <div class="lc-stat-label">Partner aderenti</div>
     </div>
 
-    <div class="ec-stat-item ec-reveal ec-reveal-d2">
-      <div class="ec-stat-value" data-counter="6000" data-suffix="+">6000+</div>
-      <div class="ec-stat-label">Utilizzi totali</div>
+    <div class="lc-stat-item reveal reveal-delay-2">
+      <div class="lc-stat-value" data-counter="6000" data-suffix="+">6000+</div>
+      <div class="lc-stat-label">Utilizzi totali</div>
     </div>
 
-    <div class="ec-stat-item ec-reveal ec-reveal-d3">
-      <div class="ec-stat-value"><em>100</em>%</div>
-      <div class="ec-stat-label">Digitale · Zero carta</div>
+    <div class="lc-stat-item reveal reveal-delay-3">
+      <div class="lc-stat-value"><em>100</em>%</div>
+      <div class="lc-stat-label">Digitale · Zero carta</div>
     </div>
 
   </div>
@@ -336,62 +421,60 @@
      HOW IT WORKS
 ═══════════════════════════════════════════════════════════ -->
 <section
-  class="ec-section"
+  class="lc-section"
   id="come-funziona"
-  aria-labelledby="ecHowTitle"
+  aria-labelledby="lcHowTitle"
 >
   <div class="container">
-
-    <div class="ec-section-header ec-reveal">
-      <p class="ec-section-eyebrow">
-        <span class="ec-eyebrow-line"></span>
+    <div class="section-header reveal">
+      <p class="lc-eyebrow" style="justify-content:center;">
+        <span class="eyebrow-line"></span>
         Come funziona
       </p>
-      <h2 class="ec-section-title" id="ecHowTitle">
+      <h2 class="section-title" id="lcHowTitle">
         Da cliente M&amp;M a membro del Club in 4 passi
       </h2>
-      <div class="ec-section-title-line"></div>
-      <p class="ec-section-sub">
+      <div class="section-title-line"></div>
+      <p class="section-sub">
         Completamente digitale. Niente tessere fisiche, niente attese, niente costi.
       </p>
     </div>
-
   </div>
 
-  <div class="ec-steps">
+  <div class="lc-steps">
 
-    <div class="ec-step ec-reveal">
-      <div class="ec-step-num">01</div>
-      <h3 class="ec-step-title">Diventa cliente M&amp;M</h3>
-      <p class="ec-step-desc">
-        Affidaci la gestione della tua fornitura energetica. Analizziamo la tua bolletta
-        gratuitamente e ti facciamo risparmiare fino al 30%.
+    <div class="lc-step reveal">
+      <div class="lc-step-num">01</div>
+      <h3 class="lc-step-title">Diventa cliente M&amp;M</h3>
+      <p class="lc-step-desc">
+        Affidaci la gestione della tua fornitura energetica. Analizziamo la tua
+        bolletta gratuitamente e ti facciamo risparmiare fino al 30%.
       </p>
     </div>
 
-    <div class="ec-step ec-reveal ec-reveal-d1">
-      <div class="ec-step-num">02</div>
-      <h3 class="ec-step-title">Registrati al portale</h3>
-      <p class="ec-step-desc">
+    <div class="lc-step reveal reveal-delay-1">
+      <div class="lc-step-num">02</div>
+      <h3 class="lc-step-title">Registrati al portale</h3>
+      <p class="lc-step-desc">
         Crea il tuo account con email e codice cliente. In 60 secondi hai la tua
-        member card digitale attiva.
+        member card digitale attiva e pronta.
       </p>
     </div>
 
-    <div class="ec-step ec-reveal ec-reveal-d2">
-      <div class="ec-step-num">03</div>
-      <h3 class="ec-step-title">Mostra il tuo QR</h3>
-      <p class="ec-step-desc">
-        Il codice si rigenera ogni 5 minuti: impossibile da duplicare. Aprilo
-        sul telefono e mostralo al partner.
+    <div class="lc-step reveal reveal-delay-2">
+      <div class="lc-step-num">03</div>
+      <h3 class="lc-step-title">Mostra il tuo QR</h3>
+      <p class="lc-step-desc">
+        Il codice si rigenera ogni 5 minuti: impossibile duplicarlo. Aprilo sul
+        telefono e mostralo al partner — zero attese.
       </p>
     </div>
 
-    <div class="ec-step ec-reveal ec-reveal-d3">
-      <div class="ec-step-num">04</div>
-      <h3 class="ec-step-title">Ottieni il vantaggio</h3>
-      <p class="ec-step-desc">
-        Il partner valida il codice in un secondo. Sconto applicato, utilizzo
+    <div class="lc-step reveal reveal-delay-3">
+      <div class="lc-step-num">04</div>
+      <h3 class="lc-step-title">Ottieni il vantaggio</h3>
+      <p class="lc-step-desc">
+        Il partner valida il QR in un secondo. Sconto applicato e utilizzo
         tracciato nel tuo storico personale.
       </p>
     </div>
@@ -405,80 +488,80 @@
      BENEFITS
 ═══════════════════════════════════════════════════════════ -->
 <section
-  class="ec-section ec-section--surface"
+  class="lc-section lc-section--soft"
   id="vantaggi"
-  aria-labelledby="ecBenefitsTitle"
+  aria-labelledby="lcBenefitsTitle"
 >
   <div class="container">
-    <div class="ec-section-header ec-reveal">
-      <p class="ec-section-eyebrow">
-        <span class="ec-eyebrow-line"></span>
+    <div class="section-header reveal">
+      <p class="lc-eyebrow" style="justify-content:center;">
+        <span class="eyebrow-line"></span>
         Vantaggi esclusivi
       </p>
-      <h2 class="ec-section-title" id="ecBenefitsTitle">
+      <h2 class="section-title" id="lcBenefitsTitle">
         Tutto quello che ottieni come membro
       </h2>
-      <div class="ec-section-title-line"></div>
-      <p class="ec-section-sub">
+      <div class="section-title-line"></div>
+      <p class="section-sub">
         L'Energy Club trasforma il tuo rapporto con M&amp;M in un vantaggio
-        concreto ogni singolo giorno.
+        concreto ogni singolo giorno — senza canoni, senza abbonamenti.
       </p>
     </div>
   </div>
 
-  <div class="ec-benefits-grid">
+  <div class="lc-benefits-grid">
 
-    <article class="ec-benefit-card ec-reveal">
-      <div class="ec-benefit-icon" aria-hidden="true">🎯</div>
-      <h3 class="ec-benefit-title">Sconti non pubblici</h3>
-      <p class="ec-benefit-desc">
-        Le convenzioni non sono disponibili al pubblico. Sono negoziate direttamente
-        da M&amp;M con ogni partner — riservate esclusivamente ai clienti attivi.
+    <article class="lc-benefit-card reveal">
+      <div class="lc-benefit-icon" aria-hidden="true">🎯</div>
+      <h3 class="lc-benefit-title">Sconti non pubblici</h3>
+      <p class="lc-benefit-desc">
+        Le convenzioni non sono disponibili al pubblico. Negoziate direttamente
+        da M&amp;M con ogni partner — riservate ai soli clienti attivi.
       </p>
     </article>
 
-    <article class="ec-benefit-card ec-reveal ec-reveal-d1">
-      <div class="ec-benefit-icon" aria-hidden="true">🔐</div>
-      <h3 class="ec-benefit-title">QR dinamico anti-frode</h3>
-      <p class="ec-benefit-desc">
-        Il codice si rigenera ogni 5 minuti. Nessuno può catturarlo con uno screenshot
-        e riutilizzarlo. Ogni scansione è verificata in tempo reale dai nostri server.
+    <article class="lc-benefit-card reveal reveal-delay-1">
+      <div class="lc-benefit-icon" aria-hidden="true">🔐</div>
+      <h3 class="lc-benefit-title">QR dinamico anti-frode</h3>
+      <p class="lc-benefit-desc">
+        Il codice si rigenera ogni 5 minuti. Nessuno può catturarlo con uno
+        screenshot e riutilizzarlo. Ogni scansione è verificata in tempo reale.
       </p>
     </article>
 
-    <article class="ec-benefit-card ec-reveal ec-reveal-d2">
-      <div class="ec-benefit-icon" aria-hidden="true">📊</div>
-      <h3 class="ec-benefit-title">Storico utilizzi personale</h3>
-      <p class="ec-benefit-desc">
-        Ogni convenzione usata viene registrata: partner, data, tipo di vantaggio.
+    <article class="lc-benefit-card reveal reveal-delay-2">
+      <div class="lc-benefit-icon" aria-hidden="true">📊</div>
+      <h3 class="lc-benefit-title">Storico utilizzi personale</h3>
+      <p class="lc-benefit-desc">
+        Ogni convenzione usata viene registrata: partner, data e tipo di vantaggio.
         Tieni tutto sotto controllo dalla tua area riservata.
       </p>
     </article>
 
-    <article class="ec-benefit-card ec-reveal">
-      <div class="ec-benefit-icon" aria-hidden="true">📍</div>
-      <h3 class="ec-benefit-title">Rete locale in crescita</h3>
-      <p class="ec-benefit-desc">
-        Nuovi partner vengono selezionati ogni mese. Ristoranti, bar, palestre
-        e negozi a Messina — attività reali, non catene commerciali.
+    <article class="lc-benefit-card reveal">
+      <div class="lc-benefit-icon" aria-hidden="true">📍</div>
+      <h3 class="lc-benefit-title">Rete locale in crescita</h3>
+      <p class="lc-benefit-desc">
+        Nuovi partner selezionati ogni mese. Ristoranti, bar, palestre e negozi
+        nel territorio di Messina — attività reali, non catene commerciali.
       </p>
     </article>
 
-    <article class="ec-benefit-card ec-reveal ec-reveal-d1">
-      <div class="ec-benefit-icon" aria-hidden="true">⚡</div>
-      <h3 class="ec-benefit-title">Attivazione immediata</h3>
-      <p class="ec-benefit-desc">
+    <article class="lc-benefit-card reveal reveal-delay-1">
+      <div class="lc-benefit-icon" aria-hidden="true">⚡</div>
+      <h3 class="lc-benefit-title">Attivazione immediata</h3>
+      <p class="lc-benefit-desc">
         Registrati e la member card è disponibile subito. Nessuna attesa,
         nessuna spedizione, nessuna configurazione manuale.
       </p>
     </article>
 
-    <article class="ec-benefit-card ec-reveal ec-reveal-d2">
-      <div class="ec-benefit-icon" aria-hidden="true">🆓</div>
-      <h3 class="ec-benefit-title">Zero costi, sempre</h3>
-      <p class="ec-benefit-desc">
-        L'Energy Club è un beneficio incluso nel tuo contratto energetico con M&amp;M.
-        Nessun canone annuale, nessuna quota di iscrizione, mai.
+    <article class="lc-benefit-card reveal reveal-delay-2">
+      <div class="lc-benefit-icon" aria-hidden="true">🆓</div>
+      <h3 class="lc-benefit-title">Zero costi, sempre</h3>
+      <p class="lc-benefit-desc">
+        L'Energy Club è un beneficio incluso nel tuo contratto energetico con
+        M&amp;M. Nessun canone annuale, nessuna quota di iscrizione, mai.
       </p>
     </article>
 
@@ -491,54 +574,54 @@
      CATEGORIES (dark)
 ═══════════════════════════════════════════════════════════ -->
 <section
-  class="ec-section ec-section--deep"
-  aria-labelledby="ecCatTitle"
+  class="lc-section lc-section--deep"
+  aria-labelledby="lcCatTitle"
 >
   <div class="container">
-    <div class="ec-section-header ec-reveal">
-      <p class="ec-section-eyebrow ec-section-eyebrow--light">
-        <span class="ec-eyebrow-line"></span>
+    <div class="section-header reveal">
+      <p class="lc-eyebrow" style="justify-content:center;">
+        <span class="eyebrow-line"></span>
         Rete partner
       </p>
-      <h2 class="ec-section-title ec-section-title--light" id="ecCatTitle">
+      <h2 class="section-title section-title--light" id="lcCatTitle">
         Dove puoi usare il tuo QR
       </h2>
-      <div class="ec-section-title-line"></div>
-      <p class="ec-section-sub ec-section-sub--light">
+      <div class="section-title-line"></div>
+      <p class="section-sub section-sub--light">
         Oltre 25 attività selezionate nel territorio di Messina. La rete si espande ogni mese.
       </p>
     </div>
   </div>
 
-  <div class="ec-categories-grid">
+  <div class="lc-categories-grid">
 
-    <div class="ec-cat-card ec-reveal">
-      <span class="ec-cat-icon" aria-hidden="true">🍽️</span>
-      <div class="ec-cat-name">Ristoranti</div>
-      <div class="ec-cat-count">12 attività</div>
+    <div class="lc-cat-card reveal">
+      <span class="lc-cat-icon" aria-hidden="true">🍽️</span>
+      <div class="lc-cat-name">Ristoranti</div>
+      <div class="lc-cat-count">12 attività</div>
     </div>
 
-    <div class="ec-cat-card ec-reveal ec-reveal-d1">
-      <span class="ec-cat-icon" aria-hidden="true">☕</span>
-      <div class="ec-cat-name">Bar &amp; Caffè</div>
-      <div class="ec-cat-count">8 attività</div>
+    <div class="lc-cat-card reveal reveal-delay-1">
+      <span class="lc-cat-icon" aria-hidden="true">☕</span>
+      <div class="lc-cat-name">Bar &amp; Caffè</div>
+      <div class="lc-cat-count">8 attività</div>
     </div>
 
-    <div class="ec-cat-card ec-reveal ec-reveal-d2">
-      <span class="ec-cat-icon" aria-hidden="true">🏋️</span>
-      <div class="ec-cat-name">Palestre &amp; Sport</div>
-      <div class="ec-cat-count">6 attività</div>
+    <div class="lc-cat-card reveal reveal-delay-2">
+      <span class="lc-cat-icon" aria-hidden="true">🏋️</span>
+      <div class="lc-cat-name">Palestre &amp; Sport</div>
+      <div class="lc-cat-count">6 attività</div>
     </div>
 
-    <div class="ec-cat-card ec-reveal ec-reveal-d3">
-      <span class="ec-cat-icon" aria-hidden="true">🛍️</span>
-      <div class="ec-cat-name">Negozi &amp; Servizi</div>
-      <div class="ec-cat-count">14 attività</div>
+    <div class="lc-cat-card reveal reveal-delay-3">
+      <span class="lc-cat-icon" aria-hidden="true">🛍️</span>
+      <div class="lc-cat-name">Negozi &amp; Servizi</div>
+      <div class="lc-cat-count">14 attività</div>
     </div>
 
   </div>
 
-  <div class="ec-categories-cta ec-reveal">
+  <div class="lc-categories-cta reveal">
     <a href="/loyalty/customer/register.html" class="btn btn-gold">
       <i class="fa fa-map-marker-alt" aria-hidden="true"></i>
       Registrati per scoprire tutti i partner
@@ -552,42 +635,42 @@
      SOCIAL PROOF / REVIEWS (dark)
 ═══════════════════════════════════════════════════════════ -->
 <section
-  class="ec-section ec-section--navy"
-  aria-labelledby="ecReviewsTitle"
+  class="lc-section lc-section--deep"
+  aria-labelledby="lcReviewsTitle"
   style="border-top: 1px solid rgba(255,255,255,0.05);"
 >
   <div class="container">
-    <div class="ec-section-header ec-reveal">
-      <p class="ec-section-eyebrow ec-section-eyebrow--light">
-        <span class="ec-eyebrow-line"></span>
+    <div class="section-header reveal">
+      <p class="lc-eyebrow" style="justify-content:center;">
+        <span class="eyebrow-line"></span>
         Cosa dicono i nostri clienti
       </p>
-      <h2 class="ec-section-title ec-section-title--light" id="ecReviewsTitle">
-        Risparmiano sull'energia. Poi sul resto.
+      <h2 class="section-title section-title--light" id="lcReviewsTitle">
+        Risparmiano sull'energia.<br>Poi risparmiano sul resto.
       </h2>
-      <div class="ec-section-title-line"></div>
+      <div class="section-title-line"></div>
     </div>
   </div>
 
-  <div class="ec-reviews-grid">
+  <div class="lc-reviews-grid">
 
-    <article class="ec-review-card ec-reveal">
-      <div class="ec-review-stars" role="img" aria-label="5 stelle su 5">
+    <article class="lc-review-card reveal">
+      <div class="lc-review-stars" role="img" aria-label="5 stelle su 5">
         <i class="fa fa-star" aria-hidden="true"></i>
         <i class="fa fa-star" aria-hidden="true"></i>
         <i class="fa fa-star" aria-hidden="true"></i>
         <i class="fa fa-star" aria-hidden="true"></i>
         <i class="fa fa-star" aria-hidden="true"></i>
       </div>
-      <blockquote class="ec-review-quote">
-        Già risparmio sulla bolletta grazie a M&amp;M, e ora con il QR uso gli sconti al
-        ristorante e in palestra. Un vantaggio concreto, non marketing.
+      <blockquote class="lc-review-quote">
+        Già risparmio sulla bolletta grazie a M&amp;M, e ora con il QR uso gli
+        sconti al ristorante e in palestra. Un vantaggio concreto, non marketing.
       </blockquote>
-      <footer class="ec-review-author">
-        <div class="ec-review-avatar" aria-hidden="true">FD</div>
+      <footer class="lc-review-footer">
+        <div class="lc-review-avatar" aria-hidden="true">FD</div>
         <div>
-          <div class="ec-review-name">Franco D.</div>
-          <div class="ec-review-verified">
+          <div class="lc-review-name">Franco D.</div>
+          <div class="lc-review-verified">
             <i class="fa fa-circle-check" aria-hidden="true"></i>
             Cliente verificato
           </div>
@@ -595,23 +678,23 @@
       </footer>
     </article>
 
-    <article class="ec-review-card ec-reveal ec-reveal-d1">
-      <div class="ec-review-stars" role="img" aria-label="5 stelle su 5">
+    <article class="lc-review-card reveal reveal-delay-1">
+      <div class="lc-review-stars" role="img" aria-label="5 stelle su 5">
         <i class="fa fa-star" aria-hidden="true"></i>
         <i class="fa fa-star" aria-hidden="true"></i>
         <i class="fa fa-star" aria-hidden="true"></i>
         <i class="fa fa-star" aria-hidden="true"></i>
         <i class="fa fa-star" aria-hidden="true"></i>
       </div>
-      <blockquote class="ec-review-quote">
-        Il QR è comodissimo. Lo mostro dal telefono e il vantaggio è immediato. Non serve
-        scaricare nulla. Funziona perfettamente.
+      <blockquote class="lc-review-quote">
+        Il QR è comodissimo. Lo mostro dal telefono e il vantaggio è immediato.
+        Non serve scaricare nulla. Funziona perfettamente.
       </blockquote>
-      <footer class="ec-review-author">
-        <div class="ec-review-avatar" aria-hidden="true">GM</div>
+      <footer class="lc-review-footer">
+        <div class="lc-review-avatar" aria-hidden="true">GM</div>
         <div>
-          <div class="ec-review-name">Giulia M.</div>
-          <div class="ec-review-verified">
+          <div class="lc-review-name">Giulia M.</div>
+          <div class="lc-review-verified">
             <i class="fa fa-circle-check" aria-hidden="true"></i>
             Cliente verificata
           </div>
@@ -619,23 +702,23 @@
       </footer>
     </article>
 
-    <article class="ec-review-card ec-reveal ec-reveal-d2">
-      <div class="ec-review-stars" role="img" aria-label="5 stelle su 5">
+    <article class="lc-review-card reveal reveal-delay-2">
+      <div class="lc-review-stars" role="img" aria-label="5 stelle su 5">
         <i class="fa fa-star" aria-hidden="true"></i>
         <i class="fa fa-star" aria-hidden="true"></i>
         <i class="fa fa-star" aria-hidden="true"></i>
         <i class="fa fa-star" aria-hidden="true"></i>
         <i class="fa fa-star" aria-hidden="true"></i>
       </div>
-      <blockquote class="ec-review-quote">
-        Servizio eccellente da parte di M&amp;M sin dal primo giorno. L'Energy Club è
-        la ciliegina sulla torta. Consigliatissimo a tutti.
+      <blockquote class="lc-review-quote">
+        Servizio eccellente da parte di M&amp;M sin dal primo giorno.
+        L'Energy Club è la ciliegina sulla torta. Consigliatissimo.
       </blockquote>
-      <footer class="ec-review-author">
-        <div class="ec-review-avatar" aria-hidden="true">FR</div>
+      <footer class="lc-review-footer">
+        <div class="lc-review-avatar" aria-hidden="true">FR</div>
         <div>
-          <div class="ec-review-name">Fabio R.</div>
-          <div class="ec-review-verified">
+          <div class="lc-review-name">Fabio R.</div>
+          <div class="lc-review-verified">
             <i class="fa fa-circle-check" aria-hidden="true"></i>
             Cliente verificato
           </div>
@@ -652,101 +735,94 @@
      PARTNER CTA — SPLIT LAYOUT
 ═══════════════════════════════════════════════════════════ -->
 <section
-  class="ec-section ec-section--deep"
+  class="lc-section lc-section--mid"
   id="partner"
-  aria-labelledby="ecPartnerTitle"
-  style="border-top: 1px solid rgba(255,255,255,0.04);"
+  aria-labelledby="lcPartnerTitle"
 >
-  <div class="ec-partner-split">
+  <div class="lc-partner-split">
 
     <!-- Copy side -->
-    <div class="ec-partner-copy ec-reveal">
-
-      <p class="ec-section-eyebrow ec-section-eyebrow--light ec-section-header--left">
-        <span class="ec-eyebrow-line"></span>
+    <div class="reveal">
+      <p class="lc-eyebrow">
+        <span class="eyebrow-line"></span>
         Per le attività commerciali
       </p>
 
-      <h2 class="ec-partner-headline" id="ecPartnerTitle">
+      <h2 class="lc-partner-headline" id="lcPartnerTitle">
         Porta nuovi clienti qualificati nella tua attività
       </h2>
 
-      <p class="ec-partner-sub">
+      <p class="lc-partner-sub">
         Entra nella rete M&amp;M Energy Club e raggiungi oltre 1.200 clienti fidelizzati
-        nel territorio messinese. Il sistema QR gestisce tutto in modo automatico.
+        nel territorio messinese. Il sistema QR gestisce tutto in automatico.
       </p>
 
-      <div class="ec-partner-perks">
+      <div class="lc-partner-perks">
 
-        <div class="ec-perk">
-          <div class="ec-perk-icon">
+        <div class="lc-perk">
+          <div class="lc-perk-icon">
             <i class="fa fa-users" aria-hidden="true"></i>
           </div>
-          <div class="ec-perk-body">
-            <div class="ec-perk-title">Clienti già motivati a spendere</div>
-            <p class="ec-perk-desc">
-              I clienti M&amp;M cercano attivamente i partner del Club. Non devi
-              acquisirli — arrivano da soli.
+          <div>
+            <div class="lc-perk-title">Clienti già motivati a spendere</div>
+            <p class="lc-perk-desc">
+              I clienti M&amp;M cercano attivamente i partner del Club. Arrivano da soli, senza che tu debba fare acquisizione.
             </p>
           </div>
         </div>
 
-        <div class="ec-perk">
-          <div class="ec-perk-icon">
+        <div class="lc-perk">
+          <div class="lc-perk-icon">
             <i class="fa fa-qrcode" aria-hidden="true"></i>
           </div>
-          <div class="ec-perk-body">
-            <div class="ec-perk-title">Scanner QR integrato</div>
-            <p class="ec-perk-desc">
-              Dashboard dedicata per validare le convenzioni in pochi secondi.
-              Nessun hardware aggiuntivo: basta un qualsiasi smartphone.
+          <div>
+            <div class="lc-perk-title">Scanner QR integrato</div>
+            <p class="lc-perk-desc">
+              Dashboard dedicata per validare le convenzioni in pochi secondi. Nessun hardware aggiuntivo: basta un qualsiasi smartphone.
             </p>
           </div>
         </div>
 
-        <div class="ec-perk">
-          <div class="ec-perk-icon">
+        <div class="lc-perk">
+          <div class="lc-perk-icon">
             <i class="fa fa-chart-bar" aria-hidden="true"></i>
           </div>
-          <div class="ec-perk-body">
-            <div class="ec-perk-title">Statistiche in tempo reale</div>
-            <p class="ec-perk-desc">
-              Quante validazioni, in quali fasce orarie, da quanti clienti unici.
-              Tutto misurabile, sempre.
+          <div>
+            <div class="lc-perk-title">Statistiche in tempo reale</div>
+            <p class="lc-perk-desc">
+              Quante validazioni, in quali fasce orarie, da quanti clienti unici. Tutto misurabile, sempre.
             </p>
           </div>
         </div>
 
-        <div class="ec-perk">
-          <div class="ec-perk-icon">
+        <div class="lc-perk">
+          <div class="lc-perk-icon">
             <i class="fa fa-tag" aria-hidden="true"></i>
           </div>
-          <div class="ec-perk-body">
-            <div class="ec-perk-title">Offerte gestite in autonomia</div>
-            <p class="ec-perk-desc">
-              Crei, modifichi e sospendi le tue convenzioni quando vuoi,
-              direttamente dalla dashboard partner.
+          <div>
+            <div class="lc-perk-title">Offerte gestite in autonomia</div>
+            <p class="lc-perk-desc">
+              Crei, modifichi e sospendi le tue convenzioni quando vuoi, direttamente dalla dashboard partner.
             </p>
           </div>
         </div>
 
       </div>
-
     </div>
 
     <!-- Form side -->
-    <div class="ec-reveal ec-reveal-d1">
-      <div class="ec-partner-form-card">
+    <div class="reveal reveal-delay-1">
+      <div class="lc-form-card">
 
-        <h3 class="ec-form-heading">Richiedi di diventare Partner</h3>
-        <p class="ec-form-subheading">
+        <h3 class="lc-form-heading">Richiedi di diventare Partner</h3>
+        <p class="lc-form-sub">
           Il team M&amp;M ti ricontatterà entro 24 ore lavorative.
         </p>
 
-        <form id="ecPartnerForm" novalidate>
+        <form id="lcPartnerForm" novalidate>
 
-          <div class="ec-form-row">
-            <div class="ec-form-field">
+          <div class="lc-form-row">
+            <div class="lc-form-field">
               <label for="pf-name">Nome attività *</label>
               <input
                 type="text"
@@ -757,7 +833,7 @@
                 autocomplete="organization"
               >
             </div>
-            <div class="ec-form-field">
+            <div class="lc-form-field">
               <label for="pf-vat">Partita IVA</label>
               <input
                 type="text"
@@ -769,8 +845,8 @@
             </div>
           </div>
 
-          <div class="ec-form-row">
-            <div class="ec-form-field">
+          <div class="lc-form-row">
+            <div class="lc-form-field">
               <label for="pf-email">Email *</label>
               <input
                 type="email"
@@ -781,7 +857,7 @@
                 autocomplete="email"
               >
             </div>
-            <div class="ec-form-field">
+            <div class="lc-form-field">
               <label for="pf-phone">Telefono</label>
               <input
                 type="tel"
@@ -793,7 +869,7 @@
             </div>
           </div>
 
-          <div class="ec-form-field ec-form-field--full">
+          <div class="lc-form-field lc-form-field--full">
             <label for="pf-category">Categoria *</label>
             <select id="pf-category" name="category" required>
               <option value="" disabled selected>Seleziona la categoria…</option>
@@ -807,33 +883,33 @@
             </select>
           </div>
 
-          <div class="ec-form-field ec-form-field--full">
+          <div class="lc-form-field lc-form-field--full">
             <label for="pf-desc">Proposta di vantaggio</label>
             <textarea
               id="pf-desc"
               name="description"
-              placeholder="Descrivi l'offerta che vuoi proporre ai clienti M&amp;M (es. 10% di sconto, caffè omaggio…)"
+              placeholder="Descrivi l'offerta per i clienti M&amp;M (es. 10% sconto, caffè omaggio…)"
               rows="3"
             ></textarea>
           </div>
 
-          <!-- Error / success banners -->
-          <div class="ec-form-error" id="ecPfError" role="alert" aria-live="polite">
+          <!-- Feedback banners -->
+          <div class="lc-form-error" id="lcPfError" role="alert" aria-live="polite">
             <i class="fa fa-triangle-exclamation" aria-hidden="true"></i>
-            <span id="ecPfErrorMsg">Compila tutti i campi obbligatori.</span>
+            <span id="lcPfErrorMsg">Compila tutti i campi obbligatori.</span>
           </div>
-          <div class="ec-form-success" id="ecPfSuccess" role="alert" aria-live="polite">
+          <div class="lc-form-success" id="lcPfSuccess" role="alert" aria-live="polite">
             <i class="fa fa-circle-check" aria-hidden="true"></i>
             <span>Richiesta inviata! Ti contatteremo entro 24 ore lavorative.</span>
           </div>
 
           <button
             type="submit"
-            class="btn btn-gold ec-form-submit"
-            id="ecPfSubmit"
+            class="btn btn-gold btn-full lc-form-submit"
+            id="lcPfSubmit"
           >
-            <span class="ec-spinner" aria-hidden="true"></span>
-            <span class="ec-btn-label">Invia Richiesta</span>
+            <span class="lc-spinner" aria-hidden="true"></span>
+            <span class="lc-btn-label">Invia Richiesta</span>
           </button>
 
         </form>
@@ -849,34 +925,34 @@
      FAQ
 ═══════════════════════════════════════════════════════════ -->
 <section
-  class="ec-section"
+  class="lc-section"
   id="faq"
-  aria-labelledby="ecFaqTitle"
+  aria-labelledby="lcFaqTitle"
 >
   <div class="container">
-    <div class="ec-section-header ec-reveal">
-      <p class="ec-section-eyebrow">
-        <span class="ec-eyebrow-line"></span>
+    <div class="section-header reveal">
+      <p class="lc-eyebrow" style="justify-content:center;">
+        <span class="eyebrow-line"></span>
         Domande frequenti
       </p>
-      <h2 class="ec-section-title" id="ecFaqTitle">
+      <h2 class="section-title" id="lcFaqTitle">
         Hai dubbi? Abbiamo risposte.
       </h2>
-      <div class="ec-section-title-line"></div>
+      <div class="section-title-line"></div>
     </div>
   </div>
 
-  <div class="ec-faq-list" role="list">
+  <div class="lc-faq-list" role="list">
 
-    <div class="ec-faq-item ec-reveal" role="listitem">
-      <button class="ec-faq-q" aria-expanded="false">
+    <div class="lc-faq-item reveal" role="listitem">
+      <button class="lc-faq-q" aria-expanded="false">
         Il programma è davvero gratuito?
-        <span class="ec-faq-chevron" aria-hidden="true">
+        <span class="lc-faq-chevron" aria-hidden="true">
           <i class="fa fa-chevron-down"></i>
         </span>
       </button>
-      <div class="ec-faq-answer">
-        <div class="ec-faq-answer-inner">
+      <div class="lc-faq-answer">
+        <div class="lc-faq-answer-inner">
           <p>
             Sì, completamente. L'Energy Club è un beneficio incluso per tutti i clienti
             con contratto energetico attivo con M&amp;M Consulting. Nessun canone,
@@ -886,95 +962,94 @@
       </div>
     </div>
 
-    <div class="ec-faq-item ec-reveal ec-reveal-d1" role="listitem">
-      <button class="ec-faq-q" aria-expanded="false">
+    <div class="lc-faq-item reveal reveal-delay-1" role="listitem">
+      <button class="lc-faq-q" aria-expanded="false">
         Come funziona il QR dinamico? È sicuro?
-        <span class="ec-faq-chevron" aria-hidden="true">
+        <span class="lc-faq-chevron" aria-hidden="true">
           <i class="fa fa-chevron-down"></i>
         </span>
       </button>
-      <div class="ec-faq-answer">
-        <div class="ec-faq-answer-inner">
+      <div class="lc-faq-answer">
+        <div class="lc-faq-answer-inner">
           <p>
-            Il tuo QR si rigenera automaticamente ogni 5 minuti. Questo significa
-            che non può essere catturato con uno screenshot e riutilizzato da un'altra
-            persona. Ogni scansione viene validata in tempo reale dai nostri server:
-            il partner vede subito se il codice è autentico e ancora valido.
+            Il tuo QR si rigenera automaticamente ogni 5 minuti. Non può essere
+            catturato con uno screenshot e riutilizzato da un'altra persona. Ogni
+            scansione viene validata in tempo reale dai nostri server: il partner
+            vede subito se il codice è autentico e ancora valido.
           </p>
         </div>
       </div>
     </div>
 
-    <div class="ec-faq-item ec-reveal ec-reveal-d2" role="listitem">
-      <button class="ec-faq-q" aria-expanded="false">
+    <div class="lc-faq-item reveal reveal-delay-2" role="listitem">
+      <button class="lc-faq-q" aria-expanded="false">
         Posso usare la stessa offerta più volte?
-        <span class="ec-faq-chevron" aria-hidden="true">
+        <span class="lc-faq-chevron" aria-hidden="true">
           <i class="fa fa-chevron-down"></i>
         </span>
       </button>
-      <div class="ec-faq-answer">
-        <div class="ec-faq-answer-inner">
+      <div class="lc-faq-answer">
+        <div class="lc-faq-answer-inner">
           <p>
             Dipende dalle condizioni definite da ciascun partner. La maggior parte
             delle offerte è valida una volta per visita. Alcuni partner consentono
-            utilizzi multipli nel mese. Le condizioni esatte sono sempre visibili
-            nel dettaglio della convenzione, prima di usarla.
+            utilizzi multipli mensili. Le condizioni esatte sono sempre visibili
+            nel dettaglio della convenzione prima di usarla.
           </p>
         </div>
       </div>
     </div>
 
-    <div class="ec-faq-item ec-reveal" role="listitem">
-      <button class="ec-faq-q" aria-expanded="false">
+    <div class="lc-faq-item reveal" role="listitem">
+      <button class="lc-faq-q" aria-expanded="false">
         Non sono ancora cliente M&amp;M. Posso iscrivermi?
-        <span class="ec-faq-chevron" aria-hidden="true">
+        <span class="lc-faq-chevron" aria-hidden="true">
           <i class="fa fa-chevron-down"></i>
         </span>
       </button>
-      <div class="ec-faq-answer">
-        <div class="ec-faq-answer-inner">
+      <div class="lc-faq-answer">
+        <div class="lc-faq-answer-inner">
           <p>
             L'Energy Club è riservato ai clienti con fornitura energetica attiva.
             Se non sei ancora cliente, <a href="/#contact">contattaci per una consulenza gratuita</a>:
-            analizziamo la tua bolletta senza impegno e, una volta attivato il contratto,
-            hai accesso immediato al Club.
+            analizziamo la tua bolletta senza impegno e, una volta attivato il
+            contratto, hai accesso immediato al Club.
           </p>
         </div>
       </div>
     </div>
 
-    <div class="ec-faq-item ec-reveal ec-reveal-d1" role="listitem">
-      <button class="ec-faq-q" aria-expanded="false">
+    <div class="lc-faq-item reveal reveal-delay-1" role="listitem">
+      <button class="lc-faq-q" aria-expanded="false">
         Devo scaricare un'app?
-        <span class="ec-faq-chevron" aria-hidden="true">
+        <span class="lc-faq-chevron" aria-hidden="true">
           <i class="fa fa-chevron-down"></i>
         </span>
       </button>
-      <div class="ec-faq-answer">
-        <div class="ec-faq-answer-inner">
+      <div class="lc-faq-answer">
+        <div class="lc-faq-answer-inner">
           <p>
             No. Il portale funziona su qualsiasi browser, su qualsiasi smartphone.
-            Puoi aggiungere la pagina alla schermata home del tuo telefono per un
-            accesso rapido — esattamente come un'app, ma senza installazione e
-            senza occupare spazio.
+            Puoi aggiungere la pagina alla schermata home per un accesso rapido —
+            esattamente come un'app, ma senza installazione e senza occupare spazio.
           </p>
         </div>
       </div>
     </div>
 
-    <div class="ec-faq-item ec-reveal ec-reveal-d2" role="listitem">
-      <button class="ec-faq-q" aria-expanded="false">
+    <div class="lc-faq-item reveal reveal-delay-2" role="listitem">
+      <button class="lc-faq-q" aria-expanded="false">
         Come posso contattare M&amp;M Consulting?
-        <span class="ec-faq-chevron" aria-hidden="true">
+        <span class="lc-faq-chevron" aria-hidden="true">
           <i class="fa fa-chevron-down"></i>
         </span>
       </button>
-      <div class="ec-faq-answer">
-        <div class="ec-faq-answer-inner">
+      <div class="lc-faq-answer">
+        <div class="lc-faq-answer-inner">
           <p>
-            Chiamaci allo <a href="tel:+390909412150">090 941 2150</a>, scrivici su WhatsApp
-            o vieni a trovarci in Via Industriale 120, Messina. Siamo disponibili
-            dal lunedì al venerdì, 9:00–18:00.
+            Chiamaci allo <a href="tel:+390909412150">090 941 2150</a>, scrivici su
+            WhatsApp o vieni a trovarci in Via Industriale 120, Messina.
+            Disponibili dal lunedì al venerdì, 9:00–18:00.
           </p>
         </div>
       </div>
@@ -988,38 +1063,35 @@
 <!-- ═══════════════════════════════════════════════════════════
      FINAL CTA BAND
 ═══════════════════════════════════════════════════════════ -->
-<section class="ec-cta-band" aria-labelledby="ecCtaTitle">
-  <div class="ec-cta-inner ec-reveal">
+<section class="lc-cta-band" aria-labelledby="lcCtaTitle">
+  <div class="lc-cta-inner reveal">
 
-    <p class="ec-cta-eyebrow">
-      <span class="ec-eyebrow-line"></span>
+    <p class="lc-eyebrow" style="justify-content:center;">
+      <span class="eyebrow-line"></span>
       Pronto a iniziare?
     </p>
 
-    <h2 class="ec-cta-headline" id="ecCtaTitle">
+    <h2 class="lc-cta-headline" id="lcCtaTitle">
       Unisciti all'Energy Club.<br>
       È gratuito. È tuo.
     </h2>
 
-    <p class="ec-cta-sub">
+    <p class="lc-cta-sub">
       Crea il tuo account in 60 secondi e inizia subito a usufruire dei vantaggi
       presso i partner M&amp;M nel territorio di Messina.
     </p>
 
-    <div class="ec-cta-actions">
-      <a
-        href="/loyalty/customer/register.html"
-        class="btn btn-gold ec-cta-btn-primary"
-      >
+    <div class="lc-cta-actions">
+      <a href="/loyalty/customer/register.html" class="btn btn-gold btn-submit">
         Registrati Gratis
         <i class="fa fa-arrow-right" aria-hidden="true"></i>
       </a>
-      <a href="/#contact" class="ec-hero-btn-secondary">
+      <a href="/#contact" class="btn btn-ghost">
         Parla con un consulente
       </a>
     </div>
 
-    <p class="ec-cta-note">
+    <p class="lc-cta-note">
       <i class="fa fa-lock" aria-hidden="true"></i>
       Nessuna carta di credito · Nessun abbonamento · Solo per clienti M&amp;M
     </p>
@@ -1027,57 +1099,155 @@
   </div>
 </section>
 
-
 </main>
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     FOOTER
+     FOOTER — exact replica of home.html footer
+     All classes (.site-footer, .footer-inner, etc.) from style.css.
 ═══════════════════════════════════════════════════════════ -->
-<footer class="ec-footer" role="contentinfo">
-  <div class="ec-footer-inner">
+<footer id="footer" class="site-footer" role="contentinfo">
+  <div class="footer-inner">
 
-    <span class="ec-footer-brand">
-      &copy; 2026 M&amp;M Consulting — Energy Club · Messina
-    </span>
+    <div class="footer-grid">
 
-    <ul class="ec-footer-links" role="list">
-      <li><a href="/">Homepage</a></li>
-      <li><a href="/privacy-page.html">Privacy Policy</a></li>
-      <li><a href="/cookies-policy.html">Cookie Policy</a></li>
-      <li><a href="/legal-note.html">Note legali</a></li>
-    </ul>
+      <!-- Brand -->
+      <div class="footer-brand">
+        <a href="/" aria-label="M&M Consulting homepage">
+          <img src="/assets/images/logo.png" alt="Logo M&M Consulting" width="64" height="64">
+        </a>
+        <p class="footer-tagline">
+          Il broker energetico di fiducia a Messina. Risparmiamo insieme.
+        </p>
+      </div>
 
-    <nav class="ec-footer-socials" aria-label="Social M&M Consulting">
-      <a
-        href="https://www.instagram.com/mm.consultingagencymessina"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Instagram M&M Consulting"
-      >
-        <i class="fab fa-instagram" aria-hidden="true"></i>
-      </a>
-      <a
-        href="https://www.facebook.com/MMconsultingme"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Facebook M&M Consulting"
-      >
-        <i class="fab fa-facebook-f" aria-hidden="true"></i>
-      </a>
-      <a
-        href="https://www.linkedin.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="LinkedIn M&M Consulting"
-      >
-        <i class="fab fa-linkedin-in" aria-hidden="true"></i>
-      </a>
-    </nav>
+      <!-- Contact -->
+      <address class="footer-contact" aria-label="Contatti M&M Consulting">
+        <p class="footer-contact-label">Contatti</p>
+
+        <p class="footer-phone">
+          <a href="tel:+390909412150">+39 090 941 2150</a>
+        </p>
+
+        <p class="footer-hours">
+          Lun–Ven, 9:00–18:00
+        </p>
+
+        <p class="footer-address">
+          Via Industriale, 120<br>98120 Messina ME, Italia
+        </p>
+      </address>
+
+      <!-- Newsletter -->
+      <div class="footer-newsletter">
+        <p class="footer-contact-label">Newsletter</p>
+
+        <p class="footer-nl-sub">
+          Aggiornamenti esclusivi e offerte dedicate direttamente nella tua inbox.
+        </p>
+
+        <form id="newsletterForm" class="nl-form" novalidate>
+          <div class="nl-field">
+            <input name="email" type="email" placeholder="La tua email" required>
+            <button id="newsletter-btn" type="submit" class="btn btn-gold">
+              <span class="btn-text">Iscriviti</span>
+              <span class="btn-dots" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </span>
+            </button>
+          </div>
+          <p class="nl-disclaimer">
+            Utilizziamo i tuoi dati solo per la newsletter. Puoi disiscriverti in qualsiasi momento.
+            <a href="/privacy-page.html">Privacy Policy</a>
+          </p>
+        </form>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+
+      <p class="footer-copy">
+        &copy; 2026 M&amp;M Consulting. Tutti i diritti riservati.
+      </p>
+
+      <nav class="footer-socials" aria-label="Social">
+        <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <i class="fab fa-linkedin"></i>
+        </a>
+        <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+          <i class="fab fa-youtube"></i>
+        </a>
+        <a href="https://www.instagram.com/mm.consultingagencymessina" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://www.facebook.com/MMconsultingme" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </nav>
+
+      <nav class="footer-legal" aria-label="Legal links">
+        <a href="/legal-note.html">Note legali</a>
+        <a href="/privacy-page.html">Privacy Policy</a>
+        <a href="/cookies-policy.html">Cookies Policy</a>
+        <a href="/blog.html">Blog</a>
+      </nav>
+
+    </div>
 
   </div>
 </footer>
-<script src="/js/features/loyalty/landingLoyalty.js"></script>
+
+<!-- WhatsApp widget (same as home.html) -->
+<div class="wa-float" role="button" tabindex="0" aria-label="Apri chat WhatsApp" aria-haspopup="dialog">
+  <img src="/assets/images/whatsapplogo.png" alt="WhatsApp" width="28" height="28"
+    onerror="this.src='https://cdn-icons-png.flaticon.com/512/733/733585.png'">
+</div>
+
+<div class="wa-chat" id="whatsappChat" role="dialog" aria-modal="true"
+  aria-label="Chat WhatsApp con M&M Consulting" aria-hidden="true">
+  <div class="wa-chat-header">
+    <div class="wa-chat-header-info">
+      <span class="wa-chat-title">Chatta con noi</span>
+      <span class="wa-chat-status">Online · risposta rapida</span>
+    </div>
+    <button class="wa-chat-close" aria-label="Chiudi chat">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
+  </div>
+  <div class="wa-chat-body">
+    <p class="wa-chat-bubble">
+      Ciao 👋 Come possiamo aiutarti a risparmiare sulla bolletta?
+    </p>
+    <div class="wa-quick-actions">
+      <button id="quickActions|SimulazioneRisparmio">Simula il tuo risparmio</button>
+      <button id="quickActions|AnalisiBolletta">Analizza la mia bolletta</button>
+      <button id="quickActions|ParlareConsulente">Parla con un consulente</button>
+    </div>
+  </div>
+  <div class="wa-chat-input">
+    <textarea id="userMessage" placeholder="Voglio ridurre la mia bolletta..." rows="2"
+      aria-label="Scrivi il tuo messaggio"></textarea>
+    <button class="wa-send-btn" aria-label="Invia messaggio su WhatsApp">
+      <i class="fa fa-paper-plane" aria-hidden="true"></i>
+    </button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+     Loads the site-wide app.js (nav burger, WhatsApp widget,
+     reveal observer, newsletter form) then adds page-specific
+     behaviour inline below.
+═══════════════════════════════════════════════════════════ -->
+
+<!-- Site-wide module — handles nav burger, WhatsApp, scroll reveal, newsletter -->
+<script type="module" src="/js/features/loyalty/landing-loyalty-app.js"></script>
+<script type="module" src="/js/features/loyalty/landing-loyalty.js"></script>
+
+<!-- Page-specific script (non-module, runs after app.js) -->
 
 </body>
 </html>

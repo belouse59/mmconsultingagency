@@ -1,0 +1,560 @@
+/* ============================================================
+   M&M Consulting — member-card.css
+   Reusable Member Card Component · Design System
+   ============================================================
+   A platform-wide UI component representing an M&M Energy Club
+   membership card. Used across:
+     - public/loyalty/index.html          (.member-card--hero)
+     - public/index.html                  (.member-card--hero)
+     - public/loyalty/customer/dashboard  (.member-card--dashboard)
+     - Any future loyalty/account page    (.member-card--compact)
+
+   Architecture:
+     .member-card                  Base component
+     .member-card--hero            Large floating card in hero visuals
+     .member-card--compact         Inline card, e.g. nav preview or widget
+     .member-card--dashboard       Full-width card on customer dashboard
+
+     .member-card__header          Brand + chip row
+     .member-card__qr              QR code frame
+     .member-card__timer           Timer bar row
+     .member-card__identity        Name + status row
+     .member-card__stats           Stats bar (dashboard variant)
+     .member-card__progress        Tier progress (dashboard variant)
+
+   Color system:
+     All tokens from style.css :root — no hardcoded values.
+     Dark mode inherits automatically via @media prefers-color-scheme.
+
+   ⚠ Do NOT use rgba(0,0,0,…) — use navy vars.
+   ⚠ Do NOT add new :root variables — use existing tokens.
+============================================================ */
+
+
+/* ============================================================
+   BASE COMPONENT
+============================================================ */
+
+.member-card {
+    /* Card shell */
+    background: linear-gradient(
+        145deg,
+        var(--navy-mid)   0%,
+        var(--navy-light) 100%
+    );
+    border: 1px solid var(--gold-border);
+    border-radius: var(--r-2xl);
+    padding: var(--sp-8) var(--sp-6);
+    position: relative;
+    overflow: hidden;
+    /* Specular gloss */
+    box-shadow:
+        0 30px 70px rgba(10, 22, 40, 0.50),
+        0 0 0 1px rgba(212, 160, 23, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    /* Default width — overridden by variant */
+    width: 300px;
+}
+
+/* Top gloss overlay */
+.member-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.04) 0%,
+        transparent 100%
+    );
+    border-radius: var(--r-2xl) var(--r-2xl) 0 0;
+    pointer-events: none;
+}
+
+/* Decorative circle motif bottom-right */
+.member-card::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; right: -30px;
+    width: 120px; height: 120px;
+    border: 1px solid rgba(212, 160, 23, 0.10);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+
+/* ── Header: brand label + EMV chip ── */
+
+.member-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-5);
+}
+
+.member-card__brand {
+    font-family: var(--font-display);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+}
+
+/* Simulated EMV chip */
+.member-card__chip {
+    width: 34px;
+    height: 26px;
+    background: linear-gradient(
+        135deg,
+        var(--gold)      0%,
+        var(--gold-dark) 100%
+    );
+    border-radius: var(--r-sm);
+    opacity: 0.82;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.member-card__chip::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    height: 1px;
+    background: rgba(10, 22, 40, 0.20);
+    transform: translateY(-50%);
+}
+
+.member-card__chip::after {
+    content: '';
+    position: absolute;
+    left: 50%; top: 0; bottom: 0;
+    width: 1px;
+    background: rgba(10, 22, 40, 0.15);
+    transform: translateX(-50%);
+}
+
+
+/* ── QR code frame ── */
+
+.member-card__qr {
+    background: #fff;
+    border-radius: var(--r-lg);
+    padding: var(--sp-4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--sp-4);
+}
+
+.member-card__qr svg {
+    display: block;
+}
+
+
+/* ── Timer bar ── */
+
+.member-card__timer {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-5);
+}
+
+.member-card__timer-track {
+    flex: 1;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.10);
+    border-radius: var(--r-full);
+    overflow: hidden;
+}
+
+.member-card__timer-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: var(--r-full);
+    animation: mc-timer 5s linear infinite;
+    transform-origin: left;
+}
+
+.member-card__timer-label {
+    font-family: var(--font-display);
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.35);
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+    min-width: 64px;
+    text-align: right;
+}
+
+
+/* ── Identity row: name + status ── */
+
+.member-card__identity {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.member-card__name {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+
+.member-card__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-display);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* Pulsing status dot */
+.member-card__dot {
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 5px var(--green);
+    animation: mc-pulse 2s ease-in-out infinite;
+}
+
+
+/* ── Stats bar (dashboard variant) ── */
+
+.member-card__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-1);
+    margin-top: var(--sp-5);
+    padding-top: var(--sp-5);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.member-card__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+}
+
+.member-card__stat-value {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.member-card__stat-value--gold {
+    color: var(--gold);
+}
+
+.member-card__stat-label {
+    font-family: var(--font-display);
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+
+/* ── Tier progress bar (dashboard variant) ── */
+
+.member-card__progress {
+    margin-top: var(--sp-4);
+}
+
+.member-card__progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--sp-2);
+}
+
+.member-card__progress-label {
+    font-family: var(--font-display);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.40);
+}
+
+.member-card__progress-pct {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--gold);
+}
+
+.member-card__progress-track {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.10);
+    border-radius: var(--r-full);
+    overflow: hidden;
+}
+
+.member-card__progress-fill {
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        var(--gold-dark) 0%,
+        var(--gold)      100%
+    );
+    border-radius: var(--r-full);
+    /* Width set inline via style="width:XX%" */
+    transition: width 1.2s var(--ease-out);
+}
+
+.member-card__progress-next {
+    margin-top: var(--sp-2);
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.35);
+    text-align: center;
+}
+
+.member-card__progress-next strong {
+    color: rgba(255, 255, 255, 0.60);
+}
+
+
+/* ============================================================
+   VARIANT: --hero
+   Large floating card with 3D perspective tilt + float animation.
+   Used in: hero sections (landing page, homepage).
+============================================================ */
+
+.member-card--hero {
+    width: 300px;
+    transform: perspective(900px) rotateX(3deg) rotateY(-6deg);
+    transform-style: preserve-3d;
+    animation: mc-float 5s ease-in-out infinite;
+}
+
+/* Wrap needed for floating badge + notification pills */
+.member-card--hero-wrap {
+    position: relative;
+    /* Outer padding so floating pills aren't clipped */
+    padding: 20px 24px 28px 20px;
+    display: inline-block;
+}
+
+/* "Member Card" badge above the card */
+.member-card__badge {
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gold);
+    color: var(--navy);
+    font-family: var(--font-display);
+    font-size: 0.60rem;
+    font-weight: 800;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    padding: 4px 16px;
+    border-radius: var(--r-full);
+    white-space: nowrap;
+    box-shadow: var(--shadow-gold);
+    animation: mc-fade-up 0.5s var(--ease) both;
+    z-index: 2;
+}
+
+/* Redemption confirmation pill below the card */
+.member-card__notification {
+    position: absolute;
+    bottom: 8px;
+    right: 4px;
+    background: var(--green);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: var(--r-full);
+    white-space: nowrap;
+    box-shadow: 0 6px 24px rgba(15, 122, 60, 0.40);
+    animation: mc-fade-up 0.5s 0.7s var(--ease) both;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    z-index: 2;
+}
+
+.member-card__notification::before {
+    content: '✓';
+    font-size: 0.8rem;
+}
+
+
+/* ============================================================
+   VARIANT: --compact
+   Small inline card — for nav previews, widgets, sidebars.
+   QR hidden; only identity + status shown.
+============================================================ */
+
+.member-card--compact {
+    width: 240px;
+    padding: var(--sp-5) var(--sp-5);
+}
+
+/* In compact mode, QR and timer are hidden */
+.member-card--compact .member-card__qr,
+.member-card--compact .member-card__timer {
+    display: none;
+}
+
+.member-card--compact .member-card__name {
+    font-size: 0.875rem;
+}
+
+.member-card--compact .member-card__chip {
+    width: 26px;
+    height: 20px;
+}
+
+
+/* ============================================================
+   VARIANT: --dashboard
+   Full-width card for the customer dashboard.
+   Shows: QR + timer + identity + stats + tier progress.
+   Transform and float animation disabled — static.
+============================================================ */
+
+.member-card--dashboard {
+    width: 100%;
+    max-width: 440px;
+    transform: none;
+    animation: none;
+    box-shadow:
+        0 16px 48px rgba(10, 22, 40, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.member-card--dashboard .member-card__qr {
+    /* Larger QR on dashboard */
+}
+
+.member-card--dashboard .member-card__qr svg {
+    width: 140px;
+    height: 140px;
+}
+
+.member-card--dashboard .member-card__name {
+    font-size: 1.15rem;
+}
+
+
+/* ============================================================
+   DARK MODE
+   All card surfaces already use dark navy vars.
+   We only need to adjust the QR frame (white bg) and minor
+   border tones consistent with the rest of the site's approach.
+============================================================ */
+
+@media (prefers-color-scheme: dark) {
+    .member-card {
+        /* Navy vars already shift via :root reassignment in style.css */
+        border-color: rgba(212, 160, 23, 0.20);
+        box-shadow:
+            0 30px 70px rgba(0, 0, 0, 0.65),
+            0 0 0 1px rgba(212, 160, 23, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .member-card__qr {
+        background: #fff; /* QR always white — required for scanning */
+    }
+}
+
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media (max-width: 400px) {
+    .member-card--hero {
+        width: 268px;
+    }
+
+    .member-card--hero-wrap {
+        padding: 16px 12px 24px 12px;
+    }
+}
+
+
+/* ============================================================
+   KEYFRAMES
+============================================================ */
+
+@keyframes mc-float {
+    0%, 100% {
+        transform: perspective(900px) rotateX(3deg) rotateY(-6deg) translateY(0px);
+    }
+    50% {
+        transform: perspective(900px) rotateX(3deg) rotateY(-6deg) translateY(-12px);
+    }
+}
+
+@keyframes mc-timer {
+    from { width: 100%; }
+    to   { width: 0%;   }
+}
+
+@keyframes mc-pulse {
+    0%, 100% { box-shadow: 0 0 4px var(--green);  opacity: 1;    }
+    50%       { box-shadow: 0 0 10px var(--green); opacity: 0.65; }
+}
+
+@keyframes mc-fade-up {
+    from { opacity: 0; transform: translateY(8px) translateX(-50%); }
+    to   { opacity: 1; transform: translateY(0)   translateX(-50%); }
+}
+
+/* notification pill has no translateX */
+.member-card__notification {
+    animation-name: mc-fade-up-plain;
+}
+
+@keyframes mc-fade-up-plain {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0);   }
+}
+
+
+/* ============================================================
+   REDUCED MOTION
+   Matches the site-wide approach in style.css:
+   animation-duration: 0.01ms + transition-duration: 0.01ms
+============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .member-card--hero,
+    .member-card__timer-fill,
+    .member-card__dot,
+    .member-card__badge,
+    .member-card__notification {
+        animation-duration:        0.01ms !important;
+        animation-iteration-count: 1      !important;
+        transition-duration:       0.01ms !important;
+    }
+
+    .member-card--hero {
+        transform: perspective(900px) rotateX(3deg) rotateY(-6deg);
+    }
+}

@@ -1,18 +1,7 @@
-import { initNav } from "./features/navigation/nav.js";
-
-import { initReveal } from "./features/animations/reveal.js";
-import { initFAQ } from "./features/animations/faq.js";
-import { initReviews } from "./features/animations/reviews.js";
-
-import { logicTeamCarousel } from "./features/carousels/team.js"; 
-
-import { initWhatsApp } from "./features/whatsapp/whatsapp.js";
-
-import { initContactForm } from "./features/forms/contactForm.js";
-import { initNewsletter } from "./features/forms/newsletter.js";
-
-import { initProviders } from "./features/simulator/providers.js";
-import { initSimulator } from "./features/simulator/simulator.js";
+import { initNav } from "../navigation/nav.js";
+import { initReveal } from "../animations/reveal.js";
+import { initWhatsApp } from "../whatsapp/whatsapp.js";
+import { initNewsletter } from "../forms/newsletter.js";
 
 
 /* ─────────────────────────────────────────────────────────────
@@ -27,18 +16,7 @@ window.addEventListener("load", () => {
 
 document.addEventListener("DOMContentLoaded", async () => {
   initNav();
-
   initReveal();
-  initFAQ();
-  initReviews();
-
   initWhatsApp();
-
-  initContactForm();
   initNewsletter();
-
-  logicTeamCarousel();
-
-  initProviders();
-  initSimulator();
 });

@@ -1,769 +1,238 @@
 /* ============================================================
-   M&M Consulting — loyalty-landing.css
-   Energy Club · Landing Page · Messina
+   M&M Consulting — loyalty-landing.css  (v3 — refined)
+   Energy Club · Landing Page
    ============================================================
-   Inherits all --navy, --gold, --text-*, --shadow-*, --r-*,
-   --font-display, --font-body, --sp-* from style.css :root.
-   This file is additive only — zero global overrides.
+   RULES:
+   · Every color value uses an existing :root token from style.css
+   · No hardcoded hex/rgba unless absolutely no token exists
+     (in which case a comment justifies the exception)
+   · Dark mode: zero new selectors — all surface vars already
+     reassign in style.css @media (prefers-color-scheme: dark)
+   · Navigation: reuses .site-header / .nav / .nav-link / .nav-burger
+     / .mobile-menu / .mobile-link exactly as defined in style.css
+   · Reveal animation: reuses .reveal / .visible / .reveal-delay-*
+     exactly as defined in style.css
+   · Footer: reuses .site-footer / .footer-* exactly from style.css
+   · This file is additive only — no global selector overrides
 
    Sections:
-   1.  Page Shell & Background
-   2.  Navigation
-   3.  Hero
-   4.  Member Card Mockup
-   5.  Stats Strip
-   6.  Section Scaffold (header, eyebrow, title, sub)
-   7.  How It Works
-   8.  Benefits Grid
-   9.  Category Showcase
-   10. Social Proof / Reviews
-   11. Partner CTA (Split Layout + Form)
-   12. FAQ Accordion
-   13. Final CTA Band
-   14. Footer
-   15. Reveal Animation Utility
-   16. Keyframes
-   17. Responsive Breakpoints
-   18. Reduced Motion
+   1.  Page shell
+   2.  Hero (loyalty variant)
+   3.  Stats strip
+   4.  Section scaffold helpers
+   5.  How it works
+   6.  Benefits grid
+   7.  Categories (dark section)
+   8.  Social proof / reviews
+   9.  Partner split + form
+   10. FAQ accordion
+   11. Final CTA band
+   12. Keyframes
+   13. Responsive
 ============================================================ */
 
 
 /* ============================================================
-   1. PAGE SHELL & BACKGROUND
+   1. PAGE SHELL
 ============================================================ */
 
-.ec-page {
-    background: var(--bg);
-    color: var(--text-primary);
-    font-family: var(--font-body);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
+/* Loyalty page reuses body defaults from style.css.
+   We only need the padding-top adjustment so content
+   clears the fixed .site-header. */
+.loyalty-page-body {
+    padding-top: var(--nav-h);
 }
 
-/* Deep section — nearly-black navy, darker than main site navy */
-.ec-section--deep {
-    background: #060D1A;
+/* Light section — matches .bg-soft from the main site */
+.lc-section {
+    padding: clamp(72px, 9vw, 110px) 0;
 }
 
-/* Mid section — standard navy */
-.ec-section--navy {
-    background: var(--navy);
-}
-
-/* Seam between dark sections */
-.ec-section--navy + .ec-section--navy,
-.ec-section--deep + .ec-section--deep {
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-/* Light surface section */
-.ec-section--surface {
+.lc-section--soft {
     background: var(--bg-soft);
 }
 
-/* Standard section padding */
-.ec-section {
-    padding: clamp(72px, 9vw, 112px) 0;
-}
-
-
-/* ============================================================
-   2. NAVIGATION
-============================================================ */
-
-.ec-nav {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 900;
-    height: var(--nav-h);
-    background: rgba(6, 13, 26, 0.94);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-bottom: 1px solid var(--gold-border);
-    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.30);
-}
-
-.ec-nav-inner {
-    max-width: var(--max-w);
-    margin: 0 auto;
-    height: 100%;
-    padding: 0 var(--sp-6);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--sp-6);
-}
-
-/* Logo lockup */
-.ec-nav-logo {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-3);
-    text-decoration: none;
-    flex-shrink: 0;
-}
-
-.ec-nav-logo img {
-    height: 36px;
-    width: auto;
-    display: block;
-    border-radius: var(--r-2xl);
-}
-
-.ec-nav-wordmark {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-}
-
-.ec-nav-brand {
-    font-family: var(--font-display);
-    font-size: 0.875rem;
-    font-weight: 800;
-    color: #fff;
-    line-height: 1;
-    letter-spacing: -0.01em;
-}
-
-.ec-nav-sub {
-    font-family: var(--font-display);
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: var(--gold);
-    line-height: 1;
-}
-
-/* Desktop links */
-.ec-nav-links {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-2);
-    list-style: none;
-}
-
-.ec-nav-link {
-    font-family: var(--font-display);
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    color: rgba(255, 255, 255, 0.58);
-    text-decoration: none;
-    padding: var(--sp-2) var(--sp-3);
-    border-radius: var(--r-md);
-    transition: color var(--dur-fast), background var(--dur-fast);
-    white-space: nowrap;
-}
-
-.ec-nav-link:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.06);
-}
-
-/* Nav CTA group */
-.ec-nav-cta {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-3);
-    flex-shrink: 0;
-}
-
-.ec-nav-login {
-    font-family: var(--font-display);
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: rgba(255, 255, 255, 0.58);
-    text-decoration: none;
-    padding: var(--sp-2) var(--sp-3);
-    border-radius: var(--r-md);
-    transition: color var(--dur-fast);
-    white-space: nowrap;
-}
-
-.ec-nav-login:hover {
-    color: #fff;
-}
-
-.ec-nav-register {
-    padding: 9px 20px;
-    font-size: 0.8rem;
-}
-
-/* Burger — mobile */
-.ec-nav-burger {
-    display: none;
-    flex-direction: column;
-    gap: 5px;
-    background: none;
-    border: none;
-    padding: var(--sp-2);
-    cursor: pointer;
-}
-
-.ec-nav-burger span {
-    display: block;
-    width: 24px;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.80);
-    border-radius: var(--r-full);
-    transition: all var(--dur-med) var(--ease);
-}
-
-.ec-nav-burger[aria-expanded="true"] span:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
-}
-.ec-nav-burger[aria-expanded="true"] span:nth-child(2) {
-    opacity: 0;
-}
-.ec-nav-burger[aria-expanded="true"] span:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
-}
-
-/* Mobile drawer */
-.ec-mobile-menu {
-    display: none;
-    flex-direction: column;
+/* Deep navy section — --navy is the darkest token in the system */
+.lc-section--deep {
     background: var(--navy);
-    border-top: 1px solid var(--gold-border);
-    padding: var(--sp-4) var(--sp-6) var(--sp-6);
-    gap: var(--sp-1);
-    position: fixed;
-    top: var(--nav-h);
-    left: 0;
-    right: 0;
-    z-index: 899;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
 }
 
-.ec-mobile-menu.open {
-    display: flex;
-}
-
-.ec-mobile-link {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 1rem;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.75);
-    text-decoration: none;
-    padding: var(--sp-3) var(--sp-4);
-    border-radius: var(--r-md);
-    transition: background var(--dur-fast), color var(--dur-fast);
-}
-
-.ec-mobile-link:hover {
-    background: rgba(255, 255, 255, 0.07);
-    color: #fff;
-}
-
-.ec-mobile-link--cta {
-    background: var(--gold);
-    color: var(--navy);
-    text-align: center;
-    margin-top: var(--sp-3);
-}
-
-.ec-mobile-link--cta:hover {
-    background: var(--gold-dark);
-    color: var(--navy);
+/* Mid navy — used for partner form section */
+.lc-section--mid {
+    background: var(--navy-mid);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 
 /* ============================================================
-   3. HERO
+   2. HERO (loyalty variant)
+   Mirrors .hero from style.css but the right panel
+   holds the card visual instead of a photo.
 ============================================================ */
 
-.ec-hero {
-    min-height: 100vh;
-    padding-top: var(--nav-h);
-    background: #060D1A;
+.lc-hero {
     display: grid;
     grid-template-columns: 55% 45%;
+    min-height: 100vh;
     overflow: hidden;
+    /* No padding-top — body already has padding-top: --nav-h */
     position: relative;
 }
 
-/* Dot-grid texture — matching main site hero pattern */
-.ec-hero::before {
+/* ── Left dark panel (mirrors .hero-panel--dark) ── */
+.lc-hero-panel {
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    padding: var(--sp-20) var(--sp-16) var(--sp-20) var(--sp-20);
+    position: relative;
+}
+
+/* Dot-grid texture (same as homepage hero) */
+.lc-hero-panel::before {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(rgba(212, 160, 23, 0.07) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(212, 160, 23, 0.08) 1px, transparent 1px);
     background-size: 28px 28px;
     pointer-events: none;
-    z-index: 0;
 }
 
-/* Radial glow bottom right */
-.ec-hero::after {
+/* Gold radial ambient */
+.lc-hero-panel::after {
     content: '';
     position: absolute;
-    bottom: -120px;
-    right: 0;
-    width: 50%;
-    height: 70%;
-    background: radial-gradient(ellipse at 80% 80%, rgba(37, 99, 235, 0.07) 0%, transparent 65%);
+    bottom: -80px;
+    left: -60px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(212, 160, 23, 0.05) 0%,
+        transparent 65%
+    );
     pointer-events: none;
-    z-index: 0;
 }
 
-/* Left column */
-.ec-hero-left {
-    display: flex;
-    align-items: center;
-    padding: var(--sp-20) var(--sp-12) var(--sp-20) var(--sp-20);
+.lc-hero-inner {
     position: relative;
-    z-index: 1;
-}
-
-.ec-hero-copy {
+    z-index: 2;
     max-width: 560px;
-    width: 100%;
 }
 
-.ec-hero-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--sp-3);
+/* Heading — same scale as .hero-heading */
+.lc-hero-heading {
     font-family: var(--font-display);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: var(--sp-6);
-}
-
-.ec-eyebrow-line {
-    display: inline-block;
-    width: 28px;
-    height: 2px;
-    background: var(--gold);
-    border-radius: var(--r-full);
-    flex-shrink: 0;
-}
-
-.ec-hero-heading {
-    font-family: var(--font-display);
-    font-size: clamp(2.2rem, 3.8vw, 3.4rem);
+    font-size: clamp(2.1rem, 3.8vw, 3.2rem);
     font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.025em;
+    line-height: 1.12;
     color: #fff;
+    letter-spacing: -0.02em;
     margin-bottom: var(--sp-5);
 }
 
-.ec-hero-heading mark {
-    color: var(--gold);
-    background: none;
-    font-style: normal;
-}
+/* Reuse .hero-highlight from style.css for the <mark> */
 
-.ec-hero-sub {
+/* Subtitle */
+.lc-hero-sub {
     font-size: 1.05rem;
-    color: rgba(255, 255, 255, 0.62);
+    color: rgba(255, 255, 255, 0.65);
     line-height: 1.75;
     margin-bottom: var(--sp-8);
-    max-width: 480px;
+    max-width: 460px;
 }
 
-.ec-hero-trust {
-    display: flex;
-    gap: var(--sp-6);
-    flex-wrap: wrap;
-    margin-bottom: var(--sp-10);
-}
-
-.ec-hero-trust-item {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-2);
-    font-family: var(--font-display);
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    color: rgba(255, 255, 255, 0.50);
-}
-
-.ec-hero-trust-item i {
-    color: var(--gold);
-    font-size: 11px;
-}
-
-.ec-hero-actions {
+/* Action row */
+.lc-hero-actions {
     display: flex;
     gap: var(--sp-4);
     flex-wrap: wrap;
     align-items: center;
 }
 
-.ec-hero-btn-primary {
-    padding: 15px 32px;
-    font-size: 0.95rem;
-    box-shadow: var(--shadow-gold);
-}
-
-.ec-hero-btn-primary i {
+.lc-hero-btn-arrow {
     transition: transform var(--dur-fast) var(--ease);
 }
 
-.ec-hero-btn-primary:hover i {
+.lc-hero-actions .btn:hover .lc-hero-btn-arrow {
     transform: translateX(4px);
 }
 
-.ec-hero-btn-secondary {
-    border: 1.5px solid rgba(255, 255, 255, 0.22);
-    color: rgba(255, 255, 255, 0.72);
-    background: transparent;
-    padding: 15px 28px;
-    font-family: var(--font-display);
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    border-radius: var(--r-md);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--sp-2);
-    cursor: pointer;
-    transition:
-        background var(--dur-fast) var(--ease),
-        color var(--dur-fast) var(--ease),
-        border-color var(--dur-fast) var(--ease);
-    white-space: nowrap;
-}
-
-.ec-hero-btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.07);
-    color: #fff;
-    border-color: rgba(255, 255, 255, 0.48);
-}
-
-/* Right column — visual stage */
-.ec-hero-right {
+/* ── Right card panel ── */
+.lc-hero-visual {
+    position: relative;
+    background: var(--navy);
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    z-index: 1;
     overflow: hidden;
 }
 
-/* Diagonal clip matching main site hero image panel */
-.ec-hero-right::before {
+/* Diagonal clip — identical to .hero-panel--image::before */
+.lc-hero-visual::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: #060D1A;
-    clip-path: polygon(0 0, 12% 0, 0 100%);
+    background: var(--navy);
+    clip-path: polygon(0 0, 14% 0, 0 100%);
     z-index: 2;
 }
 
-.ec-hero-visual-stage {
+/* Ambient glow behind card */
+.lc-hero-visual::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        ellipse 65% 65% at 60% 50%,
+        rgba(212, 160, 23, 0.09) 0%,
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+.lc-hero-visual-inner {
     position: relative;
     z-index: 3;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--sp-20) var(--sp-12) var(--sp-20) var(--sp-8);
+    padding: var(--sp-20) var(--sp-8) var(--sp-20) var(--sp-6);
 }
 
-/* Ambient glow behind the card */
-.ec-hero-visual-stage::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse 65% 65% at 55% 50%, rgba(212, 160, 23, 0.10) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-/* Scroll hint */
-.ec-scroll-hint {
+/* Scroll hint — same pattern as .hero-scroll-hint in style.css */
+.lc-scroll-hint {
     position: absolute;
     bottom: var(--sp-8);
-    left: calc(27.5%); /* centred on left panel */
+    left: 27.5%;
+    transform: translateX(-50%);
     color: rgba(255, 255, 255, 0.28);
     font-size: 18px;
-    animation: ec-bounce 2.4s ease-in-out infinite;
-    transition: opacity var(--dur-med);
+    animation: bounce 2.4s ease-in-out infinite;
     cursor: pointer;
-    z-index: 2;
+    z-index: 5;
+    transition: opacity var(--dur-med);
 }
 
-.ec-scroll-hint.hidden {
+.lc-scroll-hint.hidden {
     opacity: 0;
     pointer-events: none;
 }
 
 
 /* ============================================================
-   4. MEMBER CARD MOCKUP
+   3. STATS STRIP
 ============================================================ */
 
-.ec-card-wrap {
-    position: relative;
-    width: 300px;
-}
-
-/* The card itself */
-.ec-member-card {
-    width: 300px;
-    background: linear-gradient(145deg, #0E1E3A 0%, #1A3158 100%);
-    border: 1px solid rgba(212, 160, 23, 0.28);
-    border-radius: 20px;
-    padding: 28px;
-    box-shadow:
-        0 40px 90px rgba(0, 0, 0, 0.55),
-        0 0 0 1px rgba(212, 160, 23, 0.06),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    transform: perspective(900px) rotateX(3deg) rotateY(-6deg);
-    transform-style: preserve-3d;
-    animation: ec-float 5s ease-in-out infinite;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Specular gloss overlay */
-.ec-member-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 55%;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 100%);
-    border-radius: 20px 20px 0 0;
-    pointer-events: none;
-}
-
-/* Background circuit motif */
-.ec-member-card::after {
-    content: '';
-    position: absolute;
-    bottom: -20px;
-    right: -20px;
-    width: 120px;
-    height: 120px;
-    border: 1px solid rgba(212, 160, 23, 0.12);
-    border-radius: 50%;
-    pointer-events: none;
-}
-
-.ec-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--sp-5);
-}
-
-.ec-card-brand {
-    font-family: var(--font-display);
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--gold);
-}
-
-/* Simulated EMV chip */
-.ec-card-chip {
-    width: 34px;
-    height: 26px;
-    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
-    border-radius: 5px;
-    opacity: 0.80;
-    position: relative;
-    overflow: hidden;
-}
-
-.ec-card-chip::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.20);
-    transform: translateY(-50%);
-}
-
-.ec-card-chip::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: rgba(0, 0, 0, 0.15);
-    transform: translateX(-50%);
-}
-
-/* QR display area */
-.ec-card-qr-frame {
-    background: #fff;
-    border-radius: var(--r-lg);
-    padding: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: var(--sp-4);
-    position: relative;
-}
-
-.ec-card-qr-frame svg {
-    display: block;
-}
-
-/* Timer bar */
-.ec-card-timer-row {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-3);
-    margin-bottom: var(--sp-5);
-}
-
-.ec-card-timer-bar {
-    flex: 1;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.10);
-    border-radius: var(--r-full);
-    overflow: hidden;
-}
-
-.ec-card-timer-fill {
-    height: 100%;
-    background: var(--gold);
-    border-radius: var(--r-full);
-    animation: ec-timer 5s linear infinite;
-    transform-origin: left;
-}
-
-.ec-card-timer-label {
-    font-family: var(--font-display);
-    font-size: 0.65rem;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.38);
-    white-space: nowrap;
-    letter-spacing: 0.04em;
-}
-
-/* Name / meta */
-.ec-card-name {
-    font-family: var(--font-display);
-    font-size: 1rem;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: -0.01em;
-    margin-bottom: 2px;
-}
-
-.ec-card-meta {
-    font-family: var(--font-display);
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.35);
-    display: flex;
-    align-items: center;
-    gap: var(--sp-2);
-}
-
-.ec-card-dot {
-    width: 6px;
-    height: 6px;
-    background: var(--green);
-    border-radius: 50%;
-    box-shadow: 0 0 6px var(--green);
-    animation: ec-pulse 2s ease-in-out infinite;
-}
-
-/* Floating "Member" badge above card */
-.ec-card-badge-top {
-    position: absolute;
-    z-index: 1;
-    top: -14px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--gold);
-    color: var(--navy);
-    font-family: var(--font-display);
-    font-size: 0.62rem;
-    font-weight: 800;
-    letter-spacing: 0.10em;
-    text-transform: uppercase;
-    padding: 4px 16px;
-    border-radius: var(--r-full);
-    white-space: nowrap;
-    box-shadow: 0 4px 18px rgba(212, 160, 23, 0.40);
-    animation: ec-fade-up 0.5s var(--ease) both;
-}
-
-/* Floating notification pill */
-.ec-card-notification {
-    position: absolute;
-    bottom: -16px;
-    right: -12px;
-    background: var(--green);
-    color: #fff;
-    font-family: var(--font-display);
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 7px 14px;
-    border-radius: var(--r-full);
-    white-space: nowrap;
-    box-shadow: 0 6px 24px rgba(15, 122, 60, 0.45);
-    animation: ec-fade-up 0.5s 0.7s var(--ease) both;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.ec-card-notification::before {
-    content: '✓';
-    font-size: 0.8rem;
-}
-
-/* Second floating pill (uses count) */
-.ec-card-stat-pill {
-    position: absolute;
-    top: 24px;
-    right: -18px;
-    background: var(--navy);
-    border: 1px solid var(--gold-border);
-    color: #fff;
-    font-family: var(--font-display);
-    font-size: 0.68rem;
-    font-weight: 700;
-    padding: 7px 14px;
-    border-radius: var(--r-full);
-    white-space: nowrap;
-    box-shadow: var(--shadow-md);
-    animation: ec-fade-up 0.5s 0.3s var(--ease) both;
-}
-
-.ec-card-stat-pill strong {
-    color: var(--gold);
-}
-
-
-/* ============================================================
-   5. STATS STRIP
-============================================================ */
-
-.ec-stats-strip {
+.lc-stats-strip {
     background: var(--bg-soft);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     padding: var(--sp-10) 0;
 }
 
-.ec-stats-grid {
+.lc-stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     max-width: var(--max-w);
@@ -771,7 +240,7 @@
     padding: 0 var(--sp-6);
 }
 
-.ec-stat-item {
+.lc-stat-item {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -780,26 +249,34 @@
     border-right: 1px solid var(--border);
 }
 
-.ec-stat-item:last-child {
+.lc-stat-item:last-child {
     border-right: none;
 }
 
-.ec-stat-value {
+.lc-stat-value {
     font-family: var(--font-display);
     font-size: clamp(2rem, 3vw, 2.6rem);
     font-weight: 800;
     color: var(--navy);
+    /* navy reassigns in dark mode automatically */
     letter-spacing: -0.025em;
     line-height: 1;
     margin-bottom: var(--sp-2);
 }
 
-.ec-stat-value em {
+/* Dark mode: navy token re-assigns to #0E1E3A — text needs to be light */
+@media (prefers-color-scheme: dark) {
+    .lc-stat-value {
+        color: var(--text-primary);
+    }
+}
+
+.lc-stat-value em {
     font-style: normal;
     color: var(--gold);
 }
 
-.ec-stat-label {
+.lc-stat-label {
     font-family: var(--font-display);
     font-size: 0.72rem;
     font-weight: 700;
@@ -810,19 +287,22 @@
 
 
 /* ============================================================
-   6. SECTION SCAFFOLD
+   4. SECTION SCAFFOLD HELPERS
+   Mirrors the naming from style.css (.section-title, etc.)
+   but scoped to loyalty page to avoid any collision.
 ============================================================ */
 
-.ec-section-header {
+.lc-section-header {
     text-align: center;
     margin-bottom: var(--sp-16);
 }
 
-.ec-section-header--left {
+.lc-section-header--left {
     text-align: left;
 }
 
-.ec-section-eyebrow {
+/* Eyebrow — same as .hero-eyebrow pattern */
+.lc-eyebrow {
     display: inline-flex;
     align-items: center;
     gap: var(--sp-3);
@@ -835,76 +315,32 @@
     margin-bottom: var(--sp-4);
 }
 
-.ec-section-eyebrow--light {
-    color: var(--gold);
-}
+/* Reuse .eyebrow-line from style.css for the decorative dash */
 
-.ec-section-eyebrow .ec-eyebrow-line {
-    flex-shrink: 0;
-}
+/* Decorative underline beneath title */
+/* Reuse .section-title-line from style.css */
 
-.ec-section-title {
-    font-family: var(--font-display);
-    font-size: clamp(1.65rem, 3vw, 2.3rem);
-    font-weight: 800;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
-    line-height: 1.15;
-    margin-bottom: 0;
-}
-
-.ec-section-title--light {
-    color: #fff;
-}
-
-.ec-section-title-line {
-    width: 44px;
-    height: 3px;
-    background: var(--gold);
-    border-radius: var(--r-full);
-    margin: var(--sp-4) auto 0;
-}
-
-.ec-section-title-line--left {
-    margin-left: 0;
-}
-
-.ec-section-sub {
-    margin-top: var(--sp-4);
-    font-size: 1rem;
-    color: var(--text-secondary);
-    line-height: 1.75;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.ec-section-sub--left {
-    margin-left: 0;
-    margin-right: 0;
-}
-
-.ec-section-sub--light {
-    color: rgba(255, 255, 255, 0.55);
-}
+/* Sub-text */
+/* Reuse .section-sub and .section-sub--light from style.css */
 
 
 /* ============================================================
-   7. HOW IT WORKS
+   5. HOW IT WORKS
+   Mirrors .how-steps from style.css numerically.
 ============================================================ */
 
-.ec-steps {
+.lc-steps {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: var(--sp-6);
-    position: relative;
     max-width: var(--max-w);
     margin: 0 auto;
     padding: 0 var(--sp-6);
+    position: relative;
 }
 
 /* Dashed connector line */
-.ec-steps::before {
+.lc-steps::before {
     content: '';
     position: absolute;
     top: 35px;
@@ -918,12 +354,12 @@
         transparent 6px,
         transparent 16px
     );
-    opacity: 0.35;
+    opacity: 0.30;
     pointer-events: none;
     z-index: 0;
 }
 
-.ec-step {
+.lc-step {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -932,7 +368,7 @@
     z-index: 1;
 }
 
-.ec-step-num {
+.lc-step-num {
     width: 70px;
     height: 70px;
     border-radius: 50%;
@@ -947,16 +383,16 @@
     align-items: center;
     justify-content: center;
     margin-bottom: var(--sp-5);
-    box-shadow: 0 0 0 6px rgba(212, 160, 23, 0.06), var(--shadow-sm);
+    box-shadow: 0 0 0 6px var(--gold-glow), var(--shadow-sm);
     transition: border-color var(--dur-med), box-shadow var(--dur-med);
 }
 
-.ec-step:hover .ec-step-num {
+.lc-step:hover .lc-step-num {
     border-color: var(--gold);
-    box-shadow: 0 0 0 6px rgba(212, 160, 23, 0.12), var(--shadow-md);
+    box-shadow: 0 0 0 8px var(--gold-glow), var(--shadow-md);
 }
 
-.ec-step-title {
+.lc-step-title {
     font-family: var(--font-display);
     font-size: 0.95rem;
     font-weight: 700;
@@ -965,7 +401,7 @@
     letter-spacing: -0.01em;
 }
 
-.ec-step-desc {
+.lc-step-desc {
     font-size: 0.875rem;
     color: var(--text-secondary);
     line-height: 1.65;
@@ -973,10 +409,10 @@
 
 
 /* ============================================================
-   8. BENEFITS GRID
+   6. BENEFITS GRID
 ============================================================ */
 
-.ec-benefits-grid {
+.lc-benefits-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--sp-5);
@@ -985,24 +421,25 @@
     padding: 0 var(--sp-6);
 }
 
-.ec-benefit-card {
+/* Reuses .service-card visual style from style.css */
+.lc-benefit-card {
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: var(--r-xl);
     padding: var(--sp-8) var(--sp-6);
     transition:
-        transform var(--dur-med) var(--ease),
-        box-shadow var(--dur-med) var(--ease),
+        transform    var(--dur-med) var(--ease),
+        box-shadow   var(--dur-med) var(--ease),
         border-color var(--dur-med);
 }
 
-.ec-benefit-card:hover {
+.lc-benefit-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--shadow-md);
     border-color: var(--gold-border);
 }
 
-.ec-benefit-icon {
+.lc-benefit-icon {
     width: 48px;
     height: 48px;
     background: var(--gold-glow);
@@ -1016,12 +453,14 @@
     transition: background var(--dur-med), border-color var(--dur-med);
 }
 
-.ec-benefit-card:hover .ec-benefit-icon {
-    background: rgba(212, 160, 23, 0.18);
+.lc-benefit-card:hover .lc-benefit-icon {
+    background: rgba(212, 160, 23, 0.20);
+    /* Justified: stronger gold glow on hover, beyond --gold-glow token */
     border-color: rgba(212, 160, 23, 0.40);
+    /* Justified: same reason */
 }
 
-.ec-benefit-title {
+.lc-benefit-title {
     font-family: var(--font-display);
     font-size: 0.95rem;
     font-weight: 700;
@@ -1030,7 +469,7 @@
     letter-spacing: -0.01em;
 }
 
-.ec-benefit-desc {
+.lc-benefit-desc {
     font-size: 0.875rem;
     color: var(--text-secondary);
     line-height: 1.7;
@@ -1038,10 +477,10 @@
 
 
 /* ============================================================
-   9. CATEGORY SHOWCASE (dark section)
+   7. CATEGORIES (dark section)
 ============================================================ */
 
-.ec-categories-grid {
+.lc-categories-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: var(--sp-4);
@@ -1050,32 +489,34 @@
     padding: 0 var(--sp-6);
 }
 
-.ec-cat-card {
+.lc-cat-card {
     background: rgba(255, 255, 255, 0.04);
+    /* Justified: dark glass surface — no token for this transparency level */
     border: 1px solid rgba(255, 255, 255, 0.07);
+    /* Justified: same */
     border-radius: var(--r-xl);
     padding: var(--sp-8) var(--sp-5);
     text-align: center;
     transition:
-        background var(--dur-med),
-        border-color var(--dur-med),
-        transform var(--dur-med) var(--ease);
+        background     var(--dur-med),
+        border-color   var(--dur-med),
+        transform      var(--dur-med) var(--ease);
 }
 
-.ec-cat-card:hover {
-    background: rgba(212, 160, 23, 0.07);
-    border-color: rgba(212, 160, 23, 0.22);
+.lc-cat-card:hover {
+    background: var(--gold-glow);
+    border-color: var(--gold-border);
     transform: translateY(-4px);
 }
 
-.ec-cat-icon {
+.lc-cat-icon {
     font-size: 2.2rem;
     display: block;
     margin-bottom: var(--sp-4);
     line-height: 1;
 }
 
-.ec-cat-name {
+.lc-cat-name {
     font-family: var(--font-display);
     font-size: 0.9rem;
     font-weight: 700;
@@ -1084,7 +525,7 @@
     letter-spacing: -0.01em;
 }
 
-.ec-cat-count {
+.lc-cat-count {
     font-family: var(--font-display);
     font-size: 0.72rem;
     font-weight: 600;
@@ -1092,18 +533,17 @@
     letter-spacing: 0.04em;
 }
 
-/* "See all" CTA row below categories */
-.ec-categories-cta {
+.lc-categories-cta {
     text-align: center;
     margin-top: var(--sp-12);
 }
 
 
 /* ============================================================
-   10. SOCIAL PROOF / REVIEWS
+   8. SOCIAL PROOF / REVIEWS (dark section)
 ============================================================ */
 
-.ec-reviews-grid {
+.lc-reviews-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--sp-5);
@@ -1112,8 +552,9 @@
     padding: 0 var(--sp-6);
 }
 
-.ec-review-card {
+.lc-review-card {
     background: rgba(255, 255, 255, 0.04);
+    /* Justified: dark glass surface */
     border: 1px solid rgba(255, 255, 255, 0.07);
     border-radius: var(--r-xl);
     padding: var(--sp-8) var(--sp-6);
@@ -1122,31 +563,23 @@
     gap: var(--sp-4);
 }
 
-.ec-review-stars {
+.lc-review-stars {
     display: flex;
     gap: 3px;
     color: var(--gold);
     font-size: 0.8rem;
 }
 
-.ec-review-quote {
+.lc-review-quote {
     font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.70);
-    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.68);
+    /* Justified: no token for this level of white transparency */
+    line-height: 1.75;
     font-style: italic;
     flex: 1;
-    quotes: '\201C' '\201D';
 }
 
-.ec-review-quote::before {
-    content: open-quote;
-}
-
-.ec-review-quote::after {
-    content: close-quote;
-}
-
-.ec-review-author {
+.lc-review-footer {
     display: flex;
     align-items: center;
     gap: var(--sp-3);
@@ -1154,23 +587,23 @@
     border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-.ec-review-avatar {
+.lc-review-avatar {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--navy-light), var(--navy-mid));
+    background: var(--navy-light);
     border: 1px solid var(--gold-border);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: var(--font-display);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 700;
     color: var(--gold);
     flex-shrink: 0;
 }
 
-.ec-review-name {
+.lc-review-name {
     font-family: var(--font-display);
     font-size: 0.82rem;
     font-weight: 700;
@@ -1178,22 +611,23 @@
     line-height: 1.2;
 }
 
-.ec-review-verified {
-    font-size: 0.72rem;
+.lc-review-verified {
+    font-size: 0.70rem;
     color: var(--green);
     font-family: var(--font-display);
     font-weight: 600;
     display: flex;
     align-items: center;
     gap: 4px;
+    margin-top: 1px;
 }
 
 
 /* ============================================================
-   11. PARTNER CTA — SPLIT LAYOUT + FORM
+   9. PARTNER SPLIT LAYOUT + FORM
 ============================================================ */
 
-.ec-partner-split {
+.lc-partner-split {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--sp-20);
@@ -1203,10 +637,8 @@
     padding: 0 var(--sp-6);
 }
 
-/* Left: copy */
-.ec-partner-copy {}
-
-.ec-partner-headline {
+/* Copy side */
+.lc-partner-headline {
     font-family: var(--font-display);
     font-size: clamp(1.7rem, 3vw, 2.4rem);
     font-weight: 800;
@@ -1216,31 +648,32 @@
     margin-bottom: var(--sp-4);
 }
 
-.ec-partner-sub {
+.lc-partner-sub {
     font-size: 0.975rem;
     color: rgba(255, 255, 255, 0.58);
+    /* Justified: same as .section-sub--light in style.css is 0.60 */
     line-height: 1.75;
     margin-bottom: var(--sp-8);
     max-width: 440px;
 }
 
-.ec-partner-perks {
+.lc-partner-perks {
     display: flex;
     flex-direction: column;
-    gap: var(--sp-4);
+    gap: var(--sp-5);
 }
 
-.ec-perk {
+.lc-perk {
     display: flex;
     align-items: flex-start;
     gap: var(--sp-4);
 }
 
-.ec-perk-icon {
-    width: 30px;
-    height: 30px;
-    background: rgba(212, 160, 23, 0.10);
-    border: 1px solid rgba(212, 160, 23, 0.20);
+.lc-perk-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--gold-glow);
+    border: 1px solid var(--gold-border);
     border-radius: var(--r-md);
     display: flex;
     align-items: center;
@@ -1252,13 +685,12 @@
     transition: background var(--dur-med);
 }
 
-.ec-perk:hover .ec-perk-icon {
-    background: rgba(212, 160, 23, 0.18);
+.lc-perk:hover .lc-perk-icon {
+    background: rgba(212, 160, 23, 0.20);
+    /* Justified: stronger hover state beyond --gold-glow */
 }
 
-.ec-perk-body {}
-
-.ec-perk-title {
+.lc-perk-title {
     font-family: var(--font-display);
     font-size: 0.875rem;
     font-weight: 700;
@@ -1267,15 +699,17 @@
     letter-spacing: -0.01em;
 }
 
-.ec-perk-desc {
+.lc-perk-desc {
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.55);
-    line-height: 1.6;
+    /* Same as .section-sub--light approximation */
+    line-height: 1.65;
 }
 
-/* Right: glass form card */
-.ec-partner-form-card {
+/* Form card — glass surface on dark bg */
+.lc-form-card {
     background: rgba(255, 255, 255, 0.03);
+    /* Justified: dark glass layer — no token at this opacity */
     border: 1px solid rgba(255, 255, 255, 0.09);
     border-radius: var(--r-2xl);
     padding: var(--sp-10) var(--sp-8);
@@ -1283,7 +717,7 @@
     -webkit-backdrop-filter: blur(12px);
 }
 
-.ec-form-heading {
+.lc-form-heading {
     font-family: var(--font-display);
     font-size: 1.05rem;
     font-weight: 700;
@@ -1292,29 +726,29 @@
     margin-bottom: var(--sp-2);
 }
 
-.ec-form-subheading {
+.lc-form-sub {
     font-size: 0.82rem;
     color: rgba(255, 255, 255, 0.42);
     line-height: 1.55;
     margin-bottom: var(--sp-6);
 }
 
-/* Two-column row inside form */
-.ec-form-row {
+/* Two-column grid within form */
+.lc-form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--sp-3);
 }
 
-.ec-form-field {
+.lc-form-field {
     margin-bottom: var(--sp-3);
 }
 
-.ec-form-field--full {
+.lc-form-field--full {
     grid-column: 1 / -1;
 }
 
-.ec-form-field label {
+.lc-form-field label {
     display: block;
     font-family: var(--font-display);
     font-size: 0.68rem;
@@ -1325,9 +759,9 @@
     margin-bottom: var(--sp-1);
 }
 
-.ec-form-field input,
-.ec-form-field select,
-.ec-form-field textarea {
+.lc-form-field input,
+.lc-form-field select,
+.lc-form-field textarea {
     width: 100%;
     padding: 11px 13px;
     background: rgba(255, 255, 255, 0.05);
@@ -1339,38 +773,38 @@
     outline: none;
     transition:
         border-color var(--dur-fast),
-        background var(--dur-fast),
-        box-shadow var(--dur-fast);
+        background   var(--dur-fast),
+        box-shadow   var(--dur-fast);
     min-height: 44px;
     -webkit-appearance: none;
 }
 
-.ec-form-field input::placeholder,
-.ec-form-field textarea::placeholder {
+.lc-form-field input::placeholder,
+.lc-form-field textarea::placeholder {
     color: rgba(255, 255, 255, 0.25);
 }
 
-.ec-form-field select option {
+.lc-form-field select option {
     background: var(--navy-mid);
     color: #fff;
 }
 
-.ec-form-field input:focus,
-.ec-form-field select:focus,
-.ec-form-field textarea:focus {
+.lc-form-field input:focus,
+.lc-form-field select:focus,
+.lc-form-field textarea:focus {
     border-color: var(--gold);
     background: rgba(255, 255, 255, 0.08);
     box-shadow: 0 0 0 3px var(--gold-glow);
 }
 
-.ec-form-field textarea {
+.lc-form-field textarea {
     resize: vertical;
     min-height: 84px;
     line-height: 1.6;
 }
 
-/* Form feedback banners */
-.ec-form-error {
+/* Feedback banners — match site-wide error token pattern */
+.lc-form-error {
     display: none;
     align-items: flex-start;
     gap: var(--sp-2);
@@ -1384,16 +818,15 @@
     line-height: 1.45;
 }
 
-.ec-form-error.visible {
-    display: flex;
-}
+.lc-form-error.visible  { display: flex; }
 
-.ec-form-success {
+.lc-form-success {
     display: none;
     align-items: flex-start;
     gap: var(--sp-2);
     padding: 10px 14px;
     background: rgba(15, 122, 60, 0.08);
+    /* Justified: --green is a single hex, no bg token for green tints */
     border: 1px solid rgba(15, 122, 60, 0.25);
     border-radius: var(--r-md);
     font-size: 0.85rem;
@@ -1402,12 +835,10 @@
     line-height: 1.45;
 }
 
-.ec-form-success.visible {
-    display: flex;
-}
+.lc-form-success.visible { display: flex; }
 
-/* Submit button — full width */
-.ec-form-submit {
+/* Submit button — full width, uses .btn .btn-gold from style.css */
+.lc-form-submit {
     width: 100%;
     margin-top: var(--sp-2);
     padding: 14px;
@@ -1416,38 +847,33 @@
     min-height: 50px;
 }
 
-.ec-form-submit .ec-spinner {
+/* Loading spinner — matches style.css .btn .btn-dots approach */
+.lc-form-submit .lc-spinner {
     display: none;
     width: 16px;
     height: 16px;
     border: 2px solid rgba(10, 22, 40, 0.25);
     border-top-color: var(--navy);
     border-radius: 50%;
-    animation: ec-spin 0.7s linear infinite;
+    animation: lc-spin 0.7s linear infinite;
     position: absolute;
 }
 
-.ec-form-submit.loading .ec-btn-label {
-    opacity: 0;
-}
+.lc-form-submit.loading .lc-btn-label { opacity: 0; }
+.lc-form-submit.loading .lc-spinner   { display: block; }
 
-.ec-form-submit.loading .ec-spinner {
-    display: block;
-}
-
-.ec-form-submit:disabled {
+.lc-form-submit:disabled {
     opacity: 0.60;
     cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none !important;
 }
 
 
 /* ============================================================
-   12. FAQ ACCORDION
+   10. FAQ ACCORDION
+   Mirrors .faq-item / .faq-question pattern from style.css.
 ============================================================ */
 
-.ec-faq-list {
+.lc-faq-list {
     max-width: 720px;
     margin: 0 auto;
     padding: 0 var(--sp-6);
@@ -1456,7 +882,7 @@
     gap: var(--sp-3);
 }
 
-.ec-faq-item {
+.lc-faq-item {
     border: 1px solid var(--border);
     border-radius: var(--r-lg);
     background: var(--bg-surface);
@@ -1464,18 +890,19 @@
     transition: border-color var(--dur-med), box-shadow var(--dur-med);
 }
 
-.ec-faq-item:hover {
+.lc-faq-item:hover {
     border-color: var(--gold-border);
 }
 
-.ec-faq-item.open {
+.lc-faq-item.open {
     border-color: var(--gold-border);
     box-shadow: 0 0 0 3px var(--gold-glow);
 }
 
-.ec-faq-q {
+/* Matches .faq-question from style.css */
+.lc-faq-q {
     width: 100%;
-    background: transparent;
+    background: var(--bg-surface);
     border: none;
     padding: var(--sp-5) var(--sp-6);
     display: flex;
@@ -1492,11 +919,11 @@
     letter-spacing: -0.01em;
 }
 
-.ec-faq-q:hover {
+.lc-faq-q:hover {
     background: var(--bg-soft);
 }
 
-.ec-faq-chevron {
+.lc-faq-chevron {
     flex-shrink: 0;
     width: 24px;
     height: 24px;
@@ -1509,57 +936,59 @@
     font-size: 0.6rem;
     color: var(--text-secondary);
     transition:
-        transform var(--dur-med) var(--ease),
-        background var(--dur-fast),
-        border-color var(--dur-fast);
+        transform     var(--dur-med) var(--ease),
+        background    var(--dur-fast),
+        border-color  var(--dur-fast);
 }
 
-.ec-faq-item.open .ec-faq-chevron {
+.lc-faq-item.open .lc-faq-chevron {
     transform: rotate(180deg);
     background: var(--gold-glow);
     border-color: var(--gold-border);
     color: var(--gold-dark);
 }
 
-.ec-faq-answer {
+/* Matches .faq-answer from style.css */
+.lc-faq-answer {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.38s var(--ease);
+    background: var(--bg-surface);
 }
 
-.ec-faq-item.open .ec-faq-answer {
+.lc-faq-item.open .lc-faq-answer {
     max-height: 320px;
 }
 
-.ec-faq-answer-inner {
+.lc-faq-answer-inner {
     padding: 0 var(--sp-6) var(--sp-5);
     border-top: 1px solid var(--border);
     padding-top: var(--sp-4);
 }
 
-.ec-faq-answer-inner p {
+.lc-faq-answer-inner p {
     font-size: 0.9rem;
     color: var(--text-secondary);
     line-height: 1.75;
     margin: 0;
 }
 
-.ec-faq-answer-inner a {
+.lc-faq-answer-inner a {
     color: var(--gold-dark);
     font-weight: 600;
     text-decoration: none;
 }
 
-.ec-faq-answer-inner a:hover {
+.lc-faq-answer-inner a:hover {
     text-decoration: underline;
 }
 
 
 /* ============================================================
-   13. FINAL CTA BAND
+   11. FINAL CTA BAND
 ============================================================ */
 
-.ec-cta-band {
+.lc-cta-band {
     background: var(--navy);
     padding: clamp(80px, 10vw, 120px) 0;
     text-align: center;
@@ -1567,18 +996,18 @@
     overflow: hidden;
 }
 
-/* Dot-grid echo */
-.ec-cta-band::before {
+/* Reuse dot-grid texture pattern */
+.lc-cta-band::before {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(rgba(212, 160, 23, 0.07) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(212, 160, 23, 0.08) 1px, transparent 1px);
     background-size: 28px 28px;
     pointer-events: none;
 }
 
-/* Gold radial glow */
-.ec-cta-band::after {
+/* Gold radial ambient */
+.lc-cta-band::after {
     content: '';
     position: absolute;
     top: -100px;
@@ -1586,11 +1015,15 @@
     transform: translateX(-50%);
     width: 700px;
     height: 400px;
-    background: radial-gradient(ellipse at center, rgba(212, 160, 23, 0.10) 0%, transparent 65%);
+    background: radial-gradient(
+        ellipse at center,
+        rgba(212, 160, 23, 0.09) 0%,
+        transparent 65%
+    );
     pointer-events: none;
 }
 
-.ec-cta-inner {
+.lc-cta-inner {
     position: relative;
     z-index: 1;
     max-width: var(--max-w);
@@ -1598,20 +1031,7 @@
     padding: 0 var(--sp-6);
 }
 
-.ec-cta-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--sp-3);
-    font-family: var(--font-display);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: var(--sp-5);
-}
-
-.ec-cta-headline {
+.lc-cta-headline {
     font-family: var(--font-display);
     font-size: clamp(1.9rem, 3.5vw, 2.8rem);
     font-weight: 800;
@@ -1621,15 +1041,15 @@
     margin-bottom: var(--sp-4);
 }
 
-.ec-cta-sub {
+.lc-cta-sub {
     font-size: 1rem;
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.58);
     max-width: 500px;
     margin: 0 auto var(--sp-10);
-    line-height: 1.7;
+    line-height: 1.75;
 }
 
-.ec-cta-actions {
+.lc-cta-actions {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1637,13 +1057,7 @@
     flex-wrap: wrap;
 }
 
-.ec-cta-btn-primary {
-    padding: 16px 36px;
-    font-size: 0.95rem;
-    box-shadow: var(--shadow-gold);
-}
-
-.ec-cta-note {
+.lc-cta-note {
     margin-top: var(--sp-6);
     font-size: 0.78rem;
     color: rgba(255, 255, 255, 0.30);
@@ -1655,250 +1069,144 @@
     gap: var(--sp-2);
 }
 
-.ec-cta-note i {
-    color: rgba(255, 255, 255, 0.25);
-    font-size: 0.7rem;
+.lc-cta-note i {
+    font-size: 0.70rem;
 }
 
 
 /* ============================================================
-   14. FOOTER
+   12. KEYFRAMES
+   New: lc-spin (for form submit spinner).
+   All others (bounce, float, pulse) already in style.css.
 ============================================================ */
 
-.ec-footer {
-    background: #03070F;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    padding: var(--sp-10) 0;
-}
-
-.ec-footer-inner {
-    max-width: var(--max-w);
-    margin: 0 auto;
-    padding: 0 var(--sp-6);
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    align-items: center;
-    gap: var(--sp-8);
-}
-
-.ec-footer-brand {
-    font-family: var(--font-display);
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.28);
-    letter-spacing: 0.02em;
-}
-
-.ec-footer-links {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-5);
-    list-style: none;
-}
-
-.ec-footer-links a {
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.30);
-    text-decoration: none;
-    font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    transition: color var(--dur-fast);
-}
-
-.ec-footer-links a:hover {
-    color: rgba(255, 255, 255, 0.65);
-}
-
-.ec-footer-socials {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-4);
-}
-
-.ec-footer-socials a {
-    color: rgba(255, 255, 255, 0.28);
-    font-size: 1rem;
-    transition: color var(--dur-fast);
-    text-decoration: none;
-}
-
-.ec-footer-socials a:hover {
-    color: rgba(255, 255, 255, 0.65);
-}
-
-
-/* ============================================================
-   15. REVEAL ANIMATION UTILITY
-============================================================ */
-
-.ec-reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition:
-        opacity 0.7s var(--ease-out),
-        transform 0.7s var(--ease-out);
-}
-
-.ec-reveal.ec-visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.ec-reveal-d1 { transition-delay: 0.08s; }
-.ec-reveal-d2 { transition-delay: 0.16s; }
-.ec-reveal-d3 { transition-delay: 0.24s; }
-.ec-reveal-d4 { transition-delay: 0.32s; }
-
-
-/* ============================================================
-   16. KEYFRAMES
-============================================================ */
-
-@keyframes ec-float {
-    0%, 100% { transform: perspective(900px) rotateX(3deg) rotateY(-6deg) translateY(0px); }
-    50%       { transform: perspective(900px) rotateX(3deg) rotateY(-6deg) translateY(-12px); }
-}
-
-@keyframes ec-timer {
-    from { width: 100%; }
-    to   { width: 0%; }
-}
-
-@keyframes ec-pulse {
-    0%, 100% { box-shadow: 0 0 4px var(--green); opacity: 1; }
-    50%       { box-shadow: 0 0 10px var(--green); opacity: 0.65; }
-}
-
-@keyframes ec-fade-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes ec-spin {
+@keyframes lc-spin {
     to { transform: rotate(360deg); }
 }
 
-@keyframes ec-bounce {
-    0%, 100% { transform: translateY(0); }
-    50%       { transform: translateY(8px); }
-}
-
 
 /* ============================================================
-   17. RESPONSIVE BREAKPOINTS
+   13. RESPONSIVE
+   Matches breakpoints from style.css (1200, 1024, 900, 768, 480).
 ============================================================ */
 
-/* ── 1100px ── */
-@media (max-width: 1100px) {
-    .ec-hero-left {
-        padding: var(--sp-16) var(--sp-10) var(--sp-16) var(--sp-10);
-    }
-
-    .ec-partner-split {
-        gap: var(--sp-12);
+/* ── 1200px ── */
+@media (max-width: 1200px) {
+    .lc-hero-panel {
+        padding: var(--sp-16) var(--sp-12) var(--sp-16) var(--sp-16);
     }
 }
 
 /* ── 1024px ── */
 @media (max-width: 1024px) {
-    .ec-nav-links {
-        display: none;
-    }
-
-    .ec-nav-burger {
-        display: flex;
-    }
-
-    .ec-hero {
+    .lc-hero {
         grid-template-columns: 1fr;
         min-height: auto;
     }
 
-    .ec-hero-left {
-        padding: clamp(40px, 8vw, 72px) var(--sp-6);
+    .lc-hero-panel {
+        padding: calc(var(--nav-h) + var(--sp-12)) var(--sp-10) var(--sp-16);
+        min-height: 65vh;
         justify-content: center;
-        text-align: center;
     }
 
-    .ec-hero-copy {
+    .lc-hero-inner {
+        text-align: center;
         max-width: 640px;
     }
 
-    .ec-hero-sub {
+    .lc-hero-sub {
         max-width: 100%;
-        margin-left: auto;
-        margin-right: auto;
     }
 
-    .ec-hero-trust {
+    .lc-hero-actions {
         justify-content: center;
     }
 
-    .ec-hero-actions {
-        justify-content: center;
+    /* Reuse .hero-trust responsive handling (it already flex-wraps) */
+
+    .lc-hero-visual {
+        height: 420px;
+        order: -1;
     }
 
-    .ec-hero-right {
-        padding: var(--sp-10) 0 var(--sp-16);
-        border-top: 1px solid rgba(255, 255, 255, 0.04);
+    .lc-hero-visual::before {
+        clip-path: polygon(0 0, 100% 0, 100% 14%, 0 0);
     }
 
-    .ec-hero-right::before {
+    .lc-scroll-hint {
         display: none;
     }
 
-    .ec-hero-visual-stage {
-        padding: var(--sp-6) var(--sp-6) var(--sp-8);
-    }
-
-    .ec-scroll-hint {
-        display: none;
-    }
-
-    .ec-partner-split {
+    .lc-partner-split {
         grid-template-columns: 1fr;
         gap: var(--sp-12);
     }
 
-    .ec-partner-sub {
+    .lc-partner-sub {
         max-width: 100%;
+    }
+}
+
+/* ── 900px ── */
+@media (max-width: 900px) {
+    .lc-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Divider adjustments for 2-col stats */
+    .lc-stat-item:nth-child(2) { border-right: none; }
+    .lc-stat-item:nth-child(3) {
+        border-right: 1px solid var(--border);
+        border-top: 1px solid var(--border);
+    }
+    .lc-stat-item:nth-child(4) {
+        border-right: none;
+        border-top: 1px solid var(--border);
     }
 }
 
 /* ── 768px ── */
 @media (max-width: 768px) {
-    .ec-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .lc-hero-panel {
+        padding: calc(var(--nav-h) + var(--sp-8)) var(--sp-6) var(--sp-12);
+        min-height: auto;
     }
 
-    .ec-stat-item:nth-child(2) { border-right: none; }
-    .ec-stat-item:nth-child(3) {
-        border-right: 1px solid var(--border);
-        border-top: 1px solid var(--border);
-    }
-    .ec-stat-item:nth-child(4) {
-        border-right: none;
-        border-top: 1px solid var(--border);
+    .lc-hero-heading {
+        font-size: clamp(1.8rem, 5vw, 2.6rem);
     }
 
-    .ec-steps {
+    .lc-hero-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .lc-hero-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .lc-hero-visual {
+        height: 340px;
+    }
+
+    .lc-steps {
         grid-template-columns: 1fr;
-        gap: var(--sp-8);
+        max-width: 380px;
+        gap: var(--sp-10);
     }
 
-    .ec-steps::before {
-        display: none;
-    }
+    .lc-steps::before { display: none; }
 
-    .ec-step {
+    .lc-step {
         flex-direction: row;
         text-align: left;
         align-items: flex-start;
         gap: var(--sp-5);
     }
 
-    .ec-step-num {
+    .lc-step-num {
         flex-shrink: 0;
         width: 52px;
         height: 52px;
@@ -1906,73 +1214,40 @@
         margin-bottom: 0;
     }
 
-    .ec-benefits-grid {
+    .lc-benefits-grid {
         grid-template-columns: 1fr;
-        gap: var(--sp-4);
+        max-width: 440px;
+        margin: 0 auto;
     }
 
-    .ec-categories-grid {
+    .lc-categories-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .ec-reviews-grid {
+    .lc-reviews-grid {
         grid-template-columns: 1fr;
     }
 
-    .ec-footer-inner {
+    .lc-form-row {
         grid-template-columns: 1fr;
-        gap: var(--sp-5);
-        text-align: center;
-    }
-
-    .ec-footer-links,
-    .ec-footer-socials {
-        justify-content: center;
-    }
-
-    .ec-form-row {
-        grid-template-columns: 1fr;
-    }
-
-    .ec-hero-right {
-        display: none; /* card hidden on mobile — too tall */
     }
 }
 
 /* ── 480px ── */
 @media (max-width: 480px) {
-    .ec-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .ec-hero-trust {
-        flex-direction: column;
-        gap: var(--sp-3);
-        align-items: center;
-    }
-
-    .ec-cta-actions {
+    .lc-cta-actions {
         flex-direction: column;
     }
-}
 
+    .lc-cta-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
 
-/* ============================================================
-   18. REDUCED MOTION
-============================================================ */
-
-@media (prefers-reduced-motion: reduce) {
-    .ec-reveal,
-    .ec-member-card,
-    .ec-card-timer-fill,
-    .ec-card-notification,
-    .ec-card-badge-top,
-    .ec-card-stat-pill,
-    .ec-card-dot,
-    .ec-scroll-hint {
-        animation: none !important;
-        transition: none !important;
-        opacity: 1 !important;
-        transform: none !important;
+    .lc-hero-visual {
+        display: none;
+        /* On very small screens the card visual adds no value
+           and hurts layout — matches the pattern of .hero-panel--image
+           on mobile in style.css */
     }
 }
