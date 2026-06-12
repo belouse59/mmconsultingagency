@@ -86,6 +86,7 @@
     align-items: center;
     padding: var(--sp-20) var(--sp-16) var(--sp-20) var(--sp-20);
     position: relative;
+    justify-content: space-evenly;
 }
 
 /* Dot-grid texture (same as homepage hero) */
