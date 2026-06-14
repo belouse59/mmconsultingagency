@@ -61,7 +61,7 @@ async function createRedemption({
 
   } catch (err) {
     if (err.code === "23505") {
-      throw makeError("REDEMPTION_ALREADY_EXISTS", 409);
+      throw makeError("OFFERTA_GIA_ATTIVATA", 409);
     }
     throw err;
   }

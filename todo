@@ -2,6 +2,7 @@ add blog section to builder page
 sms pending for now
 add pagination in admin console
 think about redesign console in general to add users, newsletter list, contact request and simulator.
+need add columns to partner table and so in the creation form in the admin based on the form in loyalty page
 
 loyaltyRoutes may be move them to their own router
 
