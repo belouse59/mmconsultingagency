@@ -1,0 +1,1541 @@
+/* ============================================================
+   M&M Consulting — admin.css
+   Admin Console · Design System
+   ============================================================
+   Inherits ALL tokens from loyalty.css :root
+   (--loy-navy, --loy-gold, --loy-text, --loy-border, etc.)
+   This file is additive only — no :root overrides.
+
+   Namespace: .adm-*
+   All selectors are scoped to avoid collision with loyalty.css.
+
+   Sections:
+    1.  Shell & Layout
+    2.  Sidebar
+    3.  Topbar
+    4.  Content area
+    5.  Stat cards
+    6.  Page header
+    7.  Toolbar (search + filters + actions)
+    8.  Table
+    9.  Pagination
+   10.  Form panel (create/edit)
+   11.  Badges & status
+   12.  Modals
+   13.  Empty & loading states
+   14.  Dark mode
+   15.  Responsive
+   16.  Reduced motion
+   17.  Keyframes
+============================================================ */
+
+
+/* ============================================================
+   1. SHELL & LAYOUT
+============================================================ */
+
+/* Full-viewport shell — sidebar + main column */
+.adm-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--loy-bg-soft);
+  font-family: var(--loy-font-body);
+  -webkit-font-smoothing: antialiased;
+  color: var(--loy-text);
+}
+
+/* ── Main column (right of sidebar) ── */
+.adm-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* prevent flex overflow */
+  /* On mobile sidebar overlays, so no margin needed */
+  transition: margin-left var(--adm-sidebar-dur) var(--adm-ease);
+}
+
+/* When sidebar is open on desktop, push the column */
+@media (min-width: 1024px) {
+  .adm-column {
+    margin-left: var(--adm-sidebar-w);
+  }
+}
+
+/* ── Variables ── */
+:root {
+  --adm-sidebar-w:   240px;
+  --adm-topbar-h:    56px;
+  --adm-sidebar-dur: 0.22s;
+  --adm-ease:        cubic-bezier(0.4, 0, 0.2, 1);
+  --adm-content-max: 1200px;
+}
+
+
+/* ============================================================
+   2. SIDEBAR
+============================================================ */
+
+.adm-sidebar {
+  width: var(--adm-sidebar-w);
+  background: var(--loy-navy);
+  border-right: 1px solid var(--loy-gold-border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 200;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  transition: transform var(--adm-sidebar-dur) var(--adm-ease);
+  /* iOS safe area */
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.adm-sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+/* On mobile, sidebar slides in from left */
+.adm-sidebar--hidden {
+  transform: translateX(-100%);
+}
+
+/* ── Sidebar logo lockup ── */
+.adm-sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  height: var(--adm-topbar-h);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.adm-sidebar-logo img {
+  height: 30px;
+  width: auto;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.adm-sidebar-wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.adm-sidebar-brand {
+  font-family: var(--loy-font-display);
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-sidebar-tag {
+  font-family: var(--loy-font-display);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--loy-gold);
+  line-height: 1;
+}
+
+/* ── Sidebar nav ── */
+.adm-sidebar-nav {
+  flex: 1;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Section label */
+.adm-nav-section {
+  font-family: var(--loy-font-display);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.30);
+  padding: 10px 12px 4px;
+  margin-top: 6px;
+}
+
+.adm-nav-section:first-child {
+  margin-top: 0;
+}
+
+/* Nav item */
+.adm-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-family: var(--loy-font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.58);
+  transition:
+    background var(--adm-sidebar-dur),
+    color      var(--adm-sidebar-dur);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.adm-nav-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
+.adm-nav-item.active {
+  background: rgba(212, 160, 23, 0.14);
+  color: var(--loy-gold);
+}
+
+/* Nav icon */
+.adm-nav-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  opacity: 0.75;
+  transition: opacity var(--adm-sidebar-dur);
+}
+
+.adm-nav-item:hover .adm-nav-icon,
+.adm-nav-item.active .adm-nav-icon {
+  opacity: 1;
+}
+
+/* Count badge on nav item */
+.adm-nav-count {
+  margin-left: auto;
+  font-family: var(--loy-font-display);
+  font-size: 0.62rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.55);
+  padding: 1px 7px;
+  border-radius: 20px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.adm-nav-item.active .adm-nav-count {
+  background: rgba(212, 160, 23, 0.18);
+  color: var(--loy-gold);
+}
+
+/* ── Sidebar footer ── */
+.adm-sidebar-footer {
+  padding: 12px 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.adm-sidebar-logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-family: var(--loy-font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.42);
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background var(--adm-sidebar-dur), color var(--adm-sidebar-dur);
+}
+
+.adm-sidebar-logout:hover {
+  background: rgba(229, 72, 77, 0.12);
+  color: #E5484D;
+}
+
+/* ── Mobile overlay backdrop ── */
+.adm-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 199;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.adm-overlay.visible {
+  display: block;
+}
+
+
+/* ============================================================
+   3. TOPBAR
+============================================================ */
+
+.adm-topbar {
+  height: var(--adm-topbar-h);
+  background: var(--loy-bg);
+  border-bottom: 1px solid var(--loy-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(10, 22, 40, 0.06);
+  /* iOS safe area */
+  padding-left: max(24px, env(safe-area-inset-left));
+  padding-right: max(24px, env(safe-area-inset-right));
+}
+
+/* Burger — visible on mobile */
+.adm-topbar-burger {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 6px;
+  transition: background var(--adm-sidebar-dur);
+}
+
+.adm-topbar-burger:hover {
+  background: var(--loy-bg-soft);
+}
+
+.adm-topbar-burger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--loy-text);
+  border-radius: 2px;
+  transition: all var(--adm-sidebar-dur) var(--adm-ease);
+}
+
+.adm-topbar-burger[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.adm-topbar-burger[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+}
+.adm-topbar-burger[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (min-width: 1024px) {
+  .adm-topbar-burger {
+    display: none;
+  }
+}
+
+/* Breadcrumb / page title */
+.adm-topbar-title {
+  font-family: var(--loy-font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--loy-text);
+  letter-spacing: -0.01em;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-topbar-breadcrumb {
+  font-size: 0.78rem;
+  color: var(--loy-text-sec);
+  font-family: var(--loy-font-display);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.adm-topbar-breadcrumb-sep {
+  color: var(--loy-border);
+  font-size: 0.7rem;
+}
+
+.adm-topbar-breadcrumb-current {
+  color: var(--loy-text);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Topbar right: admin identity */
+.adm-topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.adm-topbar-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--loy-navy), var(--loy-navy-light));
+  border: 1.5px solid var(--loy-gold-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--loy-font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--loy-gold);
+}
+
+.adm-topbar-user-name {
+  font-family: var(--loy-font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--loy-text-sec);
+}
+
+@media (max-width: 480px) {
+  .adm-topbar-user-name {
+    display: none;
+  }
+}
+
+
+/* ============================================================
+   4. CONTENT AREA
+============================================================ */
+
+.adm-content {
+  flex: 1;
+  padding: 28px 24px 64px;
+  max-width: var(--adm-content-max);
+  width: 100%;
+  margin: 0 auto;
+  /* iOS safe area */
+  padding-bottom: max(64px, calc(env(safe-area-inset-bottom) + 48px));
+}
+
+@media (min-width: 768px) {
+  .adm-content {
+    padding: 32px 32px 72px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .adm-content {
+    padding: 36px 48px 80px;
+  }
+}
+
+
+/* ============================================================
+   5. STAT CARDS
+============================================================ */
+
+.adm-stats-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+@media (min-width: 640px) {
+  .adm-stats-row {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.adm-stat-card {
+  background: var(--loy-bg);
+  border: 1px solid var(--loy-border);
+  border-radius: var(--r-xl);
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.adm-stat-card:hover {
+  border-color: var(--loy-gold-border);
+  box-shadow: var(--loy-shadow-sm);
+}
+
+.adm-stat-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.adm-stat-value {
+  font-family: var(--loy-font-display);
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-weight: 800;
+  color: var(--loy-text);
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+
+.adm-stat-value--loading {
+  color: var(--loy-border);
+}
+
+.adm-stat-label {
+  font-family: var(--loy-font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--loy-text-sec);
+}
+
+.adm-stat-delta {
+  font-family: var(--loy-font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--loy-text-sec);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.adm-stat-delta--up   { color: var(--loy-green); }
+.adm-stat-delta--down { color: var(--loy-red);   }
+
+
+/* ============================================================
+   6. PAGE HEADER
+============================================================ */
+
+.adm-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.adm-page-title {
+  font-family: var(--loy-font-display);
+  font-size: clamp(1.15rem, 2vw, 1.4rem);
+  font-weight: 800;
+  color: var(--loy-text);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 3px;
+}
+
+.adm-page-sub {
+  font-size: 0.85rem;
+  color: var(--loy-text-sec);
+  line-height: 1.5;
+}
+
+.adm-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+
+/* ============================================================
+   7. TOOLBAR — search + filters + actions
+============================================================ */
+
+.adm-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+/* Search input */
+.adm-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
+}
+
+.adm-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--loy-text-sec);
+  font-size: 0.8rem;
+  pointer-events: none;
+}
+
+.adm-search {
+  width: 100%;
+  padding: 9px 12px 9px 34px;
+  border: 1px solid var(--loy-border);
+  border-radius: var(--r-md);
+  font-family: var(--loy-font-body);
+  font-size: 0.875rem;
+  color: var(--loy-text);
+  background: var(--loy-bg);
+  outline: none;
+  min-height: 40px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: none;
+}
+
+.adm-search::placeholder {
+  color: var(--loy-text-muted);
+}
+
+.adm-search:focus {
+  border-color: var(--loy-gold);
+  box-shadow: 0 0 0 3px var(--loy-gold-glow);
+}
+
+/* Filter select */
+.adm-filter-select {
+  padding: 9px 32px 9px 12px;
+  border: 1px solid var(--loy-border);
+  border-radius: var(--r-md);
+  font-family: var(--loy-font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--loy-text);
+  background: var(--loy-bg);
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%236B7A8D' height='12' viewBox='0 0 24 24' width='12' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  outline: none;
+  cursor: pointer;
+  min-height: 40px;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+
+.adm-filter-select:focus {
+  border-color: var(--loy-gold);
+}
+
+/* Toolbar action button */
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: var(--r-md);
+  font-family: var(--loy-font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  border: none;
+  min-height: 40px;
+  white-space: nowrap;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  text-decoration: none;
+}
+
+.adm-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Primary — gold */
+.adm-btn--primary {
+  background: var(--loy-gold);
+  color: var(--loy-navy);
+}
+
+.adm-btn--primary:hover:not(:disabled) {
+  background: var(--loy-gold-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(212, 160, 23, 0.28);
+}
+
+/* Secondary — outline */
+.adm-btn--secondary {
+  background: transparent;
+  color: var(--loy-text-sec);
+  border: 1px solid var(--loy-border);
+}
+
+.adm-btn--secondary:hover:not(:disabled) {
+  background: var(--loy-bg-soft);
+  color: var(--loy-text);
+  border-color: #c4c4be;
+}
+
+/* Danger */
+.adm-btn--danger {
+  background: rgba(229, 72, 77, 0.10);
+  color: #C0392B;
+}
+
+.adm-btn--danger:hover:not(:disabled) {
+  background: rgba(229, 72, 77, 0.18);
+}
+
+/* Success */
+.adm-btn--success {
+  background: rgba(15, 122, 60, 0.10);
+  color: var(--loy-green);
+}
+
+.adm-btn--success:hover:not(:disabled) {
+  background: rgba(15, 122, 60, 0.18);
+}
+
+/* Small variant */
+.adm-btn--sm {
+  padding: 5px 12px;
+  font-size: 0.72rem;
+  min-height: 30px;
+}
+
+/* Loading state */
+.adm-btn.loading {
+  position: relative;
+}
+
+.adm-btn .adm-btn-label { transition: opacity 0.15s; }
+.adm-btn .adm-btn-spinner {
+  display: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.18);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: adm-spin 0.7s linear infinite;
+  position: absolute;
+}
+
+.adm-btn.loading .adm-btn-label  { opacity: 0; }
+.adm-btn.loading .adm-btn-spinner { display: block; }
+
+/* Results count */
+.adm-toolbar-count {
+  font-family: var(--loy-font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--loy-text-sec);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+
+/* ============================================================
+   8. TABLE
+============================================================ */
+
+/* Card wrapper around table */
+.adm-table-card {
+  background: var(--loy-bg);
+  border: 1px solid var(--loy-border);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  box-shadow: var(--loy-shadow-sm);
+}
+
+/* Horizontally scrollable on small screens */
+.adm-table-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--loy-border) transparent;
+}
+
+.adm-table-scroll::-webkit-scrollbar {
+  height: 5px;
+}
+.adm-table-scroll::-webkit-scrollbar-thumb {
+  background: var(--loy-border);
+  border-radius: 4px;
+}
+
+/* Table */
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  min-width: 560px;
+}
+
+/* Header */
+.adm-table thead tr {
+  background: var(--loy-bg-soft);
+  border-bottom: 1px solid var(--loy-border);
+}
+
+.adm-table th {
+  padding: 11px 16px;
+  text-align: left;
+  font-family: var(--loy-font-display);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--loy-text-sec);
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Sortable column header */
+.adm-th-sortable {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.adm-th-sortable:hover {
+  color: var(--loy-text);
+}
+
+.adm-th-sortable.sorted {
+  color: var(--loy-gold-dark);
+}
+
+.adm-th-sort-icon {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 0.58rem;
+  opacity: 0.5;
+  vertical-align: middle;
+}
+
+.adm-th-sortable.sorted .adm-th-sort-icon {
+  opacity: 1;
+  color: var(--loy-gold-dark);
+}
+
+/* Body rows */
+.adm-table tbody tr {
+  border-bottom: 1px solid var(--loy-border);
+  transition: background 0.10s;
+}
+
+.adm-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.adm-table tbody tr:hover {
+  background: var(--loy-bg-soft);
+}
+
+.adm-table td {
+  padding: 12px 16px;
+  color: var(--loy-text);
+  vertical-align: middle;
+}
+
+/* ID cell — monospace, muted */
+.adm-td-id {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: var(--loy-text-sec);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Name cell — prominent */
+.adm-td-name {
+  font-family: var(--loy-font-display);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--loy-text);
+}
+
+/* Secondary text cell */
+.adm-td-secondary {
+  font-size: 0.82rem;
+  color: var(--loy-text-sec);
+}
+
+/* Date cell */
+.adm-td-date {
+  font-size: 0.78rem;
+  color: var(--loy-text-sec);
+  white-space: nowrap;
+}
+
+/* Actions cell */
+.adm-td-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Row action button group */
+.adm-row-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+
+/* ============================================================
+   9. PAGINATION
+============================================================ */
+
+.adm-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--loy-border);
+  background: var(--loy-bg-soft);
+  flex-wrap: wrap;
+}
+
+.adm-pagination-info {
+  font-family: var(--loy-font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--loy-text-sec);
+  white-space: nowrap;
+}
+
+.adm-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.adm-pagination-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--loy-border);
+  background: var(--loy-bg);
+  color: var(--loy-text-sec);
+  font-family: var(--loy-font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  min-width: 34px;
+}
+
+.adm-pagination-btn:hover:not(:disabled) {
+  background: var(--loy-bg-soft);
+  color: var(--loy-text);
+  border-color: #c4c4be;
+}
+
+.adm-pagination-btn.active {
+  background: var(--loy-navy);
+  color: var(--loy-gold);
+  border-color: var(--loy-navy);
+}
+
+.adm-pagination-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.adm-pagination-ellipsis {
+  font-family: var(--loy-font-display);
+  font-size: 0.78rem;
+  color: var(--loy-text-sec);
+  padding: 0 4px;
+}
+
+/* Page size selector */
+.adm-pagination-size {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--loy-font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--loy-text-sec);
+}
+
+.adm-pagination-size select {
+  padding: 5px 24px 5px 8px;
+  border: 1px solid var(--loy-border);
+  border-radius: var(--r-md);
+  font-family: var(--loy-font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--loy-text);
+  background: var(--loy-bg);
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%236B7A8D' height='10' viewBox='0 0 24 24' width='10' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+
+/* ============================================================
+   10. FORM PANEL (create / edit)
+============================================================ */
+
+.adm-form-panel {
+  background: var(--loy-bg);
+  border: 1px solid var(--loy-border);
+  border-radius: var(--r-xl);
+  padding: 24px 22px;
+  margin-bottom: 24px;
+  box-shadow: var(--loy-shadow-sm);
+}
+
+.adm-form-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.adm-form-panel-title {
+  font-family: var(--loy-font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--loy-text-sec);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adm-form-panel-title::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--loy-border);
+}
+
+/* Collapsible toggle */
+.adm-form-panel-toggle {
+  font-family: var(--loy-font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--loy-text-sec);
+  background: none;
+  border: 1px solid var(--loy-border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.adm-form-panel-toggle:hover {
+  background: var(--loy-bg-soft);
+  color: var(--loy-text);
+}
+
+/* Form grid — 2 columns */
+.adm-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.adm-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.adm-form-field--full {
+  grid-column: 1 / -1;
+}
+
+.adm-form-label {
+  font-family: var(--loy-font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--loy-text-sec);
+}
+
+.adm-form-label--required::after {
+  content: ' *';
+  color: var(--loy-red);
+}
+
+.adm-form-input,
+.adm-form-select,
+.adm-form-textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--loy-border);
+  border-radius: var(--r-md);
+  font-family: var(--loy-font-body);
+  font-size: 0.9rem;
+  color: var(--loy-text);
+  background: var(--loy-bg-soft);
+  outline: none;
+  min-height: 42px;
+  -webkit-appearance: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.adm-form-input::placeholder,
+.adm-form-textarea::placeholder {
+  color: var(--loy-text-muted);
+}
+
+.adm-form-input:focus,
+.adm-form-select:focus,
+.adm-form-textarea:focus {
+  border-color: var(--loy-gold);
+  background: var(--loy-bg);
+  box-shadow: 0 0 0 3px var(--loy-gold-glow);
+}
+
+.adm-form-select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%236B7A8D' height='12' viewBox='0 0 24 24' width='12' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.adm-form-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.6;
+}
+
+.adm-form-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* Inline feedback */
+.adm-feedback {
+  display: none;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 13px;
+  border-radius: var(--r-md);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  margin-top: 12px;
+}
+
+.adm-feedback.visible { display: flex; }
+
+.adm-feedback--error {
+  background: var(--loy-err-bg);
+  border: 1px solid var(--loy-err-border);
+  color: var(--loy-red);
+}
+
+.adm-feedback--success {
+  background: rgba(15, 122, 60, 0.08);
+  border: 1px solid rgba(15, 122, 60, 0.25);
+  color: var(--loy-green);
+}
+
+
+/* ============================================================
+   11. BADGES & STATUS
+============================================================ */
+
+.adm-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-family: var(--loy-font-display);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.adm-badge--active {
+  background: rgba(15, 122, 60, 0.10);
+  color: #0F7A3C;
+}
+
+.adm-badge--inactive {
+  background: rgba(229, 72, 77, 0.10);
+  color: #C0392B;
+}
+
+.adm-badge--pending {
+  background: rgba(212, 160, 23, 0.10);
+  color: #B8860B;
+}
+
+.adm-badge--neutral {
+  background: var(--loy-bg-soft);
+  color: var(--loy-text-sec);
+  border: 1px solid var(--loy-border);
+}
+
+.adm-badge--navy {
+  background: var(--loy-navy);
+  color: #fff;
+}
+
+
+/* ============================================================
+   12. MODALS (optional — for confirmation dialogs)
+============================================================ */
+
+.adm-modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.40);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.adm-modal-backdrop.open {
+  display: flex;
+}
+
+.adm-modal {
+  background: var(--loy-bg);
+  border: 1px solid var(--loy-border);
+  border-radius: var(--r-2xl);
+  padding: 28px 24px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: var(--loy-shadow-lg);
+  animation: adm-modal-in 0.22s var(--adm-ease) both;
+}
+
+.adm-modal-title {
+  font-family: var(--loy-font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--loy-text);
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+
+.adm-modal-body {
+  font-size: 0.9rem;
+  color: var(--loy-text-sec);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.adm-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+
+/* ============================================================
+   13. EMPTY & LOADING STATES
+============================================================ */
+
+/* Table empty state */
+.adm-empty {
+  padding: 48px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.adm-empty-icon {
+  font-size: 2.4rem;
+  opacity: 0.4;
+}
+
+.adm-empty-title {
+  font-family: var(--loy-font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--loy-text);
+  letter-spacing: -0.01em;
+}
+
+.adm-empty-sub {
+  font-size: 0.82rem;
+  color: var(--loy-text-sec);
+  line-height: 1.55;
+  max-width: 320px;
+}
+
+/* Skeleton rows */
+.adm-skeleton-row td {
+  padding: 14px 16px;
+}
+
+.adm-skeleton {
+  height: 13px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--loy-bg-soft) 25%, var(--loy-border) 50%, var(--loy-bg-soft) 75%);
+  background-size: 200% 100%;
+  animation: adm-shimmer 1.4s infinite;
+}
+
+/* Stat skeleton */
+.adm-stat-skeleton .adm-stat-value {
+  color: transparent;
+  background: var(--loy-border);
+  border-radius: 6px;
+  animation: adm-shimmer 1.4s infinite;
+}
+
+
+/* ============================================================
+   14. DARK MODE
+   All surface vars reassign via loyalty.css :root dark block.
+   We only handle components unique to admin.css here.
+============================================================ */
+
+@media (prefers-color-scheme: dark) {
+
+  .adm-topbar {
+    background: #0E1420;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .adm-table-card {
+    background: #0E1420;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .adm-table thead tr {
+    background: #131C2C;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .adm-table tbody tr:hover {
+    background: #131C2C;
+  }
+
+  .adm-table tbody tr {
+    border-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .adm-stat-card {
+    background: #0E1420;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .adm-form-panel {
+    background: #0E1420;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .adm-form-input,
+  .adm-form-select,
+  .adm-form-textarea {
+    background: #131C2C;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #F0F2F5;
+  }
+
+  .adm-form-input:focus,
+  .adm-form-select:focus,
+  .adm-form-textarea:focus {
+    background: #172030;
+  }
+
+  .adm-search {
+    background: #0E1420;
+    border-color: rgba(255, 255, 255, 0.06);
+    color: #F0F2F5;
+  }
+
+  .adm-filter-select {
+    background-color: #0E1420;
+    border-color: rgba(255, 255, 255, 0.06);
+    color: #F0F2F5;
+  }
+
+  .adm-btn--secondary {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .adm-btn--secondary:hover:not(:disabled) {
+    background: #172030;
+  }
+
+  .adm-pagination {
+    background: #131C2C;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .adm-pagination-btn {
+    background: #0E1420;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .adm-pagination-btn:hover:not(:disabled) {
+    background: #172030;
+  }
+
+  .adm-skeleton {
+    background: linear-gradient(90deg, #131C2C 25%, #172030 50%, #131C2C 75%);
+    background-size: 200% 100%;
+  }
+
+  .adm-modal {
+    background: #0E1420;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+
+/* ============================================================
+   15. RESPONSIVE
+============================================================ */
+
+/* ── 1024px — sidebar becomes overlay ── */
+@media (max-width: 1023px) {
+  .adm-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .adm-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .adm-column {
+    margin-left: 0;
+  }
+
+  .adm-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── 768px ── */
+@media (max-width: 768px) {
+  .adm-content {
+    padding: 20px 16px 56px;
+  }
+
+  .adm-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .adm-pagination {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .adm-pagination-size {
+    display: none;
+  }
+
+  .adm-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .adm-search-wrap {
+    max-width: 100%;
+    flex-basis: 100%;
+  }
+}
+
+/* ── 480px ── */
+@media (max-width: 480px) {
+  .adm-stats-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .adm-topbar {
+    padding: 0 12px;
+  }
+
+  .adm-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .adm-modal-actions .adm-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+
+/* ============================================================
+   16. REDUCED MOTION
+============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .adm-sidebar,
+  .adm-column,
+  .adm-skeleton,
+  .adm-modal,
+  .adm-btn {
+    animation-duration:        0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration:       0.01ms !important;
+  }
+}
+
+
+/* ============================================================
+   17. KEYFRAMES
+============================================================ */
+
+@keyframes adm-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes adm-shimmer {
+  0%   { background-position:  200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes adm-modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);   }
+}

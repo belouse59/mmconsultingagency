@@ -69,13 +69,19 @@
    Mirrors .hero from style.css but the right panel
    holds the card visual instead of a photo.
 ============================================================ */
-
+.lc-hero-section {
+    background: var(--navy);
+}
 .lc-hero {
     display: grid;
     grid-template-columns: 55% 45%;
+
     min-height: 100vh;
+
+    max-width: 1440px;
+    margin-inline: auto;
+
     overflow: hidden;
-    /* No padding-top — body already has padding-top: --nav-h */
     position: relative;
 }
 
@@ -86,7 +92,7 @@
     align-items: center;
     padding: var(--sp-20) var(--sp-16) var(--sp-20) var(--sp-20);
     position: relative;
-    justify-content: space-evenly;
+    justify-content: center;
 }
 
 /* Dot-grid texture (same as homepage hero) */
@@ -118,7 +124,7 @@
 .lc-hero-inner {
     position: relative;
     z-index: 2;
-    max-width: 560px;
+    max-width: 720px;
 }
 
 /* Heading — same scale as .hero-heading */
@@ -140,7 +146,7 @@
     color: rgba(255, 255, 255, 0.65);
     line-height: 1.75;
     margin-bottom: var(--sp-8);
-    max-width: 460px;
+    max-width: 580px;
 }
 
 /* Action row */

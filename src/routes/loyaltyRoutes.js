@@ -14,6 +14,7 @@
 | - Validation-ready
 | - Idempotency-ready
 | - Minimal controller responsibility
+| - Pagination-ready (admin list endpoints)
 |
  *
  * Route map:
@@ -37,10 +38,39 @@
  *   POST   /admin/login
  *   POST   /admin/logout
  *   GET    /admin/session
+ *
  *   GET    /admin/customers
  *   GET    /admin/redemptions
  *   GET    /admin/offers
  *   POST   /admin/offers
+ *   GET    /admin/partners
+ *   POST   /admin/partners
+ *   PATCH  /admin/partners/:id/active
+ *
+ * Admin list endpoints (customers, redemptions, offers, partners)
+ * are paginated via paginationMiddleware and accept:
+ *
+ *   ?page=1
+ *   &limit=20
+ *   &search=...
+ *   &sortBy=...
+ *   &sortOrder=asc|desc
+ *
+ * Entity-specific filters (passed through automatically):
+ *   &active=true|false       (customers, partners, offers)
+ *   &verified=true|false     (customers)
+ *   &category=...            (partners)
+ *   &partnerId=...           (offers, redemptions)
+ *   &offerId=...             (redemptions)
+ *
+ * Response shape:
+ *   {
+ *     success: true,
+ *     data: [...],
+ *     pagination: {
+ *       page, limit, totalItems, totalPages, hasNext, hasPrevious
+ *     }
+ *   }
  */
 
 const express      = require("express");
@@ -59,6 +89,10 @@ const {
     requireAdminAPI,
     requireXHR,
 } = require("../middleware/loyaltySession");
+
+const {
+    paginate,
+} = require("../middleware/paginationMiddleware");
 
 const router = express.Router();
 
@@ -404,19 +438,31 @@ adminRouter.get(
     adminCtrl.adminSession
 );
 
+/* ── CUSTOMERS — paginated list ──
+   GET /admin/customers?page=&limit=&search=&sortBy=&sortOrder=&active=&verified=
+*/
 adminRouter.get(
     "/customers",
-    adminCtrl.adminGetCustomers
+    paginate,
+    adminCtrl.adminGetCustomersPaginated
 );
 
+/* ── REDEMPTIONS — paginated list ──
+   GET /admin/redemptions?page=&limit=&search=&sortBy=&sortOrder=&partnerId=&offerId=
+*/
 adminRouter.get(
     "/redemptions",
-    adminCtrl.adminGetRedemptions
+    paginate,
+    adminCtrl.adminGetRedemptionsPaginated
 );
 
+/* ── OFFERS — paginated list ──
+   GET /admin/offers?page=&limit=&search=&sortBy=&sortOrder=&active=&partnerId=
+*/
 adminRouter.get(
     "/offers",
-    adminCtrl.adminGetOffers
+    paginate,
+    adminCtrl.adminGetOffersPaginated
 );
 
 adminRouter.post(
@@ -425,9 +471,13 @@ adminRouter.post(
     adminCtrl.adminCreateOffer
 );
 
+/* ── PARTNERS — paginated list ──
+   GET /admin/partners?page=&limit=&search=&sortBy=&sortOrder=&active=&category=
+*/
 adminRouter.get(
     "/partners",
-    adminCtrl.adminGetPartners
+    paginate,
+    adminCtrl.adminGetPartnersPaginated
 );
 
 adminRouter.post(

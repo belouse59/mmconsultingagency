@@ -1,94 +1,36 @@
 /**
  * js/features/loyalty/admin/admin.js
- * Admin panel — login + full dashboard.
  *
- * Features:
- *   - Inline session check (HTML guard sets window.__adminAuthenticated)
- *   - Login form shown only if unauthenticated
- *   - Dashboard shown only if authenticated
- *   - Tab system: Customers / Partners / Offers / Redemptions
- *   - Partner creation with temp password + mustChangePassword flag
- *   - Partner active/suspend toggle
- *   - Offer creation
- *   - All tables with safe HTML escaping (XSS prevention)
- *   - X-Requested-With on all state-mutating requests (CSRF)
+ * M&M Consulting — Admin Console
+ *
+ * Architecture:
+ *   - No global state pollution: all state lives in module-scoped objects
+ *   - Each data module (customers, partners, offers, redemptions) owns
+ *     its own state slice: { page, limit, search, sortBy, sortOrder, filters }
+ *   - A shared ApiClient handles all fetch calls with CSRF headers + 401 guard
+ *   - A shared Pagination renderer produces consistent pagination UI
+ *   - A shared Table renderer with XSS escaping for all cell content
+ *   - Sidebar navigation drives module switching (replaces tab system)
+ *   - Search inputs debounced 380ms before API call
  *   - All strings in Italian
+ *
+ * Drop-in replacement for the previous admin.js.
+ * Requires: /assets/css/loyalty.css + /assets/css/admin.css
  */
+
+"use strict";
 
 import { $, $$ } from "../../../core/dom.js";
 import { setLoading } from "../../../core/loyaltyUtils.js";
 
-/* ─────────────────────────────────────────────────────────────
-   DOM REFS — dashboard
-───────────────────────────────────────────────────────────── */
-const adminDashboard     = $("#adminDashboard");
-const adminTopbarActions = $("#adminTopbarActions");
-const logoutBtn          = $("#logoutBtn");
 
-/* ─────────────────────────────────────────────────────────────
-   DOM REFS — stats
-───────────────────────────────────────────────────────────── */
-const statCustomers   = $("#statCustomers");
-const statRedemptions = $("#statRedemptions");
-const statOffers      = $("#statOffers");
-const statPartners    = $("#statPartners");
+/* ═══════════════════════════════════════════════════════════
+   SECTION 1 — UTILITIES
+═══════════════════════════════════════════════════════════ */
 
-/* ─────────────────────────────────────────────────────────────
-   DOM REFS — tabs
-───────────────────────────────────────────────────────────── */
-const tabBtns = $$(".loyalty-admin-tab");
-const tabPanels = {
-  customers:   $("#tabCustomers"),
-  partners:    $("#tabPartners"),
-  offers:      $("#tabOffers"),
-  redemptions: $("#tabRedemptions"),
-};
-
-/* ─────────────────────────────────────────────────────────────
-   DOM REFS — tables
-───────────────────────────────────────────────────────────── */
-const customersBody   = $("#customersTableBody");
-const partnersBody    = $("#partnersTableBody");
-const offersBody      = $("#offersTableBody");
-const redemptionsBody = $("#redemptionsTableBody");
-
-/* ─────────────────────────────────────────────────────────────
-   DOM REFS — partner form
-───────────────────────────────────────────────────────────── */
-const createPartnerForm    = $("#createPartnerForm");
-const newPartnerIdEl       = $("#newPartnerId");
-const partnerNameEl        = $("#partnerName");
-const partnerCategoryEl    = $("#partnerCategory");
-const partnerAddressEl     = $("#partnerAddress");
-const partnerTempPassEl    = $("#partnerTempPassword");
-const createPartnerBtn     = $("#createPartnerBtn");
-const partnerError         = $("#partnerError");
-const partnerErrorText     = $("#partnerErrorText");
-const partnerSuccess       = $("#partnerSuccess");
-const partnerSuccessText   = $("#partnerSuccessText");
-
-/* ─────────────────────────────────────────────────────────────
-   DOM REFS — offer form
-───────────────────────────────────────────────────────────── */
-const addOfferForm    = $("#addOfferForm");
-const offerTitleEl    = $("#offerTitle");
-const offerDescEl     = $("#offerDescription");
-const offerPartnerEl  = $("#offerPartner");
-const addOfferBtn     = $("#addOfferBtn");
-const offerError      = $("#offerError");
-const offerErrorText  = $("#offerErrorText");
-const offerSuccess    = $("#offerSuccess");
-
-/* ─────────────────────────────────────────────────────────────
-   STATE
-───────────────────────────────────────────────────────────── */
-let _activeTab = "customers";
-
-/* ─────────────────────────────────────────────────────────────
-   UTILITIES
-───────────────────────────────────────────────────────────── */
-function _esc(str) {
-  return String(str ?? "")
+/** XSS-safe HTML escaping — used on every cell value */
+function esc(val) {
+  return String(val ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -96,43 +38,371 @@ function _esc(str) {
     .replace(/'/g, "&#039;");
 }
 
-function _fmtDate(iso) {
+/** Format ISO date string to Italian locale */
+function fmtDate(iso) {
   if (!iso) return "—";
   try {
     return new Date(iso).toLocaleDateString("it-IT", {
       day: "2-digit", month: "2-digit", year: "numeric",
     });
-  } catch { return iso; }
+  } catch { return String(iso); }
 }
 
-function _badge(active) {
+/** Truncate long strings for display */
+function truncate(str, max = 32) {
+  const s = String(str ?? "");
+  return s.length > max ? s.slice(0, max) + "…" : s;
+}
+
+/** Debounce — returns a function that delays fn by ms */
+function debounce(fn, ms) {
+  let timer;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), ms);
+  };
+}
+
+/** Status badge HTML */
+function badgeActive(active) {
   return active
-    ? `<span class="loyalty-badge loyalty-badge--active">Attivo</span>`
-    : `<span class="loyalty-badge loyalty-badge--inactive">Sospeso</span>`;
+    ? `<span class="adm-badge adm-badge--active">Attivo</span>`
+    : `<span class="adm-badge adm-badge--inactive">Sospeso</span>`;
 }
 
-function _emptyRow(colspan, msg = "Nessun dato disponibile.") {
-  return `<tr><td colspan="${colspan}" style="text-align:center;padding:28px;color:var(--text-secondary);">${_esc(msg)}</td></tr>`;
+/** Empty state row */
+function emptyRow(colspan, msg = "Nessun dato disponibile.") {
+  return `
+    <tr>
+      <td colspan="${colspan}" style="padding:0;">
+        <div class="adm-empty">
+          <span class="adm-empty-sub">${esc(msg)}</span>
+        </div>
+      </td>
+    </tr>`;
 }
 
-function _showFeedback(errEl, errTextEl, successEl, successTextEl, isSuccess, msg) {
-  if (isSuccess) {
-    if (errEl) errEl.classList.remove("visible");
-    if (successEl) {
-      if (successTextEl) successTextEl.textContent = msg;
-      successEl.classList.add("visible");
-    }
+/** Skeleton loading rows */
+function skeletonRows(colspan, count = 5) {
+  return Array.from({ length: count }, () => `
+    <tr class="adm-skeleton-row">
+      <td colspan="${colspan}" style="padding:14px 16px;">
+        <div class="adm-skeleton" style="width:${60 + Math.random() * 35 | 0}%;"></div>
+      </td>
+    </tr>`).join("");
+}
+
+/** Show/hide adm-feedback elements */
+function showFeedback(errorEl, successEl, type, msg = "") {
+  if (!errorEl || !successEl) return;
+  if (type === "error") {
+    successEl.classList.remove("visible");
+    errorEl.querySelector("span:last-child").textContent = msg;
+    errorEl.classList.add("visible");
+    errorEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  } else if (type === "success") {
+    errorEl.classList.remove("visible");
+    if (msg) successEl.querySelector("span:last-child").textContent = msg;
+    successEl.classList.add("visible");
   } else {
-    if (successEl) successEl.classList.remove("visible");
-    if (errEl) {
-      if (errTextEl) errTextEl.textContent = msg;
-      errEl.classList.add("visible");
-    }
+    errorEl.classList.remove("visible");
+    successEl.classList.remove("visible");
   }
 }
 
-/* ── Logout ── */
-logoutBtn.addEventListener("click", async () => {
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 2 — API CLIENT
+   Single fetch wrapper: CSRF headers, JSON, 401 redirect
+═══════════════════════════════════════════════════════════ */
+
+const Api = {
+  _base: "/api/loyalty/admin",
+
+  _headers(mutating = false) {
+    const h = { "Accept": "application/json" };
+    if (mutating) {
+      h["Content-Type"] = "application/json";
+      h["X-Requested-With"] = "XMLHttpRequest";
+    }
+    return h;
+  },
+
+  async _fetch(path, opts = {}) {
+    const res = await fetch(this._base + path, {
+      credentials: "same-origin",
+      ...opts,
+    });
+
+    if (res.status === 401) {
+      window.location.replace("/loyalty/admin/login.html");
+      return null;
+    }
+
+    return res;
+  },
+
+  async get(path) {
+    const res = await this._fetch(path, { headers: this._headers() });
+    if (!res) return null;
+    return res.json();
+  },
+
+  async post(path, body) {
+    const res = await this._fetch(path, {
+      method: "POST",
+      headers: this._headers(true),
+      body: JSON.stringify(body),
+    });
+    if (!res) return null;
+    return res.json();
+  },
+
+  async patch(path, body) {
+    const res = await this._fetch(path, {
+      method: "PATCH",
+      headers: this._headers(true),
+      body: JSON.stringify(body),
+    });
+    if (!res) return null;
+    return res.json();
+  },
+
+  /**
+   * Paginated GET — appends ?page=&limit=&search=&sortBy=&sortOrder=&filters
+   * Matches the paginationMiddleware contract from the backend.
+   */
+  async getPaginated(path, { page = 1, limit = 20, search = "", sortBy, sortOrder = "desc", filters = {} } = {}) {
+    const params = new URLSearchParams({ page, limit, sortOrder });
+    if (search)  params.set("search",  search);
+    if (sortBy)  params.set("sortBy",  sortBy);
+    // Spread entity-specific filters (active, partnerId, category…)
+    for (const [k, v] of Object.entries(filters)) {
+      if (v !== "" && v !== undefined && v !== null) params.set(k, v);
+    }
+    return this.get(`${path}?${params}`);
+  },
+};
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 3 — PAGINATION COMPONENT
+   Renders pagination controls from a pagination meta object.
+   Calls onChange(newPage) when a page button is clicked.
+═══════════════════════════════════════════════════════════ */
+
+function renderPagination(containerEl, infoEl, meta, onChange) {
+  if (!containerEl || !meta) return;
+
+  const { page, limit, totalItems, totalPages, hasNext, hasPrevious } = meta;
+
+  // Info text
+  if (infoEl) {
+    const from = totalItems === 0 ? 0 : (page - 1) * limit + 1;
+    const to   = Math.min(page * limit, totalItems);
+    infoEl.textContent = totalItems === 0
+      ? "Nessun risultato"
+      : `${from}–${to} di ${totalItems.toLocaleString("it-IT")}`;
+  }
+
+  // Controls
+  const buttons = [];
+
+  // Prev
+  buttons.push(`
+    <button
+      class="adm-pagination-btn"
+      data-page="${page - 1}"
+      ${!hasPrevious ? "disabled" : ""}
+      aria-label="Pagina precedente"
+    >
+      <i class="fa fa-chevron-left" aria-hidden="true"></i>
+    </button>`);
+
+  // Page numbers — window of 5 around current
+  const pages = buildPageWindow(page, totalPages);
+  let prevP = null;
+  for (const p of pages) {
+    if (prevP !== null && p - prevP > 1) {
+      buttons.push(`<span class="adm-pagination-ellipsis" aria-hidden="true">…</span>`);
+    }
+    buttons.push(`
+      <button
+        class="adm-pagination-btn ${p === page ? "active" : ""}"
+        data-page="${p}"
+        aria-label="Pagina ${p}"
+        ${p === page ? 'aria-current="page"' : ""}
+      >${p}</button>`);
+    prevP = p;
+  }
+
+  // Next
+  buttons.push(`
+    <button
+      class="adm-pagination-btn"
+      data-page="${page + 1}"
+      ${!hasNext ? "disabled" : ""}
+      aria-label="Pagina successiva"
+    >
+      <i class="fa fa-chevron-right" aria-hidden="true"></i>
+    </button>`);
+
+  containerEl.innerHTML = buttons.join("");
+
+  // Wire click handlers
+  containerEl.querySelectorAll(".adm-pagination-btn[data-page]").forEach((btn) => {
+    if (btn.disabled) return;
+    btn.addEventListener("click", () => {
+      const p = parseInt(btn.dataset.page, 10);
+      if (p >= 1 && p <= totalPages && p !== page) onChange(p);
+    });
+  });
+}
+
+/** Build an array of page numbers to show (always include 1, last, and window around current) */
+function buildPageWindow(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages = new Set([1, total]);
+  for (let i = Math.max(2, current - 2); i <= Math.min(total - 1, current + 2); i++) {
+    pages.add(i);
+  }
+  return [...pages].sort((a, b) => a - b);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 4 — MODULE STATE
+   Each module has its own isolated state object.
+   Shape mirrors the paginationMiddleware req.pagination contract.
+═══════════════════════════════════════════════════════════ */
+
+function makeState(defaults = {}) {
+  return {
+    page:      1,
+    limit:     20,
+    search:    "",
+    sortBy:    "createdAt",
+    sortOrder: "desc",
+    filters:   {},
+    ...defaults,
+  };
+}
+
+const State = {
+  customers:   makeState(),
+  partners:    makeState(),
+  offers:      makeState(),
+  redemptions: makeState({ sortBy: "redeemedAt" }),
+};
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 5 — NAVIGATION / SIDEBAR
+═══════════════════════════════════════════════════════════ */
+
+const admSidebar  = $("#admSidebar");
+const admOverlay  = $("#admOverlay");
+const admBurger   = $("#admBurger");
+const admBreadcrumbCurrent = $("#admBreadcrumbCurrent");
+
+const MODULE_LABELS = {
+  dashboard:   "Dashboard",
+  customers:   "Clienti",
+  partners:    "Partner",
+  offers:      "Offerte",
+  redemptions: "Utilizzi",
+};
+
+let _activeModule = "dashboard";
+
+/** Switch to a given module key */
+function switchModule(key) {
+  if (!MODULE_LABELS[key]) return;
+
+  // Hide all modules
+  $$(".adm-module").forEach((el) => { el.style.display = "none"; });
+
+  // Show target
+  const target = $(`#module${key.charAt(0).toUpperCase() + key.slice(1)}`);
+  if (target) target.style.display = "block";
+
+  // Update nav active state
+  $$(".adm-nav-item").forEach((btn) => {
+    const isActive = btn.dataset.module === key;
+    btn.classList.toggle("active", isActive);
+    btn.setAttribute("aria-current", isActive ? "page" : "false");
+  });
+
+  // Update breadcrumb
+  if (admBreadcrumbCurrent) {
+    admBreadcrumbCurrent.textContent = MODULE_LABELS[key] || key;
+  }
+
+  // Close mobile sidebar
+  closeSidebar();
+
+  _activeModule = key;
+
+  // Load data for the module if not dashboard
+  if (key === "dashboard") {
+    loadDashboard();
+  } else if (key === "customers") {
+    loadCustomers();
+  } else if (key === "partners") {
+    loadPartners();
+  } else if (key === "offers") {
+    loadOffers();
+  } else if (key === "redemptions") {
+    loadRedemptions();
+  }
+}
+
+/** Wire sidebar nav item buttons */
+$$(".adm-nav-item[data-module]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    if (btn.disabled) return;
+    switchModule(btn.dataset.module);
+  });
+});
+
+/** Wire "View all" / navigate buttons with data-nav attribute */
+$$("#admContent [data-nav]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    switchModule(btn.dataset.nav);
+  });
+});
+
+/** Mobile sidebar open / close */
+function openSidebar() {
+  admSidebar?.classList.add("open");
+  admOverlay?.classList.add("visible");
+  admBurger?.setAttribute("aria-expanded", "true");
+  document.body.style.overflow = "hidden";
+}
+
+function closeSidebar() {
+  admSidebar?.classList.remove("open");
+  admOverlay?.classList.remove("visible");
+  admBurger?.setAttribute("aria-expanded", "false");
+  document.body.style.overflow = "";
+}
+
+admBurger?.addEventListener("click", () => {
+  const isOpen = admSidebar?.classList.contains("open");
+  isOpen ? closeSidebar() : openSidebar();
+});
+
+admOverlay?.addEventListener("click", closeSidebar);
+
+// Close on Escape key
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && admSidebar?.classList.contains("open")) {
+    closeSidebar();
+  }
+});
+
+// Logout
+$("#admLogoutBtn")?.addEventListener("click", async () => {
   try {
     await fetch("/api/loyalty/admin/logout", {
       method:      "POST",
@@ -143,337 +413,677 @@ logoutBtn.addEventListener("click", async () => {
   window.location.replace("/loyalty/admin/login.html");
 });
 
-/* ─────────────────────────────────────────────────────────────
-   STATS
-───────────────────────────────────────────────────────────── */
-async function _loadStats() {
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 6 — SORTABLE COLUMN HEADERS
+   Makes th.adm-th-sortable toggle sortBy / sortOrder on click.
+   Calls the provided onChange(sortBy, sortOrder) callback.
+═══════════════════════════════════════════════════════════ */
+
+function initSortableHeaders(tableEl, state, onChange) {
+  if (!tableEl) return;
+  tableEl.querySelectorAll(".adm-th-sortable[data-sort]").forEach((th) => {
+    th.addEventListener("click", () => {
+      const col = th.dataset.sort;
+      const newOrder = (state.sortBy === col && state.sortOrder === "desc") ? "asc" : "desc";
+      state.sortBy    = col;
+      state.sortOrder = newOrder;
+
+      // Update visual state
+      tableEl.querySelectorAll(".adm-th-sortable").forEach((el) => {
+        el.classList.remove("sorted");
+        const icon = el.querySelector(".adm-th-sort-icon");
+        if (icon) icon.textContent = "↕";
+      });
+      th.classList.add("sorted");
+      const icon = th.querySelector(".adm-th-sort-icon");
+      if (icon) icon.textContent = newOrder === "asc" ? "↑" : "↓";
+
+      state.page = 1;
+      onChange();
+    });
+  });
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 7 — STATS & DASHBOARD
+═══════════════════════════════════════════════════════════ */
+
+const statCustomers   = $("#statCustomers");
+const statPartners    = $("#statPartners");
+const statOffers      = $("#statOffers");
+const statRedemptions = $("#statRedemptions");
+
+/**
+ * Load stats using the paginated endpoints with limit=1.
+ * totalItems in the pagination meta gives the true count
+ * without loading all rows.
+ */
+async function loadStats() {
+  // Set loading placeholders
+  [statCustomers, statPartners, statOffers, statRedemptions, ...$$(".adm-nav-count")]
+    .forEach((el) => { if (el) el.textContent = "—"; });
+
   try {
-    const [cRes, rRes, oRes, pRes] = await Promise.all([
-      fetch("/api/loyalty/admin/customers",   { credentials: "same-origin" }),
-      fetch("/api/loyalty/admin/redemptions", { credentials: "same-origin" }),
-      fetch("/api/loyalty/admin/offers",      { credentials: "same-origin" }),
-      fetch("/api/loyalty/admin/partners",    { credentials: "same-origin" }),
+    const [cData, pData, oData, rData] = await Promise.all([
+      Api.getPaginated("/customers",   { limit: 1 }),
+      Api.getPaginated("/partners",    { limit: 1, filters: { active: "true" } }),
+      Api.getPaginated("/offers",      { limit: 1, filters: { active: "true" } }),
+      Api.getPaginated("/redemptions", { limit: 1 }),
     ]);
 
-    const [cData, rData, oData, pData] = await Promise.all([
-      cRes.json(), rRes.json(), oRes.json(), pRes.json(),
-    ]);
+    const cTotal = cData?.pagination?.totalItems ?? "—";
+    const pTotal = pData?.pagination?.totalItems ?? "—";
+    const oTotal = oData?.pagination?.totalItems ?? "—";
+    const rTotal = rData?.pagination?.totalItems ?? "—";
 
-    if (statCustomers)   statCustomers.textContent   = (cData.data || []).length;
-    if (statRedemptions) statRedemptions.textContent = (rData.data || []).length;
-    if (statOffers)      statOffers.textContent      = (oData.data || []).filter((o) => o.active).length;
-    if (statPartners)    statPartners.textContent    = (pData.data || []).filter((p) => p.active).length;
+    if (statCustomers)   statCustomers.textContent   = cTotal;
+    if (statPartners)    statPartners.textContent     = pTotal;
+    if (statOffers)      statOffers.textContent       = oTotal;
+    if (statRedemptions) statRedemptions.textContent  = rTotal;
+
+    // Sidebar counts
+    const nc = $("#navCountCustomers");
+    const np = $("#navCountPartners");
+    const no = $("#navCountOffers");
+    const nr = $("#navCountRedemptions");
+    if (nc) nc.textContent = cTotal;
+    if (np) np.textContent = pTotal;
+    if (no) no.textContent = oTotal;
+    if (nr) nr.textContent = rTotal;
+
   } catch {
-    [statCustomers, statRedemptions, statOffers, statPartners]
+    [statCustomers, statPartners, statOffers, statRedemptions]
       .forEach((el) => { if (el) el.textContent = "—"; });
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   DATA LOADERS
-───────────────────────────────────────────────────────────── */
-async function _loadCustomers() {
-  if (customersBody) customersBody.innerHTML = _emptyRow(6, "Caricamento...");
+/** Load dashboard: stats + recent redemptions preview */
+async function loadDashboard() {
+  await loadStats();
+  await loadRecentRedemptions();
+}
+
+async function loadRecentRedemptions() {
+  const body = $("#dashRecentBody");
+  if (!body) return;
+
+  body.innerHTML = skeletonRows(4, 5);
+
   try {
-    const res  = await fetch("/api/loyalty/admin/customers", { credentials: "same-origin" });
-    if (res.status === 401) { showLoginPanel(); return; }
-    const data = await res.json();
-    const rows = data.data || [];
+    const data = await Api.getPaginated("/redemptions", { limit: 5, page: 1, sortBy: "redeemedAt", sortOrder: "desc" });
+    const rows = data?.data || [];
 
     if (!rows.length) {
-      customersBody.innerHTML = _emptyRow(6, "Nessun cliente registrato.");
+      body.innerHTML = emptyRow(4, "Nessun utilizzo registrato.");
       return;
     }
 
-    customersBody.innerHTML = rows.map((c) => `
+    body.innerHTML = rows.map((r) => `
       <tr>
-        <td style="font-family:var(--font-display,monospace);font-size:0.7rem;color:var(--text-secondary);">${_esc(c.id)}</td>
-        <td style="font-weight:600;">${_esc(c.full_name)}</td>
-        <td>${_esc(c.identifier)}</td>
-        <td><span class="loyalty-badge loyalty-badge--pending">${_esc(c.identifierType || "—")}</span></td>
-        <td>${_badge(c.active)}</td>
-        <td style="color:var(--text-secondary);font-size:0.8rem;">${_fmtDate(c.createdAt)}</td>
-      </tr>
-    `).join("");
+        <td class="adm-td-secondary">${esc(truncate(r.customerId, 22))}</td>
+        <td><span class="adm-badge adm-badge--neutral">${esc(r.partnerId)}</span></td>
+        <td class="adm-td-secondary">${esc(truncate(r.offerId, 24))}</td>
+        <td class="adm-td-date">${fmtDate(r.redeemedAt)}</td>
+      </tr>`).join("");
   } catch {
-    if (customersBody) customersBody.innerHTML = _emptyRow(6, "Errore nel caricamento clienti.");
+    body.innerHTML = emptyRow(4, "Errore nel caricamento degli utilizzi recenti.");
   }
 }
 
-async function _loadPartners() {
-  if (partnersBody) partnersBody.innerHTML = _emptyRow(7, "Caricamento...");
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 8 — CUSTOMERS MODULE
+═══════════════════════════════════════════════════════════ */
+
+const customersTable = $("#moduleCustomers .adm-table");
+const customersBody  = $("#customersTableBody");
+const customersCount = $("#customersCount");
+
+async function loadCustomers() {
+  if (!customersBody) return;
+  customersBody.innerHTML = skeletonRows(5);
+
   try {
-    const res  = await fetch("/api/loyalty/admin/partners", { credentials: "same-origin" });
-    if (res.status === 401) { showLoginPanel(); return; }
-    const data = await res.json();
-    const rows = data.data || [];
+    const data = await Api.getPaginated("/customers", State.customers);
+    if (!data) return;
+
+    const rows  = data.data || [];
+    const meta  = data.pagination;
+
+    // Update count label
+    if (customersCount && meta) {
+      customersCount.textContent = `${meta.totalItems.toLocaleString("it-IT")} clienti`;
+    }
 
     if (!rows.length) {
-      partnersBody.innerHTML = _emptyRow(7, "Nessun partner creato.");
-      return;
+      customersBody.innerHTML = emptyRow(5, State.customers.search
+        ? `Nessun cliente trovato per "${State.customers.search}".`
+        : "Nessun cliente registrato.");
+    } else {
+      customersBody.innerHTML = rows.map((c) => `
+        <tr>
+          <td>
+            <div class="adm-td-name">${esc(c.full_name)}</div>
+          </td>
+          <td class="adm-td-secondary">${esc(c.identifier)}</td>
+          <td>
+            <span class="adm-badge adm-badge--neutral">
+              ${esc(c.identifierType === "email" ? "Email" : c.identifierType === "phone" ? "Telefono" : c.identifierType || "—")}
+            </span>
+          </td>
+          <td>${badgeActive(c.active)}</td>
+          <td class="adm-td-date">${fmtDate(c.createdAt)}</td>
+        </tr>`).join("");
     }
 
-    partnersBody.innerHTML = rows.map((p) => `
-      <tr>
-        <td style="font-family:var(--font-display,monospace);font-size:0.72rem;color:var(--text-secondary);">${_esc(p.id)}</td>
-        <td style="font-weight:600;">${_esc(p.name)}</td>
-        <td>${_esc(p.category || "—")}</td>
-        <td style="font-size:0.82rem;color:var(--text-secondary);">${_esc(p.address || "—")}</td>
-        <td>${_badge(p.active)}</td>
-        <td>
-          ${p.mustChangePassword
-            ? `<span class="loyalty-badge loyalty-badge--pending">Da impostare</span>`
-            : `<span class="loyalty-badge loyalty-badge--active">Impostata</span>`}
-        </td>
-        <td>
-          ${p.active
-            ? `<button class="loyalty-table-action loyalty-table-action--danger"
-                data-partner-id="${_esc(p.id)}" data-action="suspend"
-                aria-label="Sospendi partner ${_esc(p.name)}">
-                Sospendi
-               </button>`
-            : `<button class="loyalty-table-action loyalty-table-action--success"
-                data-partner-id="${_esc(p.id)}" data-action="activate"
-                aria-label="Attiva partner ${_esc(p.name)}">
-                Attiva
-               </button>`}
-        </td>
-      </tr>
-    `).join("");
-
-    /* Bind action buttons */
-    partnersBody.querySelectorAll("[data-partner-id]").forEach((btn) => {
-      btn.addEventListener("click", () => _togglePartnerActive(
-        btn.dataset.partnerId,
-        btn.dataset.action === "activate"
-      ));
-    });
+    // Render pagination
+    renderPagination(
+      $("#customersPaginationControls"),
+      $("#customersPaginationInfo"),
+      meta,
+      (p) => { State.customers.page = p; loadCustomers(); }
+    );
 
   } catch {
-    if (partnersBody) partnersBody.innerHTML = _emptyRow(7, "Errore nel caricamento partner.");
+    customersBody.innerHTML = emptyRow(5, "Errore nel caricamento clienti. Riprova.");
   }
 }
 
-async function _loadOffers() {
-  if (offersBody) offersBody.innerHTML = _emptyRow(6, "Caricamento...");
-  try {
-    const res  = await fetch("/api/loyalty/admin/offers", { credentials: "same-origin" });
-    if (res.status === 401) { showLoginPanel(); return; }
-    const data = await res.json();
-    const rows = data.data || [];
+// Search
+const customersSearchInput = $("#customersSearch");
+customersSearchInput?.addEventListener("input", debounce(() => {
+  State.customers.search = customersSearchInput.value.trim();
+  State.customers.page   = 1;
+  loadCustomers();
+}, 380));
 
-    if (!rows.length) {
-      offersBody.innerHTML = _emptyRow(6, "Nessuna offerta creata.");
-      return;
-    }
-
-    offersBody.innerHTML = rows.map((o) => `
-      <tr>
-        <td style="font-family:var(--font-display,monospace);font-size:0.7rem;color:var(--text-secondary);">${_esc(o.id)}</td>
-        <td style="font-weight:600;">${_esc(o.title)}</td>
-        <td style="font-size:0.82rem;">${_esc(o.description || "—")}</td>
-        <td style="font-size:0.82rem;">${_esc(o.partnerId || "Globale")}</td>
-        <td>${_badge(o.active)}</td>
-        <td style="color:var(--text-secondary);font-size:0.8rem;">${_fmtDate(o.createdAt)}</td>
-      </tr>
-    `).join("");
-  } catch {
-    if (offersBody) offersBody.innerHTML = _emptyRow(6, "Errore nel caricamento offerte.");
-  }
-}
-
-async function _loadRedemptions() {
-  if (redemptionsBody) redemptionsBody.innerHTML = _emptyRow(5, "Caricamento...");
-  try {
-    const res  = await fetch("/api/loyalty/admin/redemptions", { credentials: "same-origin" });
-    if (res.status === 401) { showLoginPanel(); return; }
-    const data = await res.json();
-    const rows = data.data || [];
-
-    if (!rows.length) {
-      redemptionsBody.innerHTML = _emptyRow(5, "Nessun utilizzo registrato.");
-      return;
-    }
-
-    redemptionsBody.innerHTML = rows.map((r) => `
-      <tr>
-        <td style="font-family:var(--font-display,monospace);font-size:0.7rem;color:var(--text-secondary);">${_esc(r.id)}</td>
-        <td>${_esc(r.customerId)}</td>
-        <td>${_esc(r.partnerId)}</td>
-        <td>${_esc(r.offerId)}</td>
-        <td style="color:var(--text-secondary);font-size:0.8rem;">${_fmtDate(r.redeemedAt)}</td>
-      </tr>
-    `).join("");
-  } catch {
-    if (redemptionsBody) redemptionsBody.innerHTML = _emptyRow(5, "Errore nel caricamento utilizzi.");
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   PARTNER ACTIVE TOGGLE
-───────────────────────────────────────────────────────────── */
-async function _togglePartnerActive(partnerId, active) {
-  try {
-    const res = await fetch(`/api/loyalty/admin/partners/${encodeURIComponent(partnerId)}/active`, {
-      method:      "PATCH",
-      credentials: "same-origin",
-      headers:     { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
-      body:        JSON.stringify({ active }),
-    });
-
-    if (!res.ok) throw new Error("Toggle failed");
-
-    /* Reload partners table and stats */
-    await Promise.all([_loadPartners(), _loadStats()]);
-  } catch {
-    alert("Errore durante l'aggiornamento del partner. Riprova.");
-  }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   PARTNER CREATION FORM
-───────────────────────────────────────────────────────────── */
-if (createPartnerForm) {
-  createPartnerForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    if (partnerError)   partnerError.classList.remove("visible");
-    if (partnerSuccess) partnerSuccess.classList.remove("visible");
-
-    const id          = newPartnerIdEl?.value.trim();
-    const name        = partnerNameEl?.value.trim();
-    const category    = partnerCategoryEl?.value.trim();
-    const address     = partnerAddressEl?.value.trim();
-    const tempPassword = partnerTempPassEl?.value;
-
-    if (!id || !name || !tempPassword) {
-      _showFeedback(partnerError, partnerErrorText, partnerSuccess, partnerSuccessText,
-        false, "ID, nome e password temporanea sono obbligatori.");
-      return;
-    }
-
-    if (tempPassword.length < 8) {
-      _showFeedback(partnerError, partnerErrorText, partnerSuccess, partnerSuccessText,
-        false, "La password temporanea deve avere almeno 8 caratteri.");
-      return;
-    }
-
-    setLoading(createPartnerBtn, true);
-
-    try {
-      const res  = await fetch("/api/loyalty/admin/partners", {
-        method:      "POST",
-        credentials: "same-origin",
-        headers:     { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
-        body:        JSON.stringify({ id, name, category, address, tempPassword }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        _showFeedback(partnerError, partnerErrorText, partnerSuccess, partnerSuccessText,
-          true, `Partner "${name}" creato con ID: ${data.partnerId}. Il partner dovrà impostare la propria password al primo accesso.`);
-        createPartnerForm.reset();
-        await Promise.all([_loadPartners(), _loadStats()]);
-      } else {
-        _showFeedback(partnerError, partnerErrorText, partnerSuccess, partnerSuccessText,
-          false, data.message || "Errore nella creazione del partner.");
-      }
-    } catch {
-      _showFeedback(partnerError, partnerErrorText, partnerSuccess, partnerSuccessText,
-        false, "Errore di connessione. Riprova.");
-    } finally {
-      setLoading(createPartnerBtn, false);
-    }
-  });
-}
-
-/* ─────────────────────────────────────────────────────────────
-   OFFER CREATION FORM
-───────────────────────────────────────────────────────────── */
-if (addOfferForm) {
-  addOfferForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    if (offerError)   offerError.classList.remove("visible");
-    if (offerSuccess) offerSuccess.classList.remove("visible");
-
-    const title       = offerTitleEl?.value.trim();
-    const description = offerDescEl?.value.trim();
-    const partnerId   = offerPartnerEl?.value.trim() === "" ? "Globale" : offerPartnerEl?.value.trim();
-
-    if (!title) {
-      if (offerErrorText) offerErrorText.textContent = "Il titolo dell'offerta è obbligatorio.";
-      if (offerError)     offerError.classList.add("visible");
-      offerTitleEl?.focus();
-      return;
-    }
-
-    setLoading(addOfferBtn, true);
-
-    try {
-      const res  = await fetch("/api/loyalty/admin/offers", {
-        method:      "POST",
-        credentials: "same-origin",
-        headers:     { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
-        body:        JSON.stringify({ title, description, partnerId }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        if (offerSuccess) offerSuccess.classList.add("visible");
-        addOfferForm.reset();
-        await Promise.all([_loadOffers(), _loadStats()]);
-      } else {
-        if (offerErrorText) offerErrorText.textContent = data.message || "Errore nella creazione dell'offerta.";
-        if (offerError)     offerError.classList.add("visible");
-      }
-    } catch {
-      if (offerErrorText) offerErrorText.textContent = "Errore di connessione. Riprova.";
-      if (offerError)     offerError.classList.add("visible");
-    } finally {
-      setLoading(addOfferBtn, false);
-    }
-  });
-}
-
-/* ─────────────────────────────────────────────────────────────
-   TAB SYSTEM
-───────────────────────────────────────────────────────────── */
-const _tabLoaders = {
-  customers:   _loadCustomers,
-  partners:    _loadPartners,
-  offers:      _loadOffers,
-  redemptions: _loadRedemptions,
-};
-
-tabBtns.forEach((btn) => {
-  btn.addEventListener("click", async () => {
-    const tab = btn.dataset.tab;
-    if (tab === _activeTab) return;
-
-    tabBtns.forEach((b) => { b.classList.remove("active"); b.setAttribute("aria-selected", "false"); });
-    btn.classList.add("active");
-    btn.setAttribute("aria-selected", "true");
-
-    Object.values(tabPanels).forEach((p) => { if (p) p.style.display = "none"; });
-    if (tabPanels[tab]) tabPanels[tab].style.display = "block";
-
-    _activeTab = tab;
-    if (_tabLoaders[tab]) await _tabLoaders[tab]();
-  });
+// Status filter
+const customersStatusFilter = $("#customersStatusFilter");
+customersStatusFilter?.addEventListener("change", () => {
+  State.customers.filters.active = customersStatusFilter.value;
+  State.customers.page = 1;
+  loadCustomers();
 });
 
-/* ─────────────────────────────────────────────────────────────
-   DASHBOARD BOOT
-───────────────────────────────────────────────────────────── */
-async function _loadDashboard() {
-  await _loadStats();
-  await _loadCustomers(); // default tab
+// Page size
+$("#customersPageSize")?.addEventListener("change", function () {
+  State.customers.limit = parseInt(this.value, 10);
+  State.customers.page  = 1;
+  loadCustomers();
+});
+
+// Sortable headers
+initSortableHeaders(customersTable, State.customers, loadCustomers);
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 9 — PARTNERS MODULE
+═══════════════════════════════════════════════════════════ */
+
+const partnersTable = $("#modulePartners .adm-table");
+const partnersBody  = $("#partnersTableBody");
+const partnersCount = $("#partnersCount");
+
+async function loadPartners() {
+  if (!partnersBody) return;
+  partnersBody.innerHTML = skeletonRows(7);
+
+  try {
+    const data = await Api.getPaginated("/partners", State.partners);
+    if (!data) return;
+
+    const rows = data.data || [];
+    const meta = data.pagination;
+
+    if (partnersCount && meta) {
+      partnersCount.textContent = `${meta.totalItems.toLocaleString("it-IT")} partner`;
+    }
+
+    if (!rows.length) {
+      partnersBody.innerHTML = emptyRow(7, State.partners.search
+        ? `Nessun partner trovato per "${State.partners.search}".`
+        : "Nessun partner creato.");
+    } else {
+      partnersBody.innerHTML = rows.map((p) => `
+        <tr>
+          <td class="adm-td-id" title="${esc(p.id)}">${esc(truncate(p.id, 18))}</td>
+          <td class="adm-td-name">${esc(p.name)}</td>
+          <td class="adm-td-secondary">${esc(p.category || "—")}</td>
+          <td class="adm-td-secondary">${esc(truncate(p.address || "—", 28))}</td>
+          <td>${badgeActive(p.active)}</td>
+          <td>
+            ${p.mustChangePassword
+              ? `<span class="adm-badge adm-badge--pending">Da impostare</span>`
+              : `<span class="adm-badge adm-badge--active">Impostata</span>`}
+          </td>
+          <td class="adm-td-actions">
+            <div class="adm-row-actions">
+              ${p.active
+                ? `<button class="adm-btn adm-btn--danger adm-btn--sm" data-toggle-partner="${esc(p.id)}" data-active="false">
+                     Sospendi
+                   </button>`
+                : `<button class="adm-btn adm-btn--success adm-btn--sm" data-toggle-partner="${esc(p.id)}" data-active="true">
+                     Attiva
+                   </button>`}
+            </div>
+          </td>
+        </tr>`).join("");
+    }
+
+    renderPagination(
+      $("#partnersPaginationControls"),
+      $("#partnersPaginationInfo"),
+      meta,
+      (p) => { State.partners.page = p; loadPartners(); }
+    );
+
+    // Wire partner toggle buttons
+    partnersBody.querySelectorAll("[data-toggle-partner]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id     = btn.dataset.togglePartner;
+        const active = btn.dataset.active === "true";
+        showConfirm(
+          active ? `Attivare il partner "${id}"?` : `Sospendere il partner "${id}"?`,
+          active ? "Il partner potrà nuovamente accedere alla dashboard." : "Il partner non potrà accedere fino alla riattivazione.",
+          async () => togglePartnerActive(id, active)
+        );
+      });
+    });
+
+  } catch {
+    partnersBody.innerHTML = emptyRow(7, "Errore nel caricamento partner. Riprova.");
+  }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   BOOT Dashboard
-───────────────────────────────────────────────────────────── */
-_loadDashboard();
+async function togglePartnerActive(partnerId, active) {
+  try {
+    const res = await Api.patch(`/partners/${encodeURIComponent(partnerId)}/active`, { active });
+    if (res?.success !== false) {
+      await Promise.all([loadPartners(), loadStats()]);
+    } else {
+      alert("Errore durante l'aggiornamento. Riprova.");
+    }
+  } catch {
+    alert("Errore di connessione. Riprova.");
+  }
+}
+
+// Search
+const partnersSearchInput = $("#partnersSearch");
+partnersSearchInput?.addEventListener("input", debounce(() => {
+  State.partners.search = partnersSearchInput.value.trim();
+  State.partners.page   = 1;
+  loadPartners();
+}, 380));
+
+// Status filter
+const partnersStatusFilter = $("#partnersStatusFilter");
+partnersStatusFilter?.addEventListener("change", () => {
+  State.partners.filters.active = partnersStatusFilter.value;
+  State.partners.page = 1;
+  loadPartners();
+});
+
+// Page size
+$("#partnersPageSize")?.addEventListener("change", function () {
+  State.partners.limit = parseInt(this.value, 10);
+  State.partners.page  = 1;
+  loadPartners();
+});
+
+// Sort
+initSortableHeaders(partnersTable, State.partners, loadPartners);
+
+// Form panel toggle
+const admPartnerFormPanel = $("#admPartnerFormPanel");
+const admTogglePartnerForm = $("#admTogglePartnerForm");
+const admClosePartnerForm  = $("#admClosePartnerForm");
+const admCancelPartnerForm = $("#admCancelPartnerForm");
+
+function openPartnerForm() {
+  if (!admPartnerFormPanel) return;
+  admPartnerFormPanel.style.display = "block";
+  admPartnerFormPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  $("#newPartnerId")?.focus();
+}
+
+function closePartnerForm() {
+  if (!admPartnerFormPanel) return;
+  admPartnerFormPanel.style.display = "none";
+  showFeedback($("#partnerFormError"), $("#partnerFormSuccess"), "none");
+}
+
+admTogglePartnerForm?.addEventListener("click", openPartnerForm);
+admClosePartnerForm?.addEventListener("click",  closePartnerForm);
+admCancelPartnerForm?.addEventListener("click", closePartnerForm);
+
+// Create partner form submission
+const createPartnerForm = $("#createPartnerForm");
+const createPartnerBtn  = $("#createPartnerBtn");
+
+createPartnerForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const errEl  = $("#partnerFormError");
+  const succEl = $("#partnerFormSuccess");
+  showFeedback(errEl, succEl, "none");
+
+  const id          = $("#newPartnerId")?.value.trim();
+  const name        = $("#partnerName")?.value.trim();
+  const category    = $("#partnerCategory")?.value.trim();
+  const address     = $("#partnerAddress")?.value.trim();
+  const tempPassword = $("#partnerTempPassword")?.value;
+
+  if (!id || !name || !tempPassword) {
+    showFeedback(errEl, succEl, "error", "ID, nome e password temporanea sono obbligatori.");
+    return;
+  }
+
+  if (tempPassword.length < 8) {
+    showFeedback(errEl, succEl, "error", "La password temporanea deve avere almeno 8 caratteri.");
+    return;
+  }
+
+  setLoading(createPartnerBtn, true);
+
+  try {
+    const data = await Api.post("/partners", { id, name, category, address, tempPassword });
+
+    if (data?.success) {
+      showFeedback(errEl, succEl, "success",
+        `Partner "${esc(name)}" creato (ID: ${esc(data.partnerId)}). Il partner dovrà impostare la propria password al primo accesso.`);
+      createPartnerForm.reset();
+      await Promise.all([loadPartners(), loadStats()]);
+    } else {
+      showFeedback(errEl, succEl, "error", data?.message || "Errore nella creazione del partner.");
+    }
+  } catch {
+    showFeedback(errEl, succEl, "error", "Errore di connessione. Riprova.");
+  } finally {
+    setLoading(createPartnerBtn, false);
+  }
+});
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 10 — OFFERS MODULE
+═══════════════════════════════════════════════════════════ */
+
+const offersTable = $("#moduleOffers .adm-table");
+const offersBody  = $("#offersTableBody");
+const offersCount = $("#offersCount");
+
+async function loadOffers() {
+  if (!offersBody) return;
+  offersBody.innerHTML = skeletonRows(5);
+
+  try {
+    const data = await Api.getPaginated("/offers", State.offers);
+    if (!data) return;
+
+    const rows = data.data || [];
+    const meta = data.pagination;
+
+    if (offersCount && meta) {
+      offersCount.textContent = `${meta.totalItems.toLocaleString("it-IT")} offerte`;
+    }
+
+    if (!rows.length) {
+      offersBody.innerHTML = emptyRow(5, State.offers.search
+        ? `Nessuna offerta trovata per "${State.offers.search}".`
+        : "Nessuna offerta creata.");
+    } else {
+      offersBody.innerHTML = rows.map((o) => `
+        <tr>
+          <td class="adm-td-name">${esc(o.title)}</td>
+          <td class="adm-td-secondary">${esc(truncate(o.description || "—", 48))}</td>
+          <td>
+            <span class="adm-badge ${o.partnerId === "Globale" ? "adm-badge--navy" : "adm-badge--neutral"}">
+              ${esc(o.partnerId || "Globale")}
+            </span>
+          </td>
+          <td>${badgeActive(o.active)}</td>
+          <td class="adm-td-date">${fmtDate(o.createdAt)}</td>
+        </tr>`).join("");
+    }
+
+    renderPagination(
+      $("#offersPaginationControls"),
+      $("#offersPaginationInfo"),
+      meta,
+      (p) => { State.offers.page = p; loadOffers(); }
+    );
+
+  } catch {
+    offersBody.innerHTML = emptyRow(5, "Errore nel caricamento offerte. Riprova.");
+  }
+}
+
+// Search
+const offersSearchInput = $("#offersSearch");
+offersSearchInput?.addEventListener("input", debounce(() => {
+  State.offers.search = offersSearchInput.value.trim();
+  State.offers.page   = 1;
+  loadOffers();
+}, 380));
+
+// Status filter
+const offersStatusFilter = $("#offersStatusFilter");
+offersStatusFilter?.addEventListener("change", () => {
+  State.offers.filters.active = offersStatusFilter.value;
+  State.offers.page = 1;
+  loadOffers();
+});
+
+// Page size
+$("#offersPageSize")?.addEventListener("change", function () {
+  State.offers.limit = parseInt(this.value, 10);
+  State.offers.page  = 1;
+  loadOffers();
+});
+
+// Sort
+initSortableHeaders(offersTable, State.offers, loadOffers);
+
+// Form panel toggle
+const admOfferFormPanel  = $("#admOfferFormPanel");
+const admToggleOfferForm = $("#admToggleOfferForm");
+const admCloseOfferForm  = $("#admCloseOfferForm");
+const admCancelOfferForm = $("#admCancelOfferForm");
+
+function openOfferForm() {
+  if (!admOfferFormPanel) return;
+  admOfferFormPanel.style.display = "block";
+  admOfferFormPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  $("#offerTitle")?.focus();
+}
+
+function closeOfferForm() {
+  if (!admOfferFormPanel) return;
+  admOfferFormPanel.style.display = "none";
+  showFeedback($("#offerFormError"), $("#offerFormSuccess"), "none");
+}
+
+admToggleOfferForm?.addEventListener("click", openOfferForm);
+admCloseOfferForm?.addEventListener("click",  closeOfferForm);
+admCancelOfferForm?.addEventListener("click", closeOfferForm);
+
+// Create offer form submission
+const addOfferForm = $("#addOfferForm");
+const addOfferBtn  = $("#addOfferBtn");
+
+addOfferForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const errEl  = $("#offerFormError");
+  const succEl = $("#offerFormSuccess");
+  showFeedback(errEl, succEl, "none");
+
+  const title       = $("#offerTitle")?.value.trim();
+  const description = $("#offerDescription")?.value.trim();
+  const rawPartner  = $("#offerPartner")?.value.trim();
+  const partnerId   = rawPartner === "" ? "Globale" : rawPartner;
+
+  if (!title) {
+    showFeedback(errEl, succEl, "error", "Il titolo dell'offerta è obbligatorio.");
+    $("#offerTitle")?.focus();
+    return;
+  }
+
+  setLoading(addOfferBtn, true);
+
+  try {
+    const data = await Api.post("/offers", { title, description, partnerId });
+
+    if (data?.success) {
+      showFeedback(errEl, succEl, "success");
+      addOfferForm.reset();
+      await Promise.all([loadOffers(), loadStats()]);
+    } else {
+      showFeedback(errEl, succEl, "error", data?.message || "Errore nella creazione dell'offerta.");
+    }
+  } catch {
+    showFeedback(errEl, succEl, "error", "Errore di connessione. Riprova.");
+  } finally {
+    setLoading(addOfferBtn, false);
+  }
+});
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 11 — REDEMPTIONS MODULE
+═══════════════════════════════════════════════════════════ */
+
+const redemptionsTable = $("#moduleRedemptions .adm-table");
+const redemptionsBody  = $("#redemptionsTableBody");
+const redemptionsCount = $("#redemptionsCount");
+
+async function loadRedemptions() {
+  if (!redemptionsBody) return;
+  redemptionsBody.innerHTML = skeletonRows(4);
+
+  try {
+    const data = await Api.getPaginated("/redemptions", State.redemptions);
+    if (!data) return;
+
+    const rows = data.data || [];
+    const meta = data.pagination;
+
+    if (redemptionsCount && meta) {
+      redemptionsCount.textContent = `${meta.totalItems.toLocaleString("it-IT")} utilizzi`;
+    }
+
+    if (!rows.length) {
+      redemptionsBody.innerHTML = emptyRow(4, State.redemptions.search
+        ? `Nessun utilizzo trovato per "${State.redemptions.search}".`
+        : "Nessun utilizzo registrato.");
+    } else {
+      redemptionsBody.innerHTML = rows.map((r) => `
+        <tr>
+          <td class="adm-td-secondary">${esc(truncate(r.customerId, 26))}</td>
+          <td>
+            <span class="adm-badge adm-badge--neutral">${esc(r.partnerId)}</span>
+          </td>
+          <td class="adm-td-secondary">${esc(truncate(r.offerId, 26))}</td>
+          <td class="adm-td-date">${fmtDate(r.redeemedAt)}</td>
+        </tr>`).join("");
+    }
+
+    renderPagination(
+      $("#redemptionsPaginationControls"),
+      $("#redemptionsPaginationInfo"),
+      meta,
+      (p) => { State.redemptions.page = p; loadRedemptions(); }
+    );
+
+  } catch {
+    redemptionsBody.innerHTML = emptyRow(4, "Errore nel caricamento utilizzi. Riprova.");
+  }
+}
+
+// Search
+const redemptionsSearchInput = $("#redemptionsSearch");
+redemptionsSearchInput?.addEventListener("input", debounce(() => {
+  State.redemptions.search = redemptionsSearchInput.value.trim();
+  State.redemptions.page   = 1;
+  loadRedemptions();
+}, 380));
+
+// Page size
+$("#redemptionsPageSize")?.addEventListener("change", function () {
+  State.redemptions.limit = parseInt(this.value, 10);
+  State.redemptions.page  = 1;
+  loadRedemptions();
+});
+
+// Sort
+initSortableHeaders(redemptionsTable, State.redemptions, loadRedemptions);
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 12 — CONFIRM MODAL
+   Generic confirmation dialog. Replaces browser alert().
+═══════════════════════════════════════════════════════════ */
+
+const admConfirmModal  = $("#admConfirmModal");
+const admConfirmTitle  = $("#admConfirmTitle");
+const admConfirmBody   = $("#admConfirmBody");
+const admConfirmCancel = $("#admConfirmCancel");
+const admConfirmOk     = $("#admConfirmOk");
+let   _confirmCallback = null;
+
+function showConfirm(title, body, onConfirm) {
+  if (!admConfirmModal) { onConfirm(); return; }
+  if (admConfirmTitle) admConfirmTitle.textContent = title;
+  if (admConfirmBody)  admConfirmBody.textContent  = body;
+  _confirmCallback = onConfirm;
+  admConfirmModal.classList.add("open");
+  admConfirmOk?.focus();
+}
+
+function closeConfirm() {
+  admConfirmModal?.classList.remove("open");
+  _confirmCallback = null;
+}
+
+admConfirmCancel?.addEventListener("click", closeConfirm);
+admConfirmOk?.addEventListener("click", () => {
+  const cb = _confirmCallback;
+  closeConfirm();
+  if (typeof cb === "function") cb();
+});
+
+admConfirmModal?.addEventListener("click", (e) => {
+  if (e.target === admConfirmModal) closeConfirm();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && admConfirmModal?.classList.contains("open")) {
+    closeConfirm();
+  }
+});
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 13 — BOOT
+   Verify session then load the default module (dashboard).
+═══════════════════════════════════════════════════════════ */
+
+async function boot() {
+  // Verify session — will redirect to login if 401
+  const session = await Api.get("/session");
+  if (!session) return; // redirect already triggered
+
+  // Set admin name in topbar
+  const nameEl = $("#admTopbarUser");
+  if (nameEl && session.data?.email) {
+    nameEl.textContent = session.data.email.split("@")[0];
+  }
+
+  // Load default module
+  switchModule("dashboard");
+}
+
+boot();

@@ -4,255 +4,760 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>Admin — Convenzioni M&M Consulting</title>
+  <title>Admin — M&M Consulting</title>
+
   <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  >
+
+  <!-- Design system -->
   <link rel="stylesheet" href="/assets/css/loyalty.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
+
 <body>
+<div class="adm-shell">
 
-<div class="loyalty-shell">
+  <!-- ═══════════════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════════════ -->
+  <aside
+    class="adm-sidebar"
+    id="admSidebar"
+    role="navigation"
+    aria-label="Menu principale"
+  >
 
-  <header class="loyalty-topbar" role="banner">
-    <a href="/" class="loyalty-topbar-logo" aria-label="Torna alla homepage M&M Consulting">
-      <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
-      <span class="loyalty-topbar-brand">Admin</span>
+    <!-- Logo -->
+    <a href="/" class="adm-sidebar-logo" aria-label="Torna alla homepage">
+      <img
+        src="/assets/images/logo.png"
+        alt="M&M Consulting"
+        width="30"
+        height="30"
+        onerror="this.style.display='none'"
+      >
+      <div class="adm-sidebar-wordmark">
+        <span class="adm-sidebar-brand">M&amp;M Consulting</span>
+        <span class="adm-sidebar-tag">Admin Console</span>
+      </div>
     </a>
-    <div class="loyalty-topbar-actions" id="adminTopbarActions">
-      <button class="loyalty-topbar-logout" id="logoutBtn" aria-label="Esci dall'admin">Esci</button>
+
+    <!-- Navigation -->
+    <nav class="adm-sidebar-nav" aria-label="Sezioni">
+
+      <!-- Overview -->
+      <span class="adm-nav-section">Overview</span>
+
+      <button
+        class="adm-nav-item active"
+        data-module="dashboard"
+        aria-current="page"
+      >
+        <span class="adm-nav-icon"><i class="fa fa-chart-pie" aria-hidden="true"></i></span>
+        Dashboard
+      </button>
+
+      <!-- Loyalty -->
+      <span class="adm-nav-section">Loyalty</span>
+
+      <button class="adm-nav-item" data-module="customers">
+        <span class="adm-nav-icon"><i class="fa fa-users" aria-hidden="true"></i></span>
+        Clienti
+        <span class="adm-nav-count" id="navCountCustomers">—</span>
+      </button>
+
+      <button class="adm-nav-item" data-module="partners">
+        <span class="adm-nav-icon"><i class="fa fa-store" aria-hidden="true"></i></span>
+        Partner
+        <span class="adm-nav-count" id="navCountPartners">—</span>
+      </button>
+
+      <button class="adm-nav-item" data-module="offers">
+        <span class="adm-nav-icon"><i class="fa fa-tag" aria-hidden="true"></i></span>
+        Offerte
+        <span class="adm-nav-count" id="navCountOffers">—</span>
+      </button>
+
+      <button class="adm-nav-item" data-module="redemptions">
+        <span class="adm-nav-icon"><i class="fa fa-receipt" aria-hidden="true"></i></span>
+        Utilizzi
+        <span class="adm-nav-count" id="navCountRedemptions">—</span>
+      </button>
+
+      <!-- Marketing — future modules (visible but disabled) -->
+      <span class="adm-nav-section">Marketing</span>
+
+      <button class="adm-nav-item" data-module="newsletter" disabled>
+        <span class="adm-nav-icon"><i class="fa fa-envelope" aria-hidden="true"></i></span>
+        Newsletter
+        <span class="adm-badge adm-badge--pending" style="margin-left:auto;font-size:0.56rem;padding:2px 7px;">Soon</span>
+      </button>
+
+      <button class="adm-nav-item" data-module="contacts" disabled>
+        <span class="adm-nav-icon"><i class="fa fa-inbox" aria-hidden="true"></i></span>
+        Richieste
+        <span class="adm-badge adm-badge--pending" style="margin-left:auto;font-size:0.56rem;padding:2px 7px;">Soon</span>
+      </button>
+
+      <!-- Simulator -->
+      <span class="adm-nav-section">Simulatore</span>
+
+      <button class="adm-nav-item" data-module="simulator" disabled>
+        <span class="adm-nav-icon"><i class="fa fa-bolt" aria-hidden="true"></i></span>
+        Lead
+        <span class="adm-badge adm-badge--pending" style="margin-left:auto;font-size:0.56rem;padding:2px 7px;">Soon</span>
+      </button>
+
+    </nav>
+
+    <!-- Footer -->
+    <div class="adm-sidebar-footer">
+      <button class="adm-sidebar-logout" id="admLogoutBtn">
+        <span class="adm-nav-icon"><i class="fa fa-right-from-bracket" aria-hidden="true"></i></span>
+        Esci
+      </button>
     </div>
-  </header>
 
-  <main class="loyalty-main" id="main-content">
-    <!-- ══ DASHBOARD ══ -->
-    <div id="adminDashboard">
+  </aside>
 
-      <!-- Stats -->
-      <div class="loyalty-stats-grid loyalty-card--full" style="max-width:1100px;margin:0 auto 24px;">
-        <div class="loyalty-stat-card">
-          <div class="loyalty-stat-value" id="statCustomers">—</div>
-          <div class="loyalty-stat-label">Clienti</div>
-        </div>
-        <div class="loyalty-stat-card">
-          <div class="loyalty-stat-value" id="statRedemptions">—</div>
-          <div class="loyalty-stat-label">Utilizzi</div>
-        </div>
-        <div class="loyalty-stat-card">
-          <div class="loyalty-stat-value" id="statOffers">—</div>
-          <div class="loyalty-stat-label">Offerte attive</div>
-        </div>
-        <div class="loyalty-stat-card">
-          <div class="loyalty-stat-value" id="statPartners">—</div>
-          <div class="loyalty-stat-label">Partner</div>
-        </div>
+  <!-- Mobile overlay -->
+  <div class="adm-overlay" id="admOverlay" aria-hidden="true"></div>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       MAIN COLUMN
+  ═══════════════════════════════════════════════════ -->
+  <div class="adm-column">
+
+    <!-- ── Topbar ── -->
+    <header class="adm-topbar" role="banner">
+
+      <!-- Mobile burger -->
+      <button
+        class="adm-topbar-burger"
+        id="admBurger"
+        aria-label="Apri menu"
+        aria-expanded="false"
+        aria-controls="admSidebar"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <!-- Breadcrumb / page title -->
+      <div class="adm-topbar-breadcrumb" id="admBreadcrumb" aria-live="polite">
+        <span>Admin</span>
+        <span class="adm-topbar-breadcrumb-sep" aria-hidden="true">/</span>
+        <span class="adm-topbar-breadcrumb-current" id="admBreadcrumbCurrent">Dashboard</span>
       </div>
 
-      <!-- Main card with tabs -->
-      <div class="loyalty-card loyalty-card--full loyalty-fade-in" style="max-width:1100px;margin:0 auto;">
+      <!-- User -->
+      <div class="adm-topbar-user">
+        <div class="adm-topbar-avatar" aria-hidden="true">A</div>
+        <span class="adm-topbar-user-name" id="admTopbarUser">Admin</span>
+      </div>
 
-        <nav class="loyalty-admin-tabs" role="tablist" aria-label="Sezioni admin">
-          <button class="loyalty-admin-tab active" role="tab" data-tab="customers"
-            aria-selected="true" aria-controls="tabCustomers" id="tabBtnCustomers">
-            👥 Clienti
-          </button>
-          <button class="loyalty-admin-tab" role="tab" data-tab="partners"
-            aria-selected="false" aria-controls="tabPartners" id="tabBtnPartners">
-            🏪 Partner
-          </button>
-          <button class="loyalty-admin-tab" role="tab" data-tab="offers"
-            aria-selected="false" aria-controls="tabOffers" id="tabBtnOffers">
-            🎁 Offerte
-          </button>
-          <button class="loyalty-admin-tab" role="tab" data-tab="redemptions"
-            aria-selected="false" aria-controls="tabRedemptions" id="tabBtnRedemptions">
-            📋 Utilizzi
-          </button>
-        </nav>
+    </header>
 
-        <!-- Tab: Customers -->
-        <div id="tabCustomers" role="tabpanel" aria-labelledby="tabBtnCustomers">
-          <div class="loyalty-table-wrap">
-            <table class="loyalty-table" aria-label="Lista clienti">
+
+    <!-- ── Content ── -->
+    <main class="adm-content" id="admContent" role="main">
+
+      <!-- ════════════════════════════════════
+           MODULE: DASHBOARD
+      ════════════════════════════════════ -->
+      <div id="moduleDashboard" class="adm-module" data-module="dashboard">
+
+        <div class="adm-page-header">
+          <div>
+            <h1 class="adm-page-title">Dashboard</h1>
+            <p class="adm-page-sub">Panoramica del programma Energy Club</p>
+          </div>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="adm-stats-row" role="region" aria-label="Metriche">
+
+          <div class="adm-stat-card">
+            <div class="adm-stat-icon" aria-hidden="true">👥</div>
+            <div class="adm-stat-value" id="statCustomers">—</div>
+            <div class="adm-stat-label">Clienti registrati</div>
+          </div>
+
+          <div class="adm-stat-card">
+            <div class="adm-stat-icon" aria-hidden="true">🏪</div>
+            <div class="adm-stat-value" id="statPartners">—</div>
+            <div class="adm-stat-label">Partner attivi</div>
+          </div>
+
+          <div class="adm-stat-card">
+            <div class="adm-stat-icon" aria-hidden="true">🎁</div>
+            <div class="adm-stat-value" id="statOffers">—</div>
+            <div class="adm-stat-label">Offerte attive</div>
+          </div>
+
+          <div class="adm-stat-card">
+            <div class="adm-stat-icon" aria-hidden="true">📋</div>
+            <div class="adm-stat-value" id="statRedemptions">—</div>
+            <div class="adm-stat-label">Utilizzi totali</div>
+          </div>
+
+        </div>
+
+        <!-- Recent activity preview — quick table -->
+        <div class="adm-table-card" style="margin-top: 12px;">
+          <div style="padding: 16px 18px; border-bottom: 1px solid var(--loy-border); display:flex; align-items:center; justify-content:space-between;">
+            <span style="font-family:var(--loy-font-display);font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--loy-text-sec);">Ultimi utilizzi</span>
+            <button class="adm-btn adm-btn--secondary adm-btn--sm" data-nav="redemptions">
+              Vedi tutti <i class="fa fa-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="adm-table-scroll">
+            <table class="adm-table" aria-label="Ultimi 5 utilizzi">
               <thead>
                 <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col">Nome</th>
-                  <th scope="col">Contatto</th>
-                  <th scope="col">Tipo</th>
-                  <th scope="col">Stato</th>
-                  <th scope="col">Registrato</th>
+                  <th scope="col">Cliente</th>
+                  <th scope="col">Partner</th>
+                  <th scope="col">Offerta</th>
+                  <th scope="col">Data</th>
                 </tr>
               </thead>
-              <tbody id="customersTableBody">
-                <tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text-secondary);">Caricamento...</td></tr>
+              <tbody id="dashRecentBody">
+                <tr>
+                  <td colspan="4" class="adm-td-secondary" style="text-align:center;padding:28px;">
+                    Caricamento...
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Tab: Partners -->
-        <div id="tabPartners" role="tabpanel" aria-labelledby="tabBtnPartners" style="display:none;">
+      </div>
 
-          <!-- Create partner form -->
-          <div style="margin-bottom:20px;padding:20px;background:var(--bg-soft,#FAFAF8);border-radius:10px;border:1px solid var(--border-light,#E4E4E0);">
-            <p class="loyalty-section-title" style="margin-bottom:16px;">Crea nuovo partner</p>
 
-            <div class="loyalty-error" id="partnerError" role="alert" aria-live="polite">
-              <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
-              <span id="partnerErrorText"></span>
-            </div>
-            <div class="loyalty-success" id="partnerSuccess" role="status" aria-live="polite">
-              <span aria-hidden="true">✓</span>
-              <span id="partnerSuccessText"></span>
-            </div>
+      <!-- ════════════════════════════════════
+           MODULE: CUSTOMERS
+      ════════════════════════════════════ -->
+      <div id="moduleCustomers" class="adm-module" data-module="customers" style="display:none;">
 
-            <form id="createPartnerForm" novalidate>
-              <div class="loyalty-add-form">
-                <div class="loyalty-field">
-                  <label for="partnerId">ID Partner <span style="color:#C0392B;">*</span></label>
-                  <input type="text" id="newPartnerId" name="id"
-                    placeholder="es. bar-centrale"
-                    autocomplete="off" required
-                    aria-required="true"
-                    title="Solo lettere minuscole, numeri e trattini">
-                </div>
-                <div class="loyalty-field">
-                  <label for="partnerName">Nome azienda <span style="color:#C0392B;">*</span></label>
-                  <input type="text" id="partnerName" name="name"
-                    placeholder="es. Bar Centrale Messina" required aria-required="true">
-                </div>
-                <div class="loyalty-field">
-                  <label for="partnerCategory">Categoria</label>
-                  <input type="text" id="partnerCategory" name="category"
-                    placeholder="es. Ristorazione">
-                </div>
-                <div class="loyalty-field">
-                  <label for="partnerAddress">Indirizzo</label>
-                  <input type="text" id="partnerAddress" name="address"
-                    placeholder="es. Via Garibaldi 12, Messina">
-                </div>
-                <div class="loyalty-field loyalty-field--full">
-                  <label for="partnerTempPassword">Password temporanea <span style="color:#C0392B;">*</span></label>
-                  <input type="password" id="partnerTempPassword" name="tempPassword"
-                    placeholder="Minimo 8 caratteri — il partner la cambierà al primo accesso"
-                    minlength="8" required aria-required="true">
-                </div>
-              </div>
-              <button type="submit" class="loyalty-btn-submit" id="createPartnerBtn"
-                style="max-width:220px;margin-top:12px;">
-                <span class="btn-label">Crea partner</span>
-                <span class="btn-spinner" aria-hidden="true"></span>
-              </button>
-            </form>
+        <div class="adm-page-header">
+          <div>
+            <h1 class="adm-page-title">Clienti</h1>
+            <p class="adm-page-sub">Gestisci i membri del programma Energy Club</p>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="adm-toolbar" role="search" aria-label="Filtra clienti">
+          <div class="adm-search-wrap">
+            <i class="fa fa-search adm-search-icon" aria-hidden="true"></i>
+            <input
+              type="search"
+              class="adm-search"
+              id="customersSearch"
+              placeholder="Cerca per nome o email…"
+              aria-label="Cerca clienti"
+              autocomplete="off"
+            >
           </div>
 
-          <!-- Partners table -->
-          <div class="loyalty-table-wrap">
-            <table class="loyalty-table" aria-label="Lista partner">
+          <select class="adm-filter-select" id="customersStatusFilter" aria-label="Filtra per stato">
+            <option value="">Tutti gli stati</option>
+            <option value="true">Attivi</option>
+            <option value="false">Sospesi</option>
+          </select>
+
+          <span class="adm-toolbar-count" id="customersCount" aria-live="polite"></span>
+        </div>
+
+        <!-- Table card -->
+        <div class="adm-table-card">
+          <div class="adm-table-scroll">
+            <table class="adm-table" aria-label="Lista clienti">
+              <thead>
+                <tr>
+                  <th scope="col" class="adm-th-sortable" data-sort="full_name">
+                    Nome
+                    <span class="adm-th-sort-icon" aria-hidden="true">↕</span>
+                  </th>
+                  <th scope="col">Contatto</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col" class="adm-th-sortable" data-sort="active">
+                    Stato
+                    <span class="adm-th-sort-icon" aria-hidden="true">↕</span>
+                  </th>
+                  <th scope="col" class="adm-th-sortable sorted" data-sort="createdAt">
+                    Registrato
+                    <span class="adm-th-sort-icon" aria-hidden="true">↓</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="customersTableBody">
+                <tr>
+                  <td colspan="5" style="text-align:center;padding:32px;">
+                    <div class="adm-empty">
+                      <span class="adm-empty-icon">👥</span>
+                      <span class="adm-empty-sub">Caricamento clienti…</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="adm-pagination" id="customersPagination" aria-label="Paginazione clienti">
+            <span class="adm-pagination-info" id="customersPaginationInfo"></span>
+            <div class="adm-pagination-controls" id="customersPaginationControls" role="navigation" aria-label="Pagine"></div>
+            <div class="adm-pagination-size">
+              <label for="customersPageSize">Righe:</label>
+              <select id="customersPageSize" aria-label="Righe per pagina">
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ════════════════════════════════════
+           MODULE: PARTNERS
+      ════════════════════════════════════ -->
+      <div id="modulePartners" class="adm-module" data-module="partners" style="display:none;">
+
+        <div class="adm-page-header">
+          <div>
+            <h1 class="adm-page-title">Partner</h1>
+            <p class="adm-page-sub">Gestisci le attività commerciali aderenti</p>
+          </div>
+          <div class="adm-page-actions">
+            <button class="adm-btn adm-btn--primary" id="admTogglePartnerForm">
+              <i class="fa fa-plus" aria-hidden="true"></i>
+              Nuovo partner
+            </button>
+          </div>
+        </div>
+
+        <!-- Create partner form panel -->
+        <div class="adm-form-panel" id="admPartnerFormPanel" style="display:none;">
+          <div class="adm-form-panel-header">
+            <span class="adm-form-panel-title">Crea nuovo partner</span>
+            <button class="adm-form-panel-toggle" id="admClosePartnerForm">Chiudi</button>
+          </div>
+
+          <div class="adm-feedback adm-feedback--error" id="partnerFormError" role="alert" aria-live="polite">
+            <i class="fa fa-triangle-exclamation" aria-hidden="true"></i>
+            <span id="partnerFormErrorMsg"></span>
+          </div>
+          <div class="adm-feedback adm-feedback--success" id="partnerFormSuccess" role="status" aria-live="polite">
+            <i class="fa fa-circle-check" aria-hidden="true"></i>
+            <span id="partnerFormSuccessMsg"></span>
+          </div>
+
+          <form id="createPartnerForm" novalidate>
+            <div class="adm-form-grid">
+              <div class="adm-form-field">
+                <label class="adm-form-label adm-form-label--required" for="newPartnerId">
+                  ID Partner
+                </label>
+                <input
+                  type="text"
+                  id="newPartnerId"
+                  name="id"
+                  class="adm-form-input"
+                  placeholder="es. bar-centrale"
+                  autocomplete="off"
+                  required
+                >
+              </div>
+              <div class="adm-form-field">
+                <label class="adm-form-label adm-form-label--required" for="partnerName">
+                  Nome attività
+                </label>
+                <input
+                  type="text"
+                  id="partnerName"
+                  name="name"
+                  class="adm-form-input"
+                  placeholder="es. Bar Centrale Messina"
+                  required
+                >
+              </div>
+              <div class="adm-form-field">
+                <label class="adm-form-label" for="partnerCategory">Categoria</label>
+                <input
+                  type="text"
+                  id="partnerCategory"
+                  name="category"
+                  class="adm-form-input"
+                  placeholder="es. Ristorazione"
+                >
+              </div>
+              <div class="adm-form-field">
+                <label class="adm-form-label" for="partnerAddress">Indirizzo</label>
+                <input
+                  type="text"
+                  id="partnerAddress"
+                  name="address"
+                  class="adm-form-input"
+                  placeholder="es. Via Garibaldi 12, Messina"
+                >
+              </div>
+              <div class="adm-form-field adm-form-field--full">
+                <label class="adm-form-label adm-form-label--required" for="partnerTempPassword">
+                  Password temporanea
+                </label>
+                <input
+                  type="password"
+                  id="partnerTempPassword"
+                  name="tempPassword"
+                  class="adm-form-input"
+                  placeholder="Minimo 8 caratteri — il partner la cambierà al primo accesso"
+                  minlength="8"
+                  required
+                >
+              </div>
+            </div>
+
+            <div class="adm-form-footer">
+              <button type="submit" class="adm-btn adm-btn--primary" id="createPartnerBtn">
+                <span class="adm-btn-spinner" aria-hidden="true"></span>
+                <span class="adm-btn-label">Crea partner</span>
+              </button>
+              <button type="button" class="adm-btn adm-btn--secondary" id="admCancelPartnerForm">
+                Annulla
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="adm-toolbar" role="search" aria-label="Filtra partner">
+          <div class="adm-search-wrap">
+            <i class="fa fa-search adm-search-icon" aria-hidden="true"></i>
+            <input
+              type="search"
+              class="adm-search"
+              id="partnersSearch"
+              placeholder="Cerca per nome o categoria…"
+              aria-label="Cerca partner"
+              autocomplete="off"
+            >
+          </div>
+
+          <select class="adm-filter-select" id="partnersStatusFilter" aria-label="Filtra per stato">
+            <option value="">Tutti gli stati</option>
+            <option value="true">Attivi</option>
+            <option value="false">Sospesi</option>
+          </select>
+
+          <span class="adm-toolbar-count" id="partnersCount" aria-live="polite"></span>
+        </div>
+
+        <!-- Table card -->
+        <div class="adm-table-card">
+          <div class="adm-table-scroll">
+            <table class="adm-table" aria-label="Lista partner">
               <thead>
                 <tr>
                   <th scope="col">ID</th>
-                  <th scope="col">Nome</th>
+                  <th scope="col" class="adm-th-sortable" data-sort="name">
+                    Nome <span class="adm-th-sort-icon" aria-hidden="true">↕</span>
+                  </th>
                   <th scope="col">Categoria</th>
                   <th scope="col">Indirizzo</th>
                   <th scope="col">Stato</th>
                   <th scope="col">Pass. temp.</th>
-                  <th scope="col">Azioni</th>
+                  <th scope="col" class="adm-td-actions">Azioni</th>
                 </tr>
               </thead>
               <tbody id="partnersTableBody">
-                <tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text-secondary);">Caricamento...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Tab: Offers -->
-        <div id="tabOffers" role="tabpanel" aria-labelledby="tabBtnOffers" style="display:none;">
-
-          <div style="margin-bottom:20px;padding:20px;background:var(--bg-soft,#FAFAF8);border-radius:10px;border:1px solid var(--border-light,#E4E4E0);">
-            <p class="loyalty-section-title" style="margin-bottom:16px;">Aggiungi nuova offerta</p>
-
-            <div class="loyalty-error" id="offerError" role="alert" aria-live="polite">
-              <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
-              <span id="offerErrorText"></span>
-            </div>
-            <div class="loyalty-success" id="offerSuccess" role="status" aria-live="polite">
-              <span aria-hidden="true">✓</span>
-              <span>Offerta creata con successo!</span>
-            </div>
-
-            <form id="addOfferForm" novalidate>
-              <div class="loyalty-add-form">
-                <div class="loyalty-field">
-                  <label for="offerTitle">Titolo offerta <span style="color:#C0392B;">*</span></label>
-                  <input type="text" id="offerTitle" name="title"
-                    placeholder="es. 20% di sconto" required aria-required="true">
-                </div>
-                <div class="loyalty-field">
-                  <label for="offerPartner">ID Partner (vuoto = globale)</label>
-                  <input type="text" id="offerPartner" name="partnerId"
-                    placeholder="es. bar-centrale">
-                </div>
-                <div class="loyalty-field loyalty-field--full">
-                  <label for="offerDescription">Descrizione</label>
-                  <input type="text" id="offerDescription" name="description"
-                    placeholder="Dettagli dell'offerta mostrati ai clienti">
-                </div>
-              </div>
-              <button type="submit" class="loyalty-btn-submit" id="addOfferBtn"
-                style="max-width:200px;margin-top:12px;">
-                <span class="btn-label">Aggiungi offerta</span>
-                <span class="btn-spinner" aria-hidden="true"></span>
-              </button>
-            </form>
-          </div>
-
-          <div class="loyalty-table-wrap">
-            <table class="loyalty-table" aria-label="Lista offerte">
-              <thead>
                 <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col">Titolo</th>
-                  <th scope="col">Descrizione</th>
-                  <th scope="col">Partner</th>
-                  <th scope="col">Stato</th>
-                  <th scope="col">Creata</th>
+                  <td colspan="7" style="text-align:center;padding:32px;">
+                    <div class="adm-empty">
+                      <span class="adm-empty-icon">🏪</span>
+                      <span class="adm-empty-sub">Caricamento partner…</span>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody id="offersTableBody">
-                <tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text-secondary);">Caricamento...</td></tr>
               </tbody>
             </table>
           </div>
-        </div>
 
-        <!-- Tab: Redemptions -->
-        <div id="tabRedemptions" role="tabpanel" aria-labelledby="tabBtnRedemptions" style="display:none;">
-          <div class="loyalty-table-wrap">
-            <table class="loyalty-table" aria-label="Storico utilizzi">
-              <thead>
-                <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col">Cliente</th>
-                  <th scope="col">Partner</th>
-                  <th scope="col">Offerta</th>
-                  <th scope="col">Data riscatto</th>
-                </tr>
-              </thead>
-              <tbody id="redemptionsTableBody">
-                <tr><td colspan="5" style="text-align:center;padding:28px;color:var(--text-secondary);">Caricamento...</td></tr>
-              </tbody>
-            </table>
+          <div class="adm-pagination" id="partnersPagination" aria-label="Paginazione partner">
+            <span class="adm-pagination-info" id="partnersPaginationInfo"></span>
+            <div class="adm-pagination-controls" id="partnersPaginationControls" role="navigation" aria-label="Pagine"></div>
+            <div class="adm-pagination-size">
+              <label for="partnersPageSize">Righe:</label>
+              <select id="partnersPageSize" aria-label="Righe per pagina">
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
           </div>
         </div>
 
       </div>
-    </div>
 
-  </main>
+
+      <!-- ════════════════════════════════════
+           MODULE: OFFERS
+      ════════════════════════════════════ -->
+      <div id="moduleOffers" class="adm-module" data-module="offers" style="display:none;">
+
+        <div class="adm-page-header">
+          <div>
+            <h1 class="adm-page-title">Offerte</h1>
+            <p class="adm-page-sub">Gestisci le convenzioni disponibili ai clienti</p>
+          </div>
+          <div class="adm-page-actions">
+            <button class="adm-btn adm-btn--primary" id="admToggleOfferForm">
+              <i class="fa fa-plus" aria-hidden="true"></i>
+              Nuova offerta
+            </button>
+          </div>
+        </div>
+
+        <!-- Create offer form panel -->
+        <div class="adm-form-panel" id="admOfferFormPanel" style="display:none;">
+          <div class="adm-form-panel-header">
+            <span class="adm-form-panel-title">Aggiungi offerta</span>
+            <button class="adm-form-panel-toggle" id="admCloseOfferForm">Chiudi</button>
+          </div>
+
+          <div class="adm-feedback adm-feedback--error" id="offerFormError" role="alert" aria-live="polite">
+            <i class="fa fa-triangle-exclamation" aria-hidden="true"></i>
+            <span id="offerFormErrorMsg"></span>
+          </div>
+          <div class="adm-feedback adm-feedback--success" id="offerFormSuccess" role="status" aria-live="polite">
+            <i class="fa fa-circle-check" aria-hidden="true"></i>
+            <span>Offerta creata con successo!</span>
+          </div>
+
+          <form id="addOfferForm" novalidate>
+            <div class="adm-form-grid">
+              <div class="adm-form-field">
+                <label class="adm-form-label adm-form-label--required" for="offerTitle">
+                  Titolo offerta
+                </label>
+                <input
+                  type="text"
+                  id="offerTitle"
+                  name="title"
+                  class="adm-form-input"
+                  placeholder="es. 20% di sconto"
+                  required
+                >
+              </div>
+              <div class="adm-form-field">
+                <label class="adm-form-label" for="offerPartner">
+                  ID Partner (vuoto = globale)
+                </label>
+                <input
+                  type="text"
+                  id="offerPartner"
+                  name="partnerId"
+                  class="adm-form-input"
+                  placeholder="es. bar-centrale"
+                >
+              </div>
+              <div class="adm-form-field adm-form-field--full">
+                <label class="adm-form-label" for="offerDescription">Descrizione</label>
+                <input
+                  type="text"
+                  id="offerDescription"
+                  name="description"
+                  class="adm-form-input"
+                  placeholder="Dettagli dell'offerta mostrati ai clienti"
+                >
+              </div>
+            </div>
+
+            <div class="adm-form-footer">
+              <button type="submit" class="adm-btn adm-btn--primary" id="addOfferBtn">
+                <span class="adm-btn-spinner" aria-hidden="true"></span>
+                <span class="adm-btn-label">Aggiungi offerta</span>
+              </button>
+              <button type="button" class="adm-btn adm-btn--secondary" id="admCancelOfferForm">
+                Annulla
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="adm-toolbar" role="search" aria-label="Filtra offerte">
+          <div class="adm-search-wrap">
+            <i class="fa fa-search adm-search-icon" aria-hidden="true"></i>
+            <input
+              type="search"
+              class="adm-search"
+              id="offersSearch"
+              placeholder="Cerca per titolo…"
+              aria-label="Cerca offerte"
+              autocomplete="off"
+            >
+          </div>
+
+          <select class="adm-filter-select" id="offersStatusFilter" aria-label="Filtra per stato">
+            <option value="">Tutti gli stati</option>
+            <option value="true">Attive</option>
+            <option value="false">Archiviate</option>
+          </select>
+
+          <span class="adm-toolbar-count" id="offersCount" aria-live="polite"></span>
+        </div>
+
+        <!-- Table card -->
+        <div class="adm-table-card">
+          <div class="adm-table-scroll">
+            <table class="adm-table" aria-label="Lista offerte">
+              <thead>
+                <tr>
+                  <th scope="col" class="adm-th-sortable" data-sort="title">
+                    Titolo <span class="adm-th-sort-icon" aria-hidden="true">↕</span>
+                  </th>
+                  <th scope="col">Descrizione</th>
+                  <th scope="col">Partner</th>
+                  <th scope="col">Stato</th>
+                  <th scope="col" class="adm-th-sortable sorted" data-sort="createdAt">
+                    Creata <span class="adm-th-sort-icon" aria-hidden="true">↓</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="offersTableBody">
+                <tr>
+                  <td colspan="5" style="text-align:center;padding:32px;">
+                    <div class="adm-empty">
+                      <span class="adm-empty-icon">🎁</span>
+                      <span class="adm-empty-sub">Caricamento offerte…</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="adm-pagination" id="offersPagination" aria-label="Paginazione offerte">
+            <span class="adm-pagination-info" id="offersPaginationInfo"></span>
+            <div class="adm-pagination-controls" id="offersPaginationControls" role="navigation" aria-label="Pagine"></div>
+            <div class="adm-pagination-size">
+              <label for="offersPageSize">Righe:</label>
+              <select id="offersPageSize" aria-label="Righe per pagina">
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ════════════════════════════════════
+           MODULE: REDEMPTIONS
+      ════════════════════════════════════ -->
+      <div id="moduleRedemptions" class="adm-module" data-module="redemptions" style="display:none;">
+
+        <div class="adm-page-header">
+          <div>
+            <h1 class="adm-page-title">Utilizzi</h1>
+            <p class="adm-page-sub">Storico completo delle convenzioni riscattate</p>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="adm-toolbar" role="search" aria-label="Filtra utilizzi">
+          <div class="adm-search-wrap">
+            <i class="fa fa-search adm-search-icon" aria-hidden="true"></i>
+            <input
+              type="search"
+              class="adm-search"
+              id="redemptionsSearch"
+              placeholder="Cerca per partner o offerta…"
+              aria-label="Cerca utilizzi"
+              autocomplete="off"
+            >
+          </div>
+
+          <span class="adm-toolbar-count" id="redemptionsCount" aria-live="polite"></span>
+        </div>
+
+        <!-- Table card -->
+        <div class="adm-table-card">
+          <div class="adm-table-scroll">
+            <table class="adm-table" aria-label="Storico utilizzi">
+              <thead>
+                <tr>
+                  <th scope="col">Cliente</th>
+                  <th scope="col">Partner</th>
+                  <th scope="col">Offerta</th>
+                  <th scope="col" class="adm-th-sortable sorted" data-sort="redeemedAt">
+                    Data <span class="adm-th-sort-icon" aria-hidden="true">↓</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="redemptionsTableBody">
+                <tr>
+                  <td colspan="4" style="text-align:center;padding:32px;">
+                    <div class="adm-empty">
+                      <span class="adm-empty-icon">📋</span>
+                      <span class="adm-empty-sub">Caricamento utilizzi…</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="adm-pagination" id="redemptionsPagination" aria-label="Paginazione utilizzi">
+            <span class="adm-pagination-info" id="redemptionsPaginationInfo"></span>
+            <div class="adm-pagination-controls" id="redemptionsPaginationControls" role="navigation" aria-label="Pagine"></div>
+            <div class="adm-pagination-size">
+              <label for="redemptionsPageSize">Righe:</label>
+              <select id="redemptionsPageSize" aria-label="Righe per pagina">
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main><!-- /adm-content -->
+  </div><!-- /adm-column -->
+
+</div><!-- /adm-shell -->
+
+<!-- Confirm modal -->
+<div class="adm-modal-backdrop" id="admConfirmModal" role="dialog" aria-modal="true" aria-labelledby="admConfirmTitle">
+  <div class="adm-modal">
+    <p class="adm-modal-title" id="admConfirmTitle">Conferma azione</p>
+    <p class="adm-modal-body" id="admConfirmBody"></p>
+    <div class="adm-modal-actions">
+      <button class="adm-btn adm-btn--secondary" id="admConfirmCancel">Annulla</button>
+      <button class="adm-btn adm-btn--danger" id="admConfirmOk">Conferma</button>
+    </div>
+  </div>
 </div>
 
 <script type="module" src="/js/features/loyalty/admin/admin.js"></script>
