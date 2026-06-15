@@ -45,7 +45,21 @@
  *   POST   /admin/offers
  *   GET    /admin/partners
  *   POST   /admin/partners
+ *   GET    /admin/partners/:id
+ *   PATCH  /admin/partners/:id
  *   PATCH  /admin/partners/:id/active
+ *
+ * GET  /admin/partners/:id returns the full partner record
+ * (including notes, description, offerDescription) for the
+ * admin edit drawer — the paginated list response is lean.
+ *
+ * PATCH /admin/partners/:id accepts a partial update of any of:
+ *   name, legalName, vatNumber, category,
+ *   email, phone, website,
+ *   address, city, postalCode,
+ *   description, offerDescription, notes,
+ *   active
+ * id / password are not editable via this route.
  *
  * Admin list endpoints (customers, redemptions, offers, partners)
  * are paginated via paginationMiddleware and accept:
@@ -484,6 +498,23 @@ adminRouter.post(
     "/partners",
     requireXHR,
     adminCtrl.adminCreatePartner
+);
+
+/* ── PARTNERS — get one (full record for edit drawer) ──
+   GET /admin/partners/:id
+*/
+adminRouter.get(
+    "/partners/:id",
+    adminCtrl.adminGetPartnerById
+);
+
+/* ── PARTNERS — update (partial) ──
+   PATCH /admin/partners/:id
+*/
+adminRouter.patch(
+    "/partners/:id",
+    requireXHR,
+    adminCtrl.adminUpdatePartner
 );
 
 adminRouter.patch(

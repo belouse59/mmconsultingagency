@@ -619,7 +619,7 @@ initSortableHeaders(customersTable, State.customers, loadCustomers);
 
 
 /* ═══════════════════════════════════════════════════════════
-   SECTION 9 — PARTNERS MODULE
+   SECTION 9 — PARTNERS MODULE (LIST)
 ═══════════════════════════════════════════════════════════ */
 
 const partnersTable = $("#modulePartners .adm-table");
@@ -660,6 +660,9 @@ async function loadPartners() {
           </td>
           <td class="adm-td-actions">
             <div class="adm-row-actions">
+              <button class="adm-btn adm-btn--secondary adm-btn--sm" data-edit-partner="${esc(p.id)}">
+                Modifica
+              </button>
               ${p.active
                 ? `<button class="adm-btn adm-btn--danger adm-btn--sm" data-toggle-partner="${esc(p.id)}" data-active="false">
                      Sospendi
@@ -679,7 +682,14 @@ async function loadPartners() {
       (p) => { State.partners.page = p; loadPartners(); }
     );
 
-    // Wire partner toggle buttons
+    // Wire "Modifica" buttons → open edit drawer
+    partnersBody.querySelectorAll("[data-edit-partner]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        openEditPartnerDrawer(btn.dataset.editPartner);
+      });
+    });
+
+    // Wire activate/suspend toggle buttons
     partnersBody.querySelectorAll("[data-toggle-partner]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id     = btn.dataset.togglePartner;
@@ -736,73 +746,253 @@ $("#partnersPageSize")?.addEventListener("change", function () {
 // Sort
 initSortableHeaders(partnersTable, State.partners, loadPartners);
 
-// Form panel toggle
-const admPartnerFormPanel = $("#admPartnerFormPanel");
-const admTogglePartnerForm = $("#admTogglePartnerForm");
-const admClosePartnerForm  = $("#admClosePartnerForm");
-const admCancelPartnerForm = $("#admCancelPartnerForm");
 
-function openPartnerForm() {
-  if (!admPartnerFormPanel) return;
-  admPartnerFormPanel.style.display = "block";
-  admPartnerFormPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  $("#newPartnerId")?.focus();
+/* ═══════════════════════════════════════════════════════════
+   SECTION 9B — PARTNER FORM DRAWER (CREATE / EDIT)
+
+   Single drawer component for both flows:
+     - Create: openCreatePartnerDrawer()
+         ID Partner + Password temporanea visible
+         Stato (active toggle) hidden
+     - Edit:   openEditPartnerDrawer(partnerId)
+         ID Partner + Password temporanea hidden
+         Stato visible, fields pre-filled via
+         GET /admin/partners/:id (full record —
+         the paginated list response is lean)
+
+   ID auto-slug: while creating, the ID field tracks
+   the business name via slugify() until the admin
+   edits the ID field manually.
+═══════════════════════════════════════════════════════════ */
+
+const PARTNER_CATEGORIES = ["ristorante", "bar", "palestra", "negozio", "servizi", "beauty", "altro"];
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const pfDrawerBackdrop = $("#admPartnerDrawerBackdrop");
+const pfClose          = $("#admPartnerDrawerClose");
+const pfCancelBtn      = $("#pfCancelBtn");
+const pfForm           = $("#partnerForm");
+const pfSubmitBtn      = $("#pfSubmitBtn");
+const pfSubmitLabel    = $("#pfSubmitLabel");
+const pfTitle          = $("#admPartnerDrawerTitle");
+const pfSub            = $("#admPartnerDrawerSub");
+const pfPasswordField  = $("#pfPasswordField");
+const pfStatusField    = $("#pfStatusField");
+const pfName           = $("#pfName");
+const pfStatusToggle   = $("#pfStatusToggle");
+const pfStatusLabel    = $("#pfStatusLabel");
+const pfErrorEl        = $("#partnerFormError");
+const pfSuccessEl      = $("#partnerFormSuccess");
+
+let pfMode            = "create"; // 'create' | 'edit'
+let pfEditingId       = null;
+let pfActiveState     = true;
+
+/** Set the active/suspended toggle visual + internal state */
+function setPartnerToggle(active) {
+  pfActiveState = active;
+  pfStatusToggle?.setAttribute("aria-checked", String(active));
+  pfStatusToggle?.classList.toggle("on", active);
+  if (pfStatusLabel) pfStatusLabel.textContent = active ? "Attivo" : "Sospeso";
 }
 
-function closePartnerForm() {
-  if (!admPartnerFormPanel) return;
-  admPartnerFormPanel.style.display = "none";
-  showFeedback($("#partnerFormError"), $("#partnerFormSuccess"), "none");
+/** Reset form fields + feedback + internal flags */
+function resetPartnerForm() {
+  pfForm?.reset();
+  setPartnerToggle(true);
+  showFeedback(pfErrorEl, pfSuccessEl, "none");
 }
 
-admTogglePartnerForm?.addEventListener("click", openPartnerForm);
-admClosePartnerForm?.addEventListener("click",  closePartnerForm);
-admCancelPartnerForm?.addEventListener("click", closePartnerForm);
+function openPartnerDrawer() {
+  pfDrawerBackdrop?.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
 
-// Create partner form submission
-const createPartnerForm = $("#createPartnerForm");
-const createPartnerBtn  = $("#createPartnerBtn");
+function closePartnerDrawer() {
+  pfDrawerBackdrop?.classList.remove("open");
+  document.body.style.overflow = "";
+}
 
-createPartnerForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
+// Toggle click
+pfStatusToggle?.addEventListener("click", () => setPartnerToggle(!pfActiveState));
 
-  const errEl  = $("#partnerFormError");
-  const succEl = $("#partnerFormSuccess");
-  showFeedback(errEl, succEl, "none");
 
-  const id          = $("#newPartnerId")?.value.trim();
-  const name        = $("#partnerName")?.value.trim();
-  const category    = $("#partnerCategory")?.value.trim();
-  const address     = $("#partnerAddress")?.value.trim();
-  const tempPassword = $("#partnerTempPassword")?.value;
-
-  if (!id || !name || !tempPassword) {
-    showFeedback(errEl, succEl, "error", "ID, nome e password temporanea sono obbligatori.");
-    return;
+// Close handlers
+pfClose?.addEventListener("click", closePartnerDrawer);
+pfCancelBtn?.addEventListener("click", closePartnerDrawer);
+pfDrawerBackdrop?.addEventListener("click", (e) => {
+  if (e.target === pfDrawerBackdrop) closePartnerDrawer();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && pfDrawerBackdrop?.classList.contains("open")) {
+    closePartnerDrawer();
   }
+});
 
-  if (tempPassword.length < 8) {
-    showFeedback(errEl, succEl, "error", "La password temporanea deve avere almeno 8 caratteri.");
-    return;
-  }
+/**
+ * Open the drawer in CREATE mode.
+ * - ID Partner + Password temporanea visible
+ * - Stato hidden
+ * - ID auto-slugs from the business name
+ */
+function openCreatePartnerDrawer() {
+  pfMode      = "create";
+  pfEditingId = null;
+  resetPartnerForm();
 
-  setLoading(createPartnerBtn, true);
+  if (pfTitle)       pfTitle.textContent       = "Nuovo partner";
+  if (pfSub)         pfSub.textContent         = "Crea un nuovo partner per l'Energy Club";
+  if (pfSubmitLabel) pfSubmitLabel.textContent = "Crea partner";
+
+  if (pfPasswordField) pfPasswordField.style.display = "";
+  if (pfStatusField)   pfStatusField.style.display   = "none";
+
+  openPartnerDrawer();
+  pfName?.focus();
+}
+
+/**
+ * Open the drawer in EDIT mode for an existing partner.
+ * Fetches the full record (GET /admin/partners/:id) since
+ * the paginated list response omits notes/description/etc.
+ *
+ * - ID Partner + Password temporanea hidden
+ * - Stato visible, pre-filled from the record
+ *
+ * @param {string} partnerId
+ */
+async function openEditPartnerDrawer(partnerId) {
+  pfMode      = "edit";
+  pfEditingId = partnerId;
+  resetPartnerForm();
+
+  if (pfTitle)       pfTitle.textContent       = "Modifica partner";
+  if (pfSub)         pfSub.textContent         = `ID: ${partnerId}`;
+  if (pfSubmitLabel) pfSubmitLabel.textContent = "Salva modifiche";
+
+  if (pfPasswordField) pfPasswordField.style.display = "none";
+  if (pfStatusField)   pfStatusField.style.display   = "";
+
+  openPartnerDrawer();
+
+  setLoading(pfSubmitBtn, true);
+  if (pfSubmitBtn) pfSubmitBtn.disabled = true;
 
   try {
-    const data = await Api.post("/partners", { id, name, category, address, tempPassword });
+    const res = await Api.get(`/partners/${encodeURIComponent(partnerId)}`);
+    const p   = res?.data;
+
+    if (!p) {
+      showFeedback(pfErrorEl, pfSuccessEl, "error", "Impossibile caricare il partner.");
+      return;
+    }
+
+    $("#pfName").value            = p.name             || "";
+    $("#pfLegalName").value       = p.legalName         || "";
+    $("#pfVat").value              = p.vatNumber         || "";
+    $("#pfCategory").value         = p.category          || "";
+    $("#pfEmail").value             = p.email             || "";
+    $("#pfPhone").value             = p.phone             || "";
+    $("#pfWebsite").value           = p.website           || "";
+    $("#pfAddress").value           = p.address           || "";
+    $("#pfCity").value               = p.city               || "";
+    $("#pfPostalCode").value         = p.postalCode         || "";
+    $("#pfDescription").value        = p.description        || "";
+    $("#pfOfferDescription").value   = p.offerDescription    || "";
+    $("#pfNotes").value               = p.notes               || "";
+
+    setPartnerToggle(Boolean(p.active));
+
+  } catch {
+    showFeedback(pfErrorEl, pfSuccessEl, "error", "Errore di connessione. Riprova.");
+  } finally {
+    setLoading(pfSubmitBtn, false);
+    if (pfSubmitBtn) pfSubmitBtn.disabled = false;
+  }
+}
+
+// "Nuovo partner" button (page header) — opens create drawer
+$("#admTogglePartnerForm")?.addEventListener("click", openCreatePartnerDrawer);
+
+// Submit — POST for create, PATCH for edit
+pfForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  showFeedback(pfErrorEl, pfSuccessEl, "none");
+
+  const payload = {
+    name:             $("#pfName")?.value.trim(),
+    legalName:        $("#pfLegalName")?.value.trim(),
+    vatNumber:        $("#pfVat")?.value.trim(),
+    category:         $("#pfCategory")?.value,
+    email:            $("#pfEmail")?.value.trim(),
+    phone:            $("#pfPhone")?.value.trim(),
+    website:          $("#pfWebsite")?.value.trim(),
+    address:          $("#pfAddress")?.value.trim(),
+    city:             $("#pfCity")?.value.trim(),
+    postalCode:       $("#pfPostalCode")?.value.trim(),
+    description:      $("#pfDescription")?.value.trim(),
+    offerDescription: $("#pfOfferDescription")?.value.trim(),
+    notes:            $("#pfNotes")?.value.trim(),
+  };
+
+  // Shared validation
+  if (!payload.name) {
+    showFeedback(pfErrorEl, pfSuccessEl, "error", "Il nome attività è obbligatorio.");
+    pfName?.focus();
+    return;
+  }
+
+  if (!payload.category || !PARTNER_CATEGORIES.includes(payload.category)) {
+    showFeedback(pfErrorEl, pfSuccessEl, "error", "Seleziona una categoria valida.");
+    $("#pfCategory")?.focus();
+    return;
+  }
+
+  if (payload.email && !EMAIL_RE.test(payload.email)) {
+    showFeedback(pfErrorEl, pfSuccessEl, "error", "Email non valida.");
+    $("#pfEmail")?.focus();
+    return;
+  }
+
+  setLoading(pfSubmitBtn, true);
+
+  try {
+    let data;
+
+    if (pfMode === "create") {
+      const tempPassword = $("#pfTempPassword")?.value;
+
+      if (!tempPassword || tempPassword.length < 8) {
+        showFeedback(pfErrorEl, pfSuccessEl, "error", "La password temporanea deve avere almeno 8 caratteri.");
+        $("#pfTempPassword")?.focus();
+        return;
+      }
+
+      data = await Api.post("/partners", { tempPassword, ...payload });
+
+    } else {
+      payload.active = pfActiveState;
+      data = await Api.patch(`/partners/${encodeURIComponent(pfEditingId)}`, payload);
+    }
 
     if (data?.success) {
-      showFeedback(errEl, succEl, "success",
-        `Partner "${esc(name)}" creato (ID: ${esc(data.partnerId)}). Il partner dovrà impostare la propria password al primo accesso.`);
-      createPartnerForm.reset();
+      showFeedback(pfErrorEl, pfSuccessEl, "success",
+        pfMode === "create"
+          ? `Partner "${esc(payload.name)}" creato con successo. Dovrà impostare la propria password al primo accesso.`
+          : "Modifiche salvate con successo.");
+
       await Promise.all([loadPartners(), loadStats()]);
+
+      // Brief delay so the admin sees the confirmation before the drawer closes
+      setTimeout(closePartnerDrawer, 900);
+
     } else {
-      showFeedback(errEl, succEl, "error", data?.message || "Errore nella creazione del partner.");
+      showFeedback(pfErrorEl, pfSuccessEl, "error", data?.message || "Si è verificato un errore. Riprova.");
     }
   } catch {
-    showFeedback(errEl, succEl, "error", "Errore di connessione. Riprova.");
+    showFeedback(pfErrorEl, pfSuccessEl, "error", "Errore di connessione. Riprova.");
   } finally {
-    setLoading(createPartnerBtn, false);
+    setLoading(pfSubmitBtn, false);
   }
 });
 

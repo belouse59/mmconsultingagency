@@ -17,22 +17,22 @@ import { logout } from "../../../core/logout.js";
 import { setLoading, showError, hideError, safeRedirect } from "../../../core/loyaltyUtils.js";
 import { enablePasswordReveal } from "../../../core/passwordChecker.js";
 const form        = $("#partnerLoginForm");
-const partnerIdEl = $("#identifier");
+const emailEl     = $("#identifier");
 const passwordEl  = $("#password");
 const submitBtn   = $("#submitBtn");
 const errorBox    = $("#loginError");
 const errorText   = $("#loginErrorText");
-const $logout = $("#logoutBtn");
+const $logout     = $("#logoutBtn");
  
 /* ── Form submit ── */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   hideError(errorBox);
  
-  const partnerId = partnerIdEl.value.trim();
+  const email = emailEl.value.trim();
   const password  = passwordEl.value;
  
-  if (!partnerId) { showError("Inserisci il tuo ID Partner.", errorText, errorBox); partnerIdEl.focus(); return; }
+  if (!email) { showError("Inserisci il tuo ID Partner.", errorText, errorBox); emailEl.focus(); return; }
   if (!password)  { showError("Inserisci la password.", errorText, errorBox); passwordEl.focus(); return; }
  
   setLoading(submitBtn, true);
@@ -42,7 +42,7 @@ form.addEventListener("submit", async (e) => {
       method:      "POST",
       credentials: "same-origin",
       headers:     { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
-      body:        JSON.stringify({ partnerId, password }),
+      body:        JSON.stringify({ email, password }),
     });
  
     const { data, success, message } = await res.json();
@@ -67,7 +67,7 @@ form.addEventListener("submit", async (e) => {
 });
  
 /* ── Clear error on input ── */
-[partnerIdEl, passwordEl].forEach((el) =>
+[emailEl, passwordEl].forEach((el) =>
   el.addEventListener("input", () => hideError(errorBox))
 );
 

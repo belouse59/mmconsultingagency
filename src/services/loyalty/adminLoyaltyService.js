@@ -3,13 +3,13 @@
 /**
  * services/loyalty/adminLoyaltyService.js
  *
- * Changes from original:
- *   - Removed unused `hashPassword` import
- *   - Added getCustomersPaginated, getPartnersPaginated,
- *     getOffersPaginated, getRedemptionsPaginated
- *   - All paginated methods use shared buildPaginationMeta utility
- *   - Original flat methods (getCustomers, etc.) preserved unchanged
- *     for any internal callers that do not need pagination
+ * Changes from previous version:
+ *   - Added getPartnerById — returns the full partner record
+ *     (sanitized) for the admin edit drawer. The paginated list
+ *     response is intentionally lean and does not include
+ *     notes/description/offerDescription, so the edit drawer
+ *     fetches the full record on open via this method.
+ *   - All other methods unchanged.
  */
 
 const customerRepo   = require("../../repositories/loyalty/customersRepository");
@@ -25,7 +25,6 @@ const { buildPaginationMeta } = require("../../utils/paginate");
 
 /**
  * Strip sensitive fields before returning to the controller.
- * Matches original safe() behaviour.
  */
 function safe(row) {
   if (!row) return null;
@@ -56,24 +55,27 @@ async function getRedemptions() {
 }
 
 /* ─────────────────────────────────────────────
-   PAGINATED  ← NEW
+   GET PARTNER BY ID  ← NEW
+   Full record (sanitized) for the admin edit drawer.
+
+   @param {string} id
+   @returns {Partner|null}
+───────────────────────────────────────────── */
+
+async function getPartnerById(id) {
+  const partner = await partnerRepo.findPartnerById(id);
+  return safe(partner);
+}
+
+/* ─────────────────────────────────────────────
+   PAGINATED (existing — unchanged)
    All four methods follow the same contract:
 
    Input:  req.pagination (set by paginationMiddleware)
    Output: { data: [...], pagination: { page, limit, totalItems,
              totalPages, hasNext, hasPrevious } }
-
-   The service is responsible for:
-     1. Calling the paginated repository method
-     2. Sanitising sensitive fields
-     3. Building the pagination envelope
-   The controller simply passes req.pagination through.
 ───────────────────────────────────────────── */
 
-/**
- * @param {{ page, limit, offset, search, sortBy, sortOrder, filters }} pagination
- * @returns {{ data: Customer[], pagination: PaginationMeta }}
- */
 async function getCustomersPaginated(pagination) {
   const { rows, total } = await customerRepo.findCustomersPaginated(pagination);
 
@@ -87,10 +89,6 @@ async function getCustomersPaginated(pagination) {
   };
 }
 
-/**
- * @param {{ page, limit, offset, search, sortBy, sortOrder, filters }} pagination
- * @returns {{ data: Partner[], pagination: PaginationMeta }}
- */
 async function getPartnersPaginated(pagination) {
   const { rows, total } = await partnerRepo.findPartnersPaginated(pagination);
 
@@ -104,10 +102,6 @@ async function getPartnersPaginated(pagination) {
   };
 }
 
-/**
- * @param {{ page, limit, offset, search, sortBy, sortOrder, filters }} pagination
- * @returns {{ data: Offer[], pagination: PaginationMeta }}
- */
 async function getOffersPaginated(pagination) {
   const { rows, total } = await offerRepo.findOffersPaginated(pagination);
 
@@ -121,10 +115,6 @@ async function getOffersPaginated(pagination) {
   };
 }
 
-/**
- * @param {{ page, limit, offset, search, sortBy, sortOrder, filters }} pagination
- * @returns {{ data: Redemption[], pagination: PaginationMeta }}
- */
 async function getRedemptionsPaginated(pagination) {
   const { rows, total } = await redemptionRepo.findRedemptionsPaginated(pagination);
 
@@ -149,7 +139,10 @@ module.exports = {
   getPartners,
   getRedemptions,
 
-  // Paginated (new)
+  // Single record
+  getPartnerById,          // ← new
+
+  // Paginated
   getCustomersPaginated,
   getPartnersPaginated,
   getOffersPaginated,

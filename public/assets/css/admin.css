@@ -1141,6 +1141,14 @@
   line-height: 1.6;
 }
 
+/* Hint text below a field — e.g. auto-slug explanation */
+.adm-form-hint {
+  font-size: 0.74rem;
+  color: var(--loy-text-sec);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
 .adm-form-footer {
   display: flex;
   align-items: center;
@@ -1172,6 +1180,232 @@
   background: rgba(15, 122, 60, 0.08);
   border: 1px solid rgba(15, 122, 60, 0.25);
   color: var(--loy-green);
+}
+
+
+/* ============================================================
+   10B. DRAWER (slide-over panel for create / edit)
+   ============================================================
+   Used by the partner form drawer (and future entity drawers:
+   customers, offers, partner-request review).
+
+   Structure:
+     .adm-drawer-backdrop          full-screen dim layer
+       .adm-drawer                 the panel itself (right edge)
+         .adm-drawer-header        title + close button
+         .adm-drawer-body          scrollable form content
+           .adm-drawer-section     grouped field section
+             .adm-drawer-section-title
+         .adm-drawer-footer        sticky action buttons
+
+   Sections inside the body reuse .adm-form-grid /
+   .adm-form-field / .adm-form-input etc. from section 10.
+============================================================ */
+
+.adm-drawer-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 22, 40, 0.40);
+  z-index: 600;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.adm-drawer-backdrop.open {
+  display: block;
+}
+
+.adm-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 520px;
+  max-width: 100vw;
+  background: var(--loy-bg);
+  border-left: 1px solid var(--loy-border);
+  box-shadow: var(--loy-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.28s var(--adm-ease);
+}
+
+.adm-drawer-backdrop.open .adm-drawer {
+  transform: translateX(0);
+}
+
+/* ── Header ── */
+.adm-drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--loy-border);
+  flex-shrink: 0;
+}
+
+.adm-drawer-title {
+  font-family: var(--loy-font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--loy-text);
+  letter-spacing: -0.01em;
+  margin-bottom: 3px;
+}
+
+.adm-drawer-sub {
+  font-size: 0.8rem;
+  color: var(--loy-text-sec);
+  font-family: 'Courier New', monospace;
+}
+
+.adm-drawer-close {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--loy-border);
+  background: var(--loy-bg-soft);
+  color: var(--loy-text-sec);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.adm-drawer-close:hover {
+  background: var(--loy-border);
+  color: var(--loy-text);
+}
+
+/* ── Body ── */
+.adm-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 22px;
+}
+
+.adm-drawer-section {
+  margin-bottom: 24px;
+}
+
+.adm-drawer-section:last-child {
+  margin-bottom: 0;
+}
+
+.adm-drawer-section-title {
+  font-family: var(--loy-font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--loy-gold-dark);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--loy-border);
+}
+
+/* ── Footer ── */
+.adm-drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 22px;
+  border-top: 1px solid var(--loy-border);
+  background: var(--loy-bg-soft);
+  flex-shrink: 0;
+}
+
+/* ── Toggle switch (used for active / suspended status) ── */
+.adm-toggle-row {
+  display: flex;
+  align-items: center;
+}
+
+.adm-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.adm-toggle-track {
+  width: 38px;
+  height: 22px;
+  border-radius: 20px;
+  background: var(--loy-border);
+  position: relative;
+  transition: background 0.18s;
+  flex-shrink: 0;
+}
+
+.adm-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(10, 22, 40, 0.25);
+  transition: transform 0.18s;
+}
+
+.adm-toggle.on .adm-toggle-track {
+  background: var(--loy-green);
+}
+
+.adm-toggle.on .adm-toggle-thumb {
+  transform: translateX(16px);
+}
+
+.adm-toggle-label {
+  font-family: var(--loy-font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--loy-text);
+}
+
+/* ── Responsive: full-screen drawer below 640px ── */
+@media (max-width: 640px) {
+  .adm-drawer {
+    width: 100vw;
+  }
+}
+
+/* ── Dark mode ── */
+@media (prefers-color-scheme: dark) {
+  .adm-drawer {
+    background: #0E1420;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .adm-drawer-header,
+  .adm-drawer-footer {
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .adm-drawer-footer {
+    background: #131C2C;
+  }
+
+  .adm-drawer-close {
+    background: #131C2C;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .adm-toggle-track {
+    background: rgba(255, 255, 255, 0.12);
+  }
 }
 
 
@@ -1514,6 +1748,8 @@
   .adm-column,
   .adm-skeleton,
   .adm-modal,
+  .adm-drawer,
+  .adm-toggle-thumb,
   .adm-btn {
     animation-duration:        0.01ms !important;
     animation-iteration-count: 1 !important;

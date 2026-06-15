@@ -110,10 +110,10 @@ const loginPartner =
         await partnerLoyaltyService
           .loginPartner({
 
-            partnerId:
+            email:
               clean(
                 req.body
-                  ?.partnerId || ""
+                  ?.email || ""
               ),
 
             password:

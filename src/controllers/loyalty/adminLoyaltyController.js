@@ -3,25 +3,15 @@
 /**
  * controllers/loyalty/adminLoyaltyController.js
  *
- * Changes from original:
- *   - All handlers now use asyncHandler (matches the pattern
- *     used by customerLoyaltyController and partnerLoyaltyController)
- *   - Paginated handlers added for customers, partners, offers, redemptions
- *   - Paginated handlers read req.pagination (set by paginationMiddleware)
- *   - Original flat handlers preserved — routes can switch at the router level
- *   - Removed raw try/catch from every handler (asyncHandler owns this)
- *
- *
- *   // Paginated list endpoints
- *   router.get("/customers",   paginate, ctrl.adminGetCustomersPaginated);
- *   router.get("/partners",    paginate, ctrl.adminGetPartnersPaginated);
- *   router.get("/offers",      paginate, ctrl.adminGetOffersPaginated);
- *   router.get("/redemptions", paginate, ctrl.adminGetRedemptionsPaginated);
- *
- *   // Mutation endpoints (unchanged)
- *   router.post("/partners",           ctrl.adminCreatePartner);
- *   router.patch("/partners/:id/active", ctrl.adminSetPartnerActive);
- *   router.post("/offers",             ctrl.adminCreateOffer);
+ * Changes from previous version:
+ *   - adminCreatePartner extended to accept the full
+ *     business/contact/location/loyalty-program payload
+ *     from the admin partner creation drawer
+ *   - adminGetPartnerById added — GET /admin/partners/:id
+ *     returns the full record for the edit drawer
+ *   - adminUpdatePartner added — PATCH /admin/partners/:id
+ *     partial update of partner fields
+ *   - All other handlers unchanged
  */
 
 const redemptionLoyaltyService = require("../../services/loyalty/redemptionLoyaltyService");
@@ -125,7 +115,7 @@ const adminGetCustomers = asyncHandler(async (req, res) => {
 });
 
 /* ─────────────────────────────────────────────
-   CUSTOMERS — PAGINATED  ← NEW
+   CUSTOMERS — PAGINATED
    GET /admin/customers?page=1&limit=20&search=mario&active=true
 ───────────────────────────────────────────── */
 
@@ -153,7 +143,7 @@ const adminGetPartners = asyncHandler(async (req, res) => {
 });
 
 /* ─────────────────────────────────────────────
-   PARTNERS — PAGINATED  ← NEW
+   PARTNERS — PAGINATED
    GET /admin/partners?page=1&limit=20&search=bar&category=ristorante&active=true
 ───────────────────────────────────────────── */
 
@@ -168,21 +158,131 @@ const adminGetPartnersPaginated = asyncHandler(async (req, res) => {
 });
 
 /* ─────────────────────────────────────────────
-   CREATE PARTNER (original — unchanged)
+   PARTNERS — GET ONE  ← NEW
+   GET /admin/partners/:id
+
+   Returns the full partner record (sanitized).
+   The paginated list response is intentionally lean
+   (no notes/description/offerDescription) — the edit
+   drawer fetches the full record via this endpoint
+   when opened.
+───────────────────────────────────────────── */
+
+const adminGetPartnerById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const partner = await adminLoyaltyService.getPartnerById(clean(id || ""));
+
+  if (!partner) {
+    return res.status(404).json({
+      success: false,
+      message: "Partner non trovato.",
+    });
+  }
+
+  return res.json({
+    success: true,
+    data:    partner,
+  });
+});
+
+/* ─────────────────────────────────────────────
+   CREATE PARTNER  ← EXTENDED
+   POST /admin/partners
+
+   Accepts the full business / contact / location /
+   loyalty-program payload from the admin partner
+   creation drawer, in addition to the original
+   id / name / category / address / tempPassword.
 ───────────────────────────────────────────── */
 
 const adminCreatePartner = asyncHandler(async (req, res) => {
-  const { id, name, category, address, tempPassword } = req.body;
+  const {
+    id,
+    name,
+    legalName,
+    vatNumber,
+    email,
+    phone,
+    website,
+    category,
+    address,
+    city,
+    postalCode,
+    description,
+    offerDescription,
+    notes,
+    tempPassword,
+  } = req.body;
 
   const result = await partnerLoyaltyService.createPartner({
-    id:           clean(id || ""),
-    name:         clean(name || ""),
-    category:     clean(category || ""),
-    address:      clean(address || ""),
+    id:               clean(id || ""),
+    name:             clean(name || ""),
+    legalName:        clean(legalName || ""),
+    vatNumber:        clean(vatNumber || ""),
+    email:            clean(email || ""),
+    phone:            clean(phone || ""),
+    website:          clean(website || ""),
+    category:         clean(category || ""),
+    address:          clean(address || ""),
+    city:             clean(city || ""),
+    postalCode:       clean(postalCode || ""),
+    description:      clean(description || ""),
+    offerDescription: clean(offerDescription || ""),
+    notes:            clean(notes || ""),
     tempPassword,
   });
 
   return res.status(201).json(result);
+});
+
+/* ─────────────────────────────────────────────
+   UPDATE PARTNER  ← NEW
+   PATCH /admin/partners/:id
+
+   Partial update — only keys present in the request
+   body are changed. Used by the edit drawer.
+
+   id / password are not editable here
+   (id is immutable; password has its own flow via
+   setPartnerPassword).
+───────────────────────────────────────────── */
+
+const PARTNER_PATCH_FIELDS = [
+  "name",
+  "legalName",
+  "vatNumber",
+  "category",
+  "email",
+  "phone",
+  "website",
+  "address",
+  "city",
+  "postalCode",
+  "description",
+  "offerDescription",
+  "notes",
+];
+
+const adminUpdatePartner = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const fields = {};
+
+  for (const key of PARTNER_PATCH_FIELDS) {
+    if (req.body[key] !== undefined) {
+      fields[key] = clean(String(req.body[key] ?? ""));
+    }
+  }
+
+  // active is boolean — must not be passed through clean()
+  if (req.body.active !== undefined) {
+    fields.active = Boolean(req.body.active);
+  }
+
+  const result = await partnerLoyaltyService.updatePartner(clean(id || ""), fields);
+
+  return res.json(result);
 });
 
 /* ─────────────────────────────────────────────
@@ -219,7 +319,7 @@ const adminGetOffers = asyncHandler(async (req, res) => {
 });
 
 /* ─────────────────────────────────────────────
-   OFFERS — PAGINATED  ← NEW
+   OFFERS — PAGINATED
    GET /admin/offers?page=1&limit=20&search=pizza&active=true&partnerId=bar-centrale
 ───────────────────────────────────────────── */
 
@@ -263,7 +363,7 @@ const adminGetRedemptions = asyncHandler(async (req, res) => {
 });
 
 /* ─────────────────────────────────────────────
-   REDEMPTIONS — PAGINATED  ← NEW
+   REDEMPTIONS — PAGINATED
    GET /admin/redemptions?page=1&limit=20&partnerId=bar-centrale&offerId=x
 ───────────────────────────────────────────── */
 
@@ -294,7 +394,9 @@ module.exports = {
   // Partners
   adminGetPartners,
   adminGetPartnersPaginated,
+  adminGetPartnerById,        // ← new
   adminCreatePartner,
+  adminUpdatePartner,         // ← new
   adminSetPartnerActive,
 
   // Offers

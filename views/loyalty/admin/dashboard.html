@@ -355,99 +355,6 @@
           </div>
         </div>
 
-        <!-- Create partner form panel -->
-        <div class="adm-form-panel" id="admPartnerFormPanel" style="display:none;">
-          <div class="adm-form-panel-header">
-            <span class="adm-form-panel-title">Crea nuovo partner</span>
-            <button class="adm-form-panel-toggle" id="admClosePartnerForm">Chiudi</button>
-          </div>
-
-          <div class="adm-feedback adm-feedback--error" id="partnerFormError" role="alert" aria-live="polite">
-            <i class="fa fa-triangle-exclamation" aria-hidden="true"></i>
-            <span id="partnerFormErrorMsg"></span>
-          </div>
-          <div class="adm-feedback adm-feedback--success" id="partnerFormSuccess" role="status" aria-live="polite">
-            <i class="fa fa-circle-check" aria-hidden="true"></i>
-            <span id="partnerFormSuccessMsg"></span>
-          </div>
-
-          <form id="createPartnerForm" novalidate>
-            <div class="adm-form-grid">
-              <div class="adm-form-field">
-                <label class="adm-form-label adm-form-label--required" for="newPartnerId">
-                  ID Partner
-                </label>
-                <input
-                  type="text"
-                  id="newPartnerId"
-                  name="id"
-                  class="adm-form-input"
-                  placeholder="es. bar-centrale"
-                  autocomplete="off"
-                  required
-                >
-              </div>
-              <div class="adm-form-field">
-                <label class="adm-form-label adm-form-label--required" for="partnerName">
-                  Nome attività
-                </label>
-                <input
-                  type="text"
-                  id="partnerName"
-                  name="name"
-                  class="adm-form-input"
-                  placeholder="es. Bar Centrale Messina"
-                  required
-                >
-              </div>
-              <div class="adm-form-field">
-                <label class="adm-form-label" for="partnerCategory">Categoria</label>
-                <input
-                  type="text"
-                  id="partnerCategory"
-                  name="category"
-                  class="adm-form-input"
-                  placeholder="es. Ristorazione"
-                >
-              </div>
-              <div class="adm-form-field">
-                <label class="adm-form-label" for="partnerAddress">Indirizzo</label>
-                <input
-                  type="text"
-                  id="partnerAddress"
-                  name="address"
-                  class="adm-form-input"
-                  placeholder="es. Via Garibaldi 12, Messina"
-                >
-              </div>
-              <div class="adm-form-field adm-form-field--full">
-                <label class="adm-form-label adm-form-label--required" for="partnerTempPassword">
-                  Password temporanea
-                </label>
-                <input
-                  type="password"
-                  id="partnerTempPassword"
-                  name="tempPassword"
-                  class="adm-form-input"
-                  placeholder="Minimo 8 caratteri — il partner la cambierà al primo accesso"
-                  minlength="8"
-                  required
-                >
-              </div>
-            </div>
-
-            <div class="adm-form-footer">
-              <button type="submit" class="adm-btn adm-btn--primary" id="createPartnerBtn">
-                <span class="adm-btn-spinner" aria-hidden="true"></span>
-                <span class="adm-btn-label">Crea partner</span>
-              </button>
-              <button type="button" class="adm-btn adm-btn--secondary" id="admCancelPartnerForm">
-                Annulla
-              </button>
-            </div>
-          </form>
-        </div>
-
         <!-- Toolbar -->
         <div class="adm-toolbar" role="search" aria-label="Filtra partner">
           <div class="adm-search-wrap">
@@ -758,6 +665,273 @@
       <button class="adm-btn adm-btn--danger" id="admConfirmOk">Conferma</button>
     </div>
   </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     PARTNER FORM DRAWER
+     Single component for both "Nuovo partner" (create)
+     and "Modifica" (edit), opened from the Partners module.
+     - Create: ID Partner + Password temporanea visible,
+       Stato hidden.
+     - Edit: ID Partner + Password temporanea hidden,
+       Stato visible. Fields pre-filled via
+       GET /admin/partners/:id.
+═══════════════════════════════════════════════════ -->
+<div class="adm-drawer-backdrop" id="admPartnerDrawerBackdrop">
+  <aside
+    class="adm-drawer"
+    id="admPartnerDrawer"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="admPartnerDrawerTitle"
+  >
+
+    <div class="adm-drawer-header">
+      <div>
+        <p class="adm-drawer-title" id="admPartnerDrawerTitle">Nuovo partner</p>
+        <p class="adm-drawer-sub" id="admPartnerDrawerSub">Crea un nuovo partner per l'Energy Club</p>
+      </div>
+      <button class="adm-drawer-close" id="admPartnerDrawerClose" aria-label="Chiudi">
+        <i class="fa fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="adm-drawer-body">
+
+      <div class="adm-feedback adm-feedback--error" id="partnerFormError" role="alert" aria-live="polite">
+        <i class="fa fa-triangle-exclamation" aria-hidden="true"></i>
+        <span id="partnerFormErrorMsg"></span>
+      </div>
+      <div class="adm-feedback adm-feedback--success" id="partnerFormSuccess" role="status" aria-live="polite">
+        <i class="fa fa-circle-check" aria-hidden="true"></i>
+        <span id="partnerFormSuccessMsg"></span>
+      </div>
+
+      <form id="partnerForm" novalidate>
+
+        <!-- ── Informazioni attività ── -->
+        <div class="adm-drawer-section">
+          <p class="adm-drawer-section-title">Informazioni attività</p>
+          <div class="adm-form-grid">
+
+            <div class="adm-form-field adm-form-field--full">
+              <label class="adm-form-label adm-form-label--required" for="pfName">Nome attività</label>
+              <input
+                type="text"
+                id="pfName"
+                class="adm-form-input"
+                placeholder="es. Bar Centrale Messina"
+                autocomplete="off"
+                required
+              >
+            </div>
+
+            <div class="adm-form-field">
+              <label class="adm-form-label" for="pfLegalName">Ragione sociale</label>
+              <input
+                type="text"
+                id="pfLegalName"
+                class="adm-form-input"
+                placeholder="es. Bar Centrale S.r.l."
+                autocomplete="off"
+              >
+            </div>
+
+            <div class="adm-form-field">
+              <label class="adm-form-label" for="pfVat">Partita IVA</label>
+              <input
+                type="text"
+                id="pfVat"
+                class="adm-form-input"
+                placeholder="IT12345678901"
+                autocomplete="off"
+              >
+            </div>
+
+            <div class="adm-form-field adm-form-field--full">
+              <label class="adm-form-label adm-form-label--required" for="pfCategory">Categoria</label>
+              <select id="pfCategory" class="adm-form-select" required>
+                <option value="" disabled selected>Seleziona la categoria…</option>
+                <option value="ristorante">Ristorante</option>
+                <option value="bar">Bar / Caffè</option>
+                <option value="palestra">Palestra / Sport</option>
+                <option value="negozio">Negozio / Retail</option>
+                <option value="servizi">Servizi professionali</option>
+                <option value="beauty">Beauty &amp; Benessere</option>
+                <option value="altro">Altro</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── Contatti ── -->
+        <div class="adm-drawer-section">
+          <p class="adm-drawer-section-title">Contatti</p>
+          <div class="adm-form-grid">
+
+            <div class="adm-form-field">
+              <label class="adm-form-label" for="pfEmail">Email</label>
+              <input
+                type="email"
+                id="pfEmail"
+                class="adm-form-input"
+                placeholder="info@attivita.it"
+                autocomplete="off"
+              >
+            </div>
+
+            <div class="adm-form-field">
+              <label class="adm-form-label" for="pfPhone">Telefono</label>
+              <input
+                type="tel"
+                id="pfPhone"
+                class="adm-form-input"
+                placeholder="+39 090 000 0000"
+                autocomplete="off"
+              >
+            </div>
+
+            <div class="adm-form-field adm-form-field--full">
+              <label class="adm-form-label" for="pfWebsite">Sito web</label>
+              <input
+                type="url"
+                id="pfWebsite"
+                class="adm-form-input"
+                placeholder="https://www.attivita.it"
+                autocomplete="off"
+              >
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── Sede ── -->
+        <div class="adm-drawer-section">
+          <p class="adm-drawer-section-title">Sede</p>
+          <div class="adm-form-grid">
+
+            <div class="adm-form-field adm-form-field--full">
+              <label class="adm-form-label" for="pfAddress">Indirizzo</label>
+              <input
+                type="text"
+                id="pfAddress"
+                class="adm-form-input"
+                placeholder="Via Garibaldi 12"
+                autocomplete="off"
+              >
+            </div>
+
+            <div class="adm-form-field">
+              <label class="adm-form-label" for="pfCity">Città</label>
+              <input
+                type="text"
+                id="pfCity"
+                class="adm-form-input"
+                placeholder="Messina"
+                autocomplete="off"
+              >
+            </div>
+
+            <div class="adm-form-field">
+              <label class="adm-form-label" for="pfPostalCode">CAP</label>
+              <input
+                type="text"
+                id="pfPostalCode"
+                class="adm-form-input"
+                placeholder="98100"
+                autocomplete="off"
+              >
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── Programma Loyalty ── -->
+        <div class="adm-drawer-section">
+          <p class="adm-drawer-section-title">Programma Loyalty</p>
+          <div class="adm-form-grid">
+
+            <div class="adm-form-field adm-form-field--full">
+              <label class="adm-form-label" for="pfDescription">Descrizione attività</label>
+              <textarea
+                id="pfDescription"
+                class="adm-form-textarea"
+                rows="2"
+                placeholder="Descrizione mostrata ai clienti (es. nella futura pagina partner)…"
+              ></textarea>
+            </div>
+
+            <div class="adm-form-field adm-form-field--full">
+              <label class="adm-form-label" for="pfOfferDescription">Proposta di offerta</label>
+              <textarea
+                id="pfOfferDescription"
+                class="adm-form-textarea"
+                rows="2"
+                placeholder="es. 10% di sconto per i clienti M&amp;M Energy Club…"
+              ></textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── Accesso & Amministrazione ── -->
+        <div class="adm-drawer-section">
+          <p class="adm-drawer-section-title">Accesso &amp; Amministrazione</p>
+          <div class="adm-form-grid">
+
+            <!-- Create-only: Temporary password -->
+            <div class="adm-form-field adm-form-field--full" id="pfPasswordField">
+              <label class="adm-form-label adm-form-label--required" for="pfTempPassword">Password temporanea</label>
+              <input
+                type="password"
+                id="pfTempPassword"
+                class="adm-form-input"
+                placeholder="Minimo 8 caratteri — il partner la cambierà al primo accesso"
+                minlength="8"
+                autocomplete="new-password"
+              >
+            </div>
+
+            <!-- Edit-only: Active / suspended toggle -->
+            <div class="adm-form-field adm-form-field--full" id="pfStatusField" style="display:none;">
+              <label class="adm-form-label">Stato account</label>
+              <div class="adm-toggle-row">
+                <button type="button" class="adm-toggle on" id="pfStatusToggle" role="switch" aria-checked="true">
+                  <span class="adm-toggle-track" aria-hidden="true">
+                    <span class="adm-toggle-thumb"></span>
+                  </span>
+                  <span class="adm-toggle-label" id="pfStatusLabel">Attivo</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="adm-form-field adm-form-field--full">
+              <label class="adm-form-label" for="pfNotes">Note interne</label>
+              <textarea
+                id="pfNotes"
+                class="adm-form-textarea"
+                rows="2"
+                placeholder="Note visibili solo agli amministratori…"
+              ></textarea>
+            </div>
+
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="adm-drawer-footer">
+      <button type="button" class="adm-btn adm-btn--secondary" id="pfCancelBtn">Annulla</button>
+      <button type="submit" form="partnerForm" class="adm-btn adm-btn--primary" id="pfSubmitBtn">
+        <span class="adm-btn-spinner" aria-hidden="true"></span>
+        <span class="adm-btn-label" id="pfSubmitLabel">Crea partner</span>
+      </button>
+    </div>
+
+  </aside>
 </div>
 
 <script type="module" src="/js/features/loyalty/admin/admin.js"></script>

@@ -79,7 +79,7 @@ async function register({
         .createCustomer({
 
           id:
-            generateUUID(),
+            generateUUID('c'),
 
           full_name,
 

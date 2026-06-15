@@ -38,6 +38,8 @@ const SORT_COLUMNS = {
     createdAt: "created_at",
     name:      "name",
     category:  "category",
+    city:      "city",
+    email:     "email",
     active:    "active",
   },
 
