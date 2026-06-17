@@ -57,6 +57,14 @@ const SORT_COLUMNS = {
     offerId:    "offer_id",
   },
 
+  partnerRequests: {
+    createdAt:    "created_at",
+    submittedAt:  "submitted_at",
+    businessName: "business_name",
+    status:       "status",
+    category:     "category",
+  },
+
 };
 
 /* ─────────────────────────────────────────────

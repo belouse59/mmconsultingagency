@@ -289,10 +289,11 @@ function makeState(defaults = {}) {
 }
 
 const State = {
-  customers:   makeState(),
-  partners:    makeState(),
-  offers:      makeState(),
-  redemptions: makeState({ sortBy: "redeemedAt" }),
+  customers:       makeState(),
+  partners:        makeState(),
+  partnerRequests: makeState({ sortBy: "createdAt", filters: { status: "pending" } }),
+  offers:          makeState(),
+  redemptions:     makeState({ sortBy: "redeemedAt" }),
 };
 
 
@@ -306,11 +307,12 @@ const admBurger   = $("#admBurger");
 const admBreadcrumbCurrent = $("#admBreadcrumbCurrent");
 
 const MODULE_LABELS = {
-  dashboard:   "Dashboard",
-  customers:   "Clienti",
-  partners:    "Partner",
-  offers:      "Offerte",
-  redemptions: "Utilizzi",
+  dashboard:       "Dashboard",
+  customers:       "Clienti",
+  partners:        "Partner",
+  partnerRequests: "Richieste Partner",
+  offers:          "Offerte",
+  redemptions:     "Utilizzi",
 };
 
 let _activeModule = "dashboard";
@@ -350,6 +352,8 @@ function switchModule(key) {
     loadCustomers();
   } else if (key === "partners") {
     loadPartners();
+  } else if (key === "partnerRequests") {
+    loadPartnerRequests();
   } else if (key === "offers") {
     loadOffers();
   } else if (key === "redemptions") {
@@ -466,17 +470,19 @@ async function loadStats() {
     .forEach((el) => { if (el) el.textContent = "—"; });
 
   try {
-    const [cData, pData, oData, rData] = await Promise.all([
-      Api.getPaginated("/customers",   { limit: 1 }),
-      Api.getPaginated("/partners",    { limit: 1, filters: { active: "true" } }),
-      Api.getPaginated("/offers",      { limit: 1, filters: { active: "true" } }),
-      Api.getPaginated("/redemptions", { limit: 1 }),
+    const [cData, pData, oData, rData, prData] = await Promise.all([
+      Api.getPaginated("/customers",        { limit: 1 }),
+      Api.getPaginated("/partners",         { limit: 1, filters: { active: "true" } }),
+      Api.getPaginated("/offers",           { limit: 1, filters: { active: "true" } }),
+      Api.getPaginated("/redemptions",      { limit: 1 }),
+      Api.getPaginated("/partner-requests", { limit: 1, filters: { status: "pending" } }),
     ]);
 
-    const cTotal = cData?.pagination?.totalItems ?? "—";
-    const pTotal = pData?.pagination?.totalItems ?? "—";
-    const oTotal = oData?.pagination?.totalItems ?? "—";
-    const rTotal = rData?.pagination?.totalItems ?? "—";
+    const cTotal  = cData?.pagination?.totalItems  ?? "—";
+    const pTotal  = pData?.pagination?.totalItems  ?? "—";
+    const oTotal  = oData?.pagination?.totalItems  ?? "—";
+    const rTotal  = rData?.pagination?.totalItems  ?? "—";
+    const prTotal = prData?.pagination?.totalItems ?? "—";
 
     if (statCustomers)   statCustomers.textContent   = cTotal;
     if (statPartners)    statPartners.textContent     = pTotal;
@@ -484,14 +490,23 @@ async function loadStats() {
     if (statRedemptions) statRedemptions.textContent  = rTotal;
 
     // Sidebar counts
-    const nc = $("#navCountCustomers");
-    const np = $("#navCountPartners");
-    const no = $("#navCountOffers");
-    const nr = $("#navCountRedemptions");
-    if (nc) nc.textContent = cTotal;
-    if (np) np.textContent = pTotal;
-    if (no) no.textContent = oTotal;
-    if (nr) nr.textContent = rTotal;
+    const nc  = $("#navCountCustomers");
+    const np  = $("#navCountPartners");
+    const no  = $("#navCountOffers");
+    const nr  = $("#navCountRedemptions");
+    const npr = $("#navCountPartnerRequests");
+    if (nc)  nc.textContent  = cTotal;
+    if (np)  np.textContent  = pTotal;
+    if (no)  no.textContent  = oTotal;
+    if (nr)  nr.textContent  = rTotal;
+    // Show pending count on the nav badge — highlight if > 0
+    if (npr) {
+      npr.textContent = prTotal;
+      if (prTotal > 0) {
+        npr.style.background = "rgba(212,160,23,0.25)";
+        npr.style.color      = "var(--loy-gold)";
+      }
+    }
 
   } catch {
     [statCustomers, statPartners, statOffers, statRedemptions]
@@ -748,21 +763,25 @@ initSortableHeaders(partnersTable, State.partners, loadPartners);
 
 
 /* ═══════════════════════════════════════════════════════════
-   SECTION 9B — PARTNER FORM DRAWER (CREATE / EDIT)
+   SECTION 9B — PARTNER FORM DRAWER (CREATE / EDIT / APPROVE)
 
-   Single drawer component for both flows:
+   Single drawer component for three flows:
      - Create: openCreatePartnerDrawer()
-         ID Partner + Password temporanea visible
+         Password temporanea visible
          Stato (active toggle) hidden
      - Edit:   openEditPartnerDrawer(partnerId)
-         ID Partner + Password temporanea hidden
+         Password temporanea hidden
          Stato visible, fields pre-filled via
-         GET /admin/partners/:id (full record —
-         the paginated list response is lean)
+         GET /admin/partners/:id
+     - Approve: openApproveRequestDrawer(requestObj)
+         Password temporanea visible
+         Stato hidden
+         All request fields pre-filled from the
+         in-memory request object (no extra API call)
 
-   ID auto-slug: while creating, the ID field tracks
-   the business name via slugify() until the admin
-   edits the ID field manually.
+   Partner ID is NEVER entered by the admin.
+   It is generated server-side by partnerLoyaltyService.createPartner()
+   from the business name + a random 4-char hex suffix.
 ═══════════════════════════════════════════════════════════ */
 
 const PARTNER_CATEGORIES = ["ristorante", "bar", "palestra", "negozio", "servizi", "beauty", "altro"];
@@ -784,9 +803,10 @@ const pfStatusLabel    = $("#pfStatusLabel");
 const pfErrorEl        = $("#partnerFormError");
 const pfSuccessEl      = $("#partnerFormSuccess");
 
-let pfMode            = "create"; // 'create' | 'edit'
-let pfEditingId       = null;
-let pfActiveState     = true;
+let pfMode               = "create"; // 'create' | 'edit' | 'approve'
+let pfEditingId          = null;
+let pfActiveState        = true;
+let _pfApprovalRequestId = null;
 
 /** Set the active/suspended toggle visual + internal state */
 function setPartnerToggle(active) {
@@ -796,11 +816,32 @@ function setPartnerToggle(active) {
   if (pfStatusLabel) pfStatusLabel.textContent = active ? "Attivo" : "Sospeso";
 }
 
-/** Reset form fields + feedback + internal flags */
+/** Reset form fields + feedback */
 function resetPartnerForm() {
   pfForm?.reset();
   setPartnerToggle(true);
   showFeedback(pfErrorEl, pfSuccessEl, "none");
+}
+
+/** Fill all form fields from a data object */
+function fillPartnerForm(d = {}) {
+  const set = (id, val) => {
+    const el = $(`#${id}`);
+    if (el) el.value = val || "";
+  };
+  set("pfName",             d.name             || d.businessName || "");
+  set("pfLegalName",        d.legalName        || "");
+  set("pfVat",              d.vatNumber        || "");
+  set("pfCategory",         d.category         || "");
+  set("pfEmail",            d.email            || "");
+  set("pfPhone",            d.phone            || "");
+  set("pfWebsite",          d.website          || "");
+  set("pfAddress",          d.address          || "");
+  set("pfCity",             d.city             || "");
+  set("pfPostalCode",       d.postalCode       || "");
+  set("pfDescription",      d.description      || "");
+  set("pfOfferDescription", d.offerDescription || d.description || "");
+  set("pfNotes",            d.notes            || "");
 }
 
 function openPartnerDrawer() {
@@ -816,7 +857,6 @@ function closePartnerDrawer() {
 // Toggle click
 pfStatusToggle?.addEventListener("click", () => setPartnerToggle(!pfActiveState));
 
-
 // Close handlers
 pfClose?.addEventListener("click", closePartnerDrawer);
 pfCancelBtn?.addEventListener("click", closePartnerDrawer);
@@ -831,13 +871,12 @@ document.addEventListener("keydown", (e) => {
 
 /**
  * Open the drawer in CREATE mode.
- * - ID Partner + Password temporanea visible
- * - Stato hidden
- * - ID auto-slugs from the business name
+ * Password temporanea visible. Stato hidden. Form empty.
  */
 function openCreatePartnerDrawer() {
-  pfMode      = "create";
-  pfEditingId = null;
+  pfMode               = "create";
+  pfEditingId          = null;
+  _pfApprovalRequestId = null;
   resetPartnerForm();
 
   if (pfTitle)       pfTitle.textContent       = "Nuovo partner";
@@ -852,18 +891,16 @@ function openCreatePartnerDrawer() {
 }
 
 /**
- * Open the drawer in EDIT mode for an existing partner.
- * Fetches the full record (GET /admin/partners/:id) since
- * the paginated list response omits notes/description/etc.
- *
- * - ID Partner + Password temporanea hidden
- * - Stato visible, pre-filled from the record
+ * Open the drawer in EDIT mode.
+ * Fetches full record (GET /admin/partners/:id).
+ * Password field hidden. Stato toggle visible.
  *
  * @param {string} partnerId
  */
 async function openEditPartnerDrawer(partnerId) {
-  pfMode      = "edit";
-  pfEditingId = partnerId;
+  pfMode               = "edit";
+  pfEditingId          = partnerId;
+  _pfApprovalRequestId = null;
   resetPartnerForm();
 
   if (pfTitle)       pfTitle.textContent       = "Modifica partner";
@@ -887,20 +924,7 @@ async function openEditPartnerDrawer(partnerId) {
       return;
     }
 
-    $("#pfName").value            = p.name             || "";
-    $("#pfLegalName").value       = p.legalName         || "";
-    $("#pfVat").value              = p.vatNumber         || "";
-    $("#pfCategory").value         = p.category          || "";
-    $("#pfEmail").value             = p.email             || "";
-    $("#pfPhone").value             = p.phone             || "";
-    $("#pfWebsite").value           = p.website           || "";
-    $("#pfAddress").value           = p.address           || "";
-    $("#pfCity").value               = p.city               || "";
-    $("#pfPostalCode").value         = p.postalCode         || "";
-    $("#pfDescription").value        = p.description        || "";
-    $("#pfOfferDescription").value   = p.offerDescription    || "";
-    $("#pfNotes").value               = p.notes               || "";
-
+    fillPartnerForm(p);
     setPartnerToggle(Boolean(p.active));
 
   } catch {
@@ -911,10 +935,48 @@ async function openEditPartnerDrawer(partnerId) {
   }
 }
 
-// "Nuovo partner" button (page header) — opens create drawer
+/**
+ * Open the drawer in APPROVE mode.
+ * Pre-fills ALL fields from the in-memory request object —
+ * no additional API call needed; the object is already in
+ * memory from the loadPartnerRequests() response.
+ * Password field visible (required to create the partner account).
+ * Stato hidden (approved partners are always active).
+ *
+ * @param {object} requestObj — the full partner request row from the API
+ */
+function openApproveRequestDrawer(requestObj) {
+  pfMode               = "approve";
+  pfEditingId          = null;
+  _pfApprovalRequestId = requestObj.id;
+  resetPartnerForm();
+
+  if (pfTitle)       pfTitle.textContent       = "Approva richiesta partner";
+  if (pfSub)         pfSub.textContent         = `Richiesta di: ${requestObj.businessName}`;
+  if (pfSubmitLabel) pfSubmitLabel.textContent = "Approva e crea partner";
+
+  if (pfPasswordField) pfPasswordField.style.display = "";
+  if (pfStatusField)   pfStatusField.style.display   = "none";
+
+  // Pre-fill from request — offerDescription maps from request.description
+  fillPartnerForm({
+    businessName:     requestObj.businessName,
+    vatNumber:        requestObj.vatNumber,
+    category:         requestObj.category,
+    email:            requestObj.email,
+    phone:            requestObj.phone,
+    description:      requestObj.description, // fillPartnerForm maps this to offerDescription too
+  });
+
+  openPartnerDrawer();
+  // Focus the password field — it's the only thing the admin must fill
+  $("#pfTempPassword")?.focus();
+}
+
+// "Nuovo partner" button (page header)
 $("#admTogglePartnerForm")?.addEventListener("click", openCreatePartnerDrawer);
 
-// Submit — POST for create, PATCH for edit
+// Submit
 pfForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   showFeedback(pfErrorEl, pfSuccessEl, "none");
@@ -935,7 +997,7 @@ pfForm?.addEventListener("submit", async (e) => {
     notes:            $("#pfNotes")?.value.trim(),
   };
 
-  // Shared validation
+  // Validation shared across create + approve
   if (!payload.name) {
     showFeedback(pfErrorEl, pfSuccessEl, "error", "Il nome attività è obbligatorio.");
     pfName?.focus();
@@ -968,22 +1030,44 @@ pfForm?.addEventListener("submit", async (e) => {
         return;
       }
 
+      // Partner ID is generated server-side — not sent by the frontend.
       data = await Api.post("/partners", { tempPassword, ...payload });
 
+    } else if (pfMode === "approve") {
+      const tempPassword = $("#pfTempPassword")?.value;
+
+      if (!tempPassword || tempPassword.length < 8) {
+        showFeedback(pfErrorEl, pfSuccessEl, "error", "La password temporanea deve avere almeno 8 caratteri.");
+        $("#pfTempPassword")?.focus();
+        return;
+      }
+
+      // Partner ID is generated server-side by the approval service.
+      data = await Api.post(
+        `/partner-requests/${encodeURIComponent(_pfApprovalRequestId)}/approve`,
+        { tempPassword, ...payload }
+      );
+
     } else {
+      // Edit
       payload.active = pfActiveState;
       data = await Api.patch(`/partners/${encodeURIComponent(pfEditingId)}`, payload);
     }
 
     if (data?.success) {
-      showFeedback(pfErrorEl, pfSuccessEl, "success",
+      const successMsg =
         pfMode === "create"
-          ? `Partner "${esc(payload.name)}" creato con successo. Dovrà impostare la propria password al primo accesso.`
-          : "Modifiche salvate con successo.");
+          ? `Partner "${esc(payload.name)}" creato. Dovrà impostare la password al primo accesso.`
+          : pfMode === "approve"
+            ? `Richiesta approvata. Partner "${esc(payload.name)}" creato con successo.`
+            : "Modifiche salvate con successo.";
 
-      await Promise.all([loadPartners(), loadStats()]);
+      showFeedback(pfErrorEl, pfSuccessEl, "success", successMsg);
 
-      // Brief delay so the admin sees the confirmation before the drawer closes
+      const reloads = [loadStats(), loadPartners()];
+      if (pfMode === "approve") reloads.push(loadPartnerRequests());
+      await Promise.all(reloads);
+
       setTimeout(closePartnerDrawer, 900);
 
     } else {
@@ -993,6 +1077,315 @@ pfForm?.addEventListener("submit", async (e) => {
     showFeedback(pfErrorEl, pfSuccessEl, "error", "Errore di connessione. Riprova.");
   } finally {
     setLoading(pfSubmitBtn, false);
+  }
+});
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 9C — PARTNER REQUESTS MODULE
+   (list + approve via partner drawer pre-filled mode
+   + reject via dedicated modal with notes textarea)
+═══════════════════════════════════════════════════════════ */
+
+const partnerRequestsTable  = $("#modulePartnerRequests .adm-table");
+const partnerRequestsBody   = $("#partnerRequestsTableBody");
+const partnerRequestsCount  = $("#partnerRequestsCount");
+
+/** Map internal category keys to Italian display labels */
+const CATEGORY_LABELS = {
+  ristorante: "Ristorante",
+  bar:        "Bar / Caffè",
+  palestra:   "Palestra / Sport",
+  negozio:    "Negozio / Retail",
+  servizi:    "Servizi professionali",
+  beauty:     "Beauty & Benessere",
+  altro:      "Altro",
+};
+
+/** Map request status keys to badge HTML */
+function requestStatusBadge(status) {
+  const map = {
+    pending:  `<span class="adm-badge adm-badge--pending">In attesa</span>`,
+    approved: `<span class="adm-badge adm-badge--active">Approvata</span>`,
+    rejected: `<span class="adm-badge adm-badge--inactive">Rifiutata</span>`,
+    archived: `<span class="adm-badge adm-badge--neutral">Archiviata</span>`,
+  };
+  return map[status] || `<span class="adm-badge adm-badge--neutral">${esc(status)}</span>`;
+}
+
+/**
+ * In-memory map of request objects from the last API response.
+ * Keyed by request ID. Used by the Approve/Reject button handlers
+ * so we can pass the full object to openApproveRequestDrawer()
+ * without a second API call or HTML-encoded JSON in data attributes.
+ */
+const _partnerRequestsCache = new Map();
+
+async function loadPartnerRequests() {
+  if (!partnerRequestsBody) return;
+  partnerRequestsBody.innerHTML = skeletonRows(7);
+
+  try {
+    const data = await Api.getPaginated("/partner-requests", State.partnerRequests);
+    if (!data) return;
+
+    const rows = data.data || [];
+    const meta = data.pagination;
+
+    // Populate in-memory cache for this page of results.
+    _partnerRequestsCache.clear();
+    rows.forEach((r) => _partnerRequestsCache.set(r.id, r));
+
+    if (partnerRequestsCount && meta) {
+      partnerRequestsCount.textContent = `${meta.totalItems.toLocaleString("it-IT")} richieste`;
+    }
+
+    if (!rows.length) {
+      partnerRequestsBody.innerHTML = emptyRow(7, State.partnerRequests.search
+        ? `Nessuna richiesta trovata per "${State.partnerRequests.search}".`
+        : "Nessuna richiesta ricevuta.");
+    } else {
+      partnerRequestsBody.innerHTML = rows.map((r) => {
+        const isPending = r.status === "pending";
+        const catLabel  = CATEGORY_LABELS[r.category] || esc(r.category);
+
+        return `
+          <tr>
+            <td>
+              <div class="adm-td-name">${esc(r.businessName)}</div>
+              ${r.vatNumber
+                ? `<div class="adm-td-secondary" style="font-size:0.75rem;">${esc(r.vatNumber)}</div>`
+                : ""}
+            </td>
+            <td>
+              <span class="adm-badge adm-badge--neutral">${esc(catLabel)}</span>
+            </td>
+            <td class="adm-td-secondary">
+              <a href="mailto:${esc(r.email)}"
+                style="color:var(--loy-gold-dark);text-decoration:none;"
+              >${esc(r.email)}</a>
+              ${r.phone
+                ? `<div style="font-size:0.75rem;margin-top:2px;">${esc(r.phone)}</div>`
+                : ""}
+            </td>
+            <td class="adm-td-secondary" style="max-width:180px;">
+              ${r.description
+                ? `<span
+                     class="adm-td-proposal-preview"
+                     title="${esc(r.description)}"
+                     style="
+                       display:block;
+                       overflow:hidden;
+                       white-space:nowrap;
+                       text-overflow:ellipsis;
+                       max-width:160px;
+                     "
+                   >${esc(r.description)}</span>
+                   <button
+                     class="adm-btn adm-btn--secondary adm-btn--sm"
+                     data-proposal-id="${esc(r.id)}"
+                     style="margin-top:4px;font-size:0.68rem;padding:3px 10px;"
+                   >Dettagli</button>`
+                : `<span class="adm-td-secondary">—</span>`}
+            </td>
+            <td>${requestStatusBadge(r.status)}</td>
+            <td class="adm-td-date">${fmtDate(r.createdAt)}</td>
+            <td class="adm-td-actions">
+              <div class="adm-row-actions">
+                ${isPending
+                  ? `
+                    <button
+                      class="adm-btn adm-btn--primary adm-btn--sm"
+                      data-approve-request="${esc(r.id)}"
+                    >Approva</button>
+                    <button
+                      class="adm-btn adm-btn--danger adm-btn--sm"
+                      data-reject-request="${esc(r.id)}"
+                      data-request-name="${esc(r.businessName)}"
+                    >Rifiuta</button>`
+                  : r.convertedPartnerId
+                    ? `<button
+                         class="adm-btn adm-btn--secondary adm-btn--sm"
+                         data-nav="partners"
+                       >Partner →</button>`
+                    : ""}
+              </div>
+            </td>
+          </tr>`;
+      }).join("");
+    }
+
+    renderPagination(
+      $("#partnerRequestsPaginationControls"),
+      $("#partnerRequestsPaginationInfo"),
+      meta,
+      (p) => { State.partnerRequests.page = p; loadPartnerRequests(); }
+    );
+
+    // Wire "Approva" — pass the full cached request object.
+    // No second API call needed: the data is already in memory.
+    partnerRequestsBody.querySelectorAll("[data-approve-request]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const requestObj = _partnerRequestsCache.get(btn.dataset.approveRequest);
+        if (requestObj) openApproveRequestDrawer(requestObj);
+      });
+    });
+
+    // Wire "Rifiuta" — only needs id + name for the confirm modal.
+    partnerRequestsBody.querySelectorAll("[data-reject-request]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        openRejectModal(btn.dataset.rejectRequest, btn.dataset.requestName);
+      });
+    });
+
+    // Wire "Partner →" shortcut buttons
+    partnerRequestsBody.querySelectorAll("[data-nav]").forEach((btn) => {
+      btn.addEventListener("click", () => switchModule(btn.dataset.nav));
+    });
+
+    // Wire "Dettagli" proposal buttons
+    partnerRequestsBody.querySelectorAll("[data-proposal-id]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const requestObj = _partnerRequestsCache.get(btn.dataset.proposalId);
+        if (requestObj) openProposalModal(requestObj);
+      });
+    });
+
+  } catch {
+    partnerRequestsBody.innerHTML = emptyRow(7, "Errore nel caricamento richieste. Riprova.");
+  }
+}
+
+// Search
+const partnerRequestsSearchInput = $("#partnerRequestsSearch");
+partnerRequestsSearchInput?.addEventListener("input", debounce(() => {
+  State.partnerRequests.search = partnerRequestsSearchInput.value.trim();
+  State.partnerRequests.page   = 1;
+  loadPartnerRequests();
+}, 380));
+
+// Status filter
+const partnerRequestsStatusFilter = $("#partnerRequestsStatusFilter");
+partnerRequestsStatusFilter?.addEventListener("change", () => {
+  State.partnerRequests.filters.status = partnerRequestsStatusFilter.value;
+  State.partnerRequests.page = 1;
+  loadPartnerRequests();
+});
+
+// Page size
+$("#partnerRequestsPageSize")?.addEventListener("change", function () {
+  State.partnerRequests.limit = parseInt(this.value, 10);
+  State.partnerRequests.page  = 1;
+  loadPartnerRequests();
+});
+
+// Sort
+initSortableHeaders(partnerRequestsTable, State.partnerRequests, loadPartnerRequests);
+
+
+/* ── PROPOSAL DETAIL MODAL ─────────────────────────────── */
+
+const admProposalModal = $("#admProposalModal");
+const admProposalTitle = $("#admProposalTitle");
+const admProposalMeta  = $("#admProposalMeta");
+const admProposalBody  = $("#admProposalBody");
+const admProposalClose = $("#admProposalClose");
+
+function openProposalModal(requestObj) {
+  if (!admProposalModal) return;
+
+  if (admProposalTitle) admProposalTitle.textContent = "Proposta partner";
+  if (admProposalMeta) {
+    admProposalMeta.textContent =
+      `${requestObj.businessName} · ${CATEGORY_LABELS[requestObj.category] || requestObj.category}`;
+  }
+  if (admProposalBody) {
+    admProposalBody.textContent = requestObj.description || "Nessuna proposta fornita.";
+  }
+
+  admProposalModal.classList.add("open");
+  admProposalClose?.focus();
+}
+
+function closeProposalModal() {
+  admProposalModal?.classList.remove("open");
+}
+
+admProposalClose?.addEventListener("click", closeProposalModal);
+
+admProposalModal?.addEventListener("click", (e) => {
+  if (e.target === admProposalModal) closeProposalModal();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && admProposalModal?.classList.contains("open")) {
+    closeProposalModal();
+  }
+});
+
+
+/* ── REJECT: modal with notes textarea ─────────────────── */
+
+const admRejectModal  = $("#admRejectModal");
+const admRejectCancel = $("#admRejectCancel");
+const admRejectOk     = $("#admRejectOk");
+const admRejectNotes  = $("#admRejectNotes");
+
+let _rejectRequestId  = null;
+
+function openRejectModal(requestId, requestName) {
+  _rejectRequestId = requestId;
+  if (admRejectNotes) admRejectNotes.value = "";
+
+  const body = admRejectModal?.querySelector("#admRejectBody");
+  if (body) {
+    body.textContent =
+      `Rifiuta la richiesta di "${requestName}"? La richiesta verrà contrassegnata come rifiutata. Puoi aggiungere una nota interna.`;
+  }
+
+  admRejectModal?.classList.add("open");
+  admRejectNotes?.focus();
+}
+
+function closeRejectModal() {
+  admRejectModal?.classList.remove("open");
+  _rejectRequestId = null;
+}
+
+admRejectCancel?.addEventListener("click", closeRejectModal);
+
+admRejectModal?.addEventListener("click", (e) => {
+  if (e.target === admRejectModal) closeRejectModal();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && admRejectModal?.classList.contains("open")) {
+    closeRejectModal();
+  }
+});
+
+admRejectOk?.addEventListener("click", async () => {
+  if (!_rejectRequestId) return;
+
+  const notes = admRejectNotes?.value.trim() || "";
+  setLoading(admRejectOk, true);
+
+  try {
+    const res = await Api.post(
+      `/partner-requests/${encodeURIComponent(_rejectRequestId)}/reject`,
+      { reviewNotes: notes }
+    );
+
+    if (res?.success) {
+      closeRejectModal();
+      await Promise.all([loadPartnerRequests(), loadStats()]);
+    } else {
+      alert(res?.message || "Errore durante il rifiuto. Riprova.");
+    }
+  } catch {
+    alert("Errore di connessione. Riprova.");
+  } finally {
+    setLoading(admRejectOk, false);
   }
 });
 

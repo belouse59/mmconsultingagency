@@ -49,6 +49,12 @@
  *   PATCH  /admin/partners/:id
  *   PATCH  /admin/partners/:id/active
  *
+ *   GET    /admin/partner-requests
+ *   POST   /admin/partner-requests/:id/approve
+ *   POST   /admin/partner-requests/:id/reject
+ *
+ *   POST   /partner-request
+ *
  * GET  /admin/partners/:id returns the full partner record
  * (including notes, description, offerDescription) for the
  * admin edit drawer — the paginated list response is lean.
@@ -59,7 +65,19 @@
  *   address, city, postalCode,
  *   description, offerDescription, notes,
  *   active
- * id / password are not editable via this route.
+ * id / identifier / password are not editable via this route.
+ *
+ * POST /partner-request is the public, unauthenticated endpoint
+ * behind the loyalty landing page "Richiedi di diventare Partner"
+ * form. It creates a row in loyalty_partner_requests with
+ * status='pending'. Admins review pending requests via
+ * GET /admin/partner-requests and either:
+ *   - approve: POST /admin/partner-requests/:id/approve
+ *     (body: { id, tempPassword, ...overrides, reviewNotes? })
+ *     → calls partnerLoyaltyService.createPartner() and links
+ *       the new partner via convertedPartnerId
+ *   - reject: POST /admin/partner-requests/:id/reject
+ *     (body: { reviewNotes? })
  *
  * Admin list endpoints (customers, redemptions, offers, partners)
  * are paginated via paginationMiddleware and accept:
@@ -90,11 +108,12 @@
 const express      = require("express");
 const rateLimit    = require("express-rate-limit");
 
-const adminCtrl    = require("../controllers/loyalty/adminLoyaltyController");
-const customerCtrl = require("../controllers/loyalty/customerLoyaltyController");
-const passwordCtrl = require("../controllers/loyalty/passwordResetLoyaltyController");
-const partnerCtrl  = require("../controllers/loyalty/partnerLoyaltyController");
-const verifCtrl    = require("../controllers/verificationController");
+const adminCtrl           = require("../controllers/loyalty/adminLoyaltyController");
+const customerCtrl        = require("../controllers/loyalty/customerLoyaltyController");
+const passwordCtrl        = require("../controllers/loyalty/passwordResetLoyaltyController");
+const partnerCtrl         = require("../controllers/loyalty/partnerLoyaltyController");
+const partnerRequestCtrl  = require("../controllers/loyalty/partnerRequestLoyaltyController");
+const verifCtrl           = require("../controllers/verificationController");
 
 const {
     requireCustomerAPI,
@@ -197,6 +216,26 @@ createLimiter({
     },
 });
 
+const partnerRequestLimiter =
+createLimiter({
+    windowMs:
+        60 * 60 * 1000,
+
+    max:
+        5,
+
+    message:
+        "Troppe richieste. Riprova tra un'ora.",
+
+    keyGenerator(req) {
+        return (
+            req.body?.email?.toLowerCase()
+            ||
+            ipKeyGenerator(req)
+        );
+    },
+});
+
 const passwordResetLimiter =
 createLimiter({
   windowMs: 15 * 60 * 1000,
@@ -278,6 +317,26 @@ function requireIdempotency(
 
     next();
 }
+
+/* ──────────────────────────────────────────────
+   PARTNER REQUEST ROUTER
+   Public, unauthenticated. Used by the loyalty
+   landing page "Richiedi di diventare Partner" form.
+
+   Mounted directly on the top-level router (sibling
+   of /customer, /partner, /admin) since it has no
+   session context of its own.
+────────────────────────────────────────────── */
+
+const partnerRequestRouter =
+express.Router();
+
+partnerRequestRouter.post(
+    "/",
+    partnerRequestLimiter,
+    requireXHR,
+    partnerRequestCtrl.submitPartnerRequest
+);
 
 /* ──────────────────────────────────────────────
    CUSTOMER ROUTER
@@ -523,6 +582,35 @@ adminRouter.patch(
     adminCtrl.adminSetPartnerActive
 );
 
+/* ── PARTNER REQUESTS — paginated list ──
+   GET /admin/partner-requests?page=&limit=&search=&sortBy=&sortOrder=&status=&category=
+*/
+adminRouter.get(
+    "/partner-requests",
+    paginate,
+    adminCtrl.adminGetPartnerRequestsPaginated
+);
+
+/* ── PARTNER REQUESTS — approve ──
+   POST /admin/partner-requests/:id/approve
+   Body: { id, tempPassword, ...partner field overrides, reviewNotes? }
+*/
+adminRouter.post(
+    "/partner-requests/:id/approve",
+    requireXHR,
+    adminCtrl.adminApprovePartnerRequest
+);
+
+/* ── PARTNER REQUESTS — reject ──
+   POST /admin/partner-requests/:id/reject
+   Body: { reviewNotes? }
+*/
+adminRouter.post(
+    "/partner-requests/:id/reject",
+    requireXHR,
+    adminCtrl.adminRejectPartnerRequest
+);
+
 /* ──────────────────────────────────────────────
    MOUNT
 ────────────────────────────────────────────── */
@@ -535,6 +623,11 @@ router.use(
 router.use(
     "/partner",
     partnerRouter
+);
+
+router.use(
+    "/partner-request",
+    partnerRequestRouter
 );
 
 router.use(

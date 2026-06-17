@@ -2,7 +2,7 @@ import { initNav } from "../navigation/nav.js";
 import { initReveal } from "../animations/reveal.js";
 import { initWhatsApp } from "../whatsapp/whatsapp.js";
 import { initNewsletter } from "../forms/newsletter.js";
-
+import { initFAQ } from "../animations/faq.js";
 
 /* ─────────────────────────────────────────────────────────────
    SCROLL RESTORATION — must run before DOMContentLoaded
@@ -18,5 +18,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   initNav();
   initReveal();
   initWhatsApp();
+  initFAQ();
   initNewsletter();
 });

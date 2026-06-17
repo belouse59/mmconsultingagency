@@ -1,0 +1,130 @@
+<!--
+  templates/partner-request-email.html
+
+  ⚠ ASSUMPTION: this template uses the same {{PLACEHOLDER}} token
+  syntax inferred from emailService.js usage (loadTemplate(name, data, true)).
+  If your existing templates (new-lead-email.html, simulator-email.html)
+  use a different token syntax (e.g. {PLACEHOLDER} or %PLACEHOLDER%),
+  replace the {{...}} tokens below to match — the data keys passed
+  from emailService.notifyPartnerRequest() are:
+
+    DATE, BUSINESS_NAME, VAT_NUMBER, EMAIL, PHONE,
+    CATEGORY, DESCRIPTION, FORM_TYPE
+
+  Place this file alongside your other email templates
+  (wherever new-lead-email.html / simulator-email.html live).
+-->
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuova richiesta partner</title>
+</head>
+<body style="margin:0;padding:0;background:#F7F8FB;font-family:Arial,Helvetica,sans-serif;color:#1F2937;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F7F8FB;padding:32px 0;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width:560px;background:#FFFFFF;border-radius:12px;overflow:hidden;border:1px solid #E5E7EB;">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:#0A1628;padding:24px 32px;">
+              <span style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#D4A017;">
+                M&amp;M Energy Club
+              </span>
+              <h1 style="margin:6px 0 0;font-size:20px;font-weight:800;color:#FFFFFF;">
+                Nuova richiesta partner
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:28px 32px;">
+
+              <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#4B5563;">
+                È arrivata una nuova richiesta di adesione all'Energy Club dal sito.
+                Ricevuta il <strong>{{DATE}}</strong>.
+              </p>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+
+                <tr>
+                  <td style="padding:10px 0;border-bottom:1px solid #E5E7EB;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6B7280;width:140px;vertical-align:top;">
+                    Attività
+                  </td>
+                  <td style="padding:10px 0;border-bottom:1px solid #E5E7EB;font-size:14px;color:#1F2937;font-weight:700;vertical-align:top;">
+                    {{BUSINESS_NAME}}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px 0;border-bottom:1px solid #E5E7EB;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6B7280;vertical-align:top;">
+                    Categoria
+                  </td>
+                  <td style="padding:10px 0;border-bottom:1px solid #E5E7EB;font-size:14px;color:#1F2937;vertical-align:top;">
+                    {{CATEGORY}}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px 0;border-bottom:1px solid #E5E7EB;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6B7280;vertical-align:top;">
+                    Email
+                  </td>
+                  <td style="padding:10px 0;border-bottom:1px solid #E5E7EB;font-size:14px;vertical-align:top;">
+                    <a href="mailto:{{EMAIL}}" style="color:#1E3A5F;text-decoration:none;">{{EMAIL}}</a>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px 0;border-bottom:1px solid #E5E7EB;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6B7280;vertical-align:top;">
+                    Telefono
+                  </td>
+                  <td style="padding:10px 0;border-bottom:1px solid #E5E7EB;font-size:14px;color:#1F2937;vertical-align:top;">
+                    {{PHONE}}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px 0;border-bottom:1px solid #E5E7EB;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6B7280;vertical-align:top;">
+                    Partita IVA
+                  </td>
+                  <td style="padding:10px 0;border-bottom:1px solid #E5E7EB;font-size:14px;color:#1F2937;vertical-align:top;">
+                    {{VAT_NUMBER}}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding:10px 0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6B7280;vertical-align:top;">
+                    Proposta
+                  </td>
+                  <td style="padding:10px 0;font-size:14px;color:#1F2937;line-height:1.6;vertical-align:top;">
+                    {{DESCRIPTION}}
+                  </td>
+                </tr>
+
+              </table>
+
+              <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#6B7280;">
+                Vai alla console admin → <strong>Loyalty → Richieste Partner</strong> per approvare o rifiutare questa richiesta.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:18px 32px;background:#F7F8FB;border-top:1px solid #E5E7EB;">
+              <p style="margin:0;font-size:11px;color:#9CA3AF;">
+                M&amp;M Consulting — Energy Club · Messina · Notifica automatica
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

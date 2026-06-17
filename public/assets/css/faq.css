@@ -1,0 +1,154 @@
+/* ============================================================
+   faq.css — Unified FAQ Accordion Component
+   ============================================================
+   Replaces:
+     - .faq-* block in style.css (homepage)
+     - .lc-faq-* block in loyalty-landing.css
+
+   Import once in style.css (or as a separate <link>).
+   All tokens from style.css :root — no hardcoded values.
+
+   Structure expected:
+     .faq-list
+       .faq-item  [.faq-item--open when expanded]
+         .faq-btn   [aria-expanded]
+           .faq-chevron (fa-chevron-down icon)
+         .faq-answer  [hidden when closed]
+           .faq-answer-inner
+             p / a …
+============================================================ */
+
+/* ── Container ── */
+.faq-list {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  /* No horizontal padding here — let the parent section or
+     .container handle it so the list works both full-width
+     and inside a .container. */
+}
+
+/* ── Item ── */
+.faq-item {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-surface);
+  overflow: hidden;
+  transition:
+    border-color var(--dur-fast),
+    box-shadow   var(--dur-fast);
+}
+
+.faq-item:hover {
+  border-color: var(--gold-border);
+}
+
+.faq-item--open {
+  border-color: var(--gold-border);
+  box-shadow: 0 0 0 3px var(--gold-glow);
+}
+
+/* ── Button (the clickable question row) ── */
+.faq-btn {
+  width: 100%;
+  background: var(--bg-surface);
+  border: none;
+  padding: var(--sp-5) var(--sp-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.925rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: left;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  transition: background var(--dur-fast);
+}
+
+.faq-btn:hover {
+  background: var(--bg-soft);
+}
+
+.faq-item--open .faq-btn {
+  background: var(--bg-soft);
+}
+
+/* ── Chevron icon ── */
+.faq-chevron {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  transition:
+    transform     var(--dur-med) var(--ease),
+    background    var(--dur-fast),
+    border-color  var(--dur-fast),
+    color         var(--dur-fast);
+}
+
+.faq-item--open .faq-chevron {
+  transform: rotate(180deg);
+  background: var(--gold-glow);
+  border-color: var(--gold-border);
+  color: var(--gold-dark);
+}
+
+/* ── Answer panel ── */
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  background: var(--bg-surface);
+  /* Transition driven by JS via answer.style.maxHeight */
+  transition: max-height 0.38s var(--ease);
+}
+
+/* When open, max-height is set to scrollHeight by faq.js */
+
+.faq-answer-inner {
+  padding: 0 var(--sp-6) var(--sp-5);
+  border-top: 1px solid var(--border);
+  padding-top: var(--sp-4);
+}
+
+.faq-answer-inner p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.75;
+  margin: 0;
+}
+
+.faq-answer-inner a {
+  color: var(--gold-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.faq-answer-inner a:hover {
+  text-decoration: underline;
+}
+
+/* ── Dark mode (inherits from style.css :root reassignment) ── */
+/* No overrides needed — all tokens reassign in dark mode. */
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .faq-answer,
+  .faq-chevron,
+  .faq-item,
+  .faq-btn {
+    transition-duration: 0.01ms !important;
+  }
+}

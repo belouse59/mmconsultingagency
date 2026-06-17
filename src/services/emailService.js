@@ -127,9 +127,57 @@ async function notifySimulator(data) {
   }
 }
 
+/**
+ * Send notification when a new partner request is submitted
+ * via the loyalty landing page ("Richiedi di diventare Partner").
+ * Fails silently — never blocks the API response.
+ *
+ * @param {{
+ *   businessName: string,
+ *   vatNumber?:    string|null,
+ *   email:        string,
+ *   phone?:        string|null,
+ *   category:     string,
+ *   description?:  string|null,
+ *   submittedAt?:  string|Date,
+ * }} data — the created loyalty_partner_requests row
+ *           (camelCase, as returned by
+ *           partnerRequestsRepository.mapPartnerRequest)
+ */
+async function notifyPartnerRequest(data) {
+  if (!process.env.NOTIFY_TO) return;
+  try {
+    const html = loadTemplate("partner-request-email.html", {
+      DATE: getLocalTimestamp() || "",
+
+      BUSINESS_NAME: data.businessName || "",
+      VAT_NUMBER: data.vatNumber || "Non fornita",
+      EMAIL: data.email || "",
+      PHONE: data.phone || "Non fornito",
+      CATEGORY: data.category || "Non specificata",
+      DESCRIPTION: data.description || "Nessuna descrizione fornita",
+      FORM_TYPE: "partner-request",
+    }, true
+    );
+
+    await resend.emails.send({
+      from: `${process.env.BRAND_NAME} <${process.env.RESEND_FROM_EMAIL}>`,
+      to: process.env.NOTIFY_TO,
+      subject: `Nuova richiesta partner — ${data.businessName || "Attività"}`,
+      html,
+    }).then(mail => console.log(mail));
+  } catch (err) {
+    console.error(
+      "[emailService] Failed to send partner request notification:",
+      err.message
+    );
+  }
+}
+
 module.exports = {
   sendVerificationEmail,
   sendCustomerPasswordReset,
   notifyNewLead,
   notifySimulator,
+  notifyPartnerRequest,
 };

@@ -84,6 +84,12 @@
         <span class="adm-nav-count" id="navCountPartners">—</span>
       </button>
 
+      <button class="adm-nav-item" data-module="partnerRequests">
+        <span class="adm-nav-icon"><i class="fa fa-user-plus" aria-hidden="true"></i></span>
+        Richieste Partner
+        <span class="adm-nav-count" id="navCountPartnerRequests">—</span>
+      </button>
+
       <button class="adm-nav-item" data-module="offers">
         <span class="adm-nav-icon"><i class="fa fa-tag" aria-hidden="true"></i></span>
         Offerte
@@ -650,6 +656,93 @@
 
       </div>
 
+
+      <!-- ════════════════════════════════════
+           MODULE: PARTNER REQUESTS
+      ════════════════════════════════════ -->
+      <div id="modulePartnerRequests" class="adm-module" data-module="partnerRequests" style="display:none;">
+
+        <div class="adm-page-header">
+          <div>
+            <h1 class="adm-page-title">Richieste Partner</h1>
+            <p class="adm-page-sub">Richieste di adesione ricevute dal sito — approva per creare il partner</p>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="adm-toolbar" role="search" aria-label="Filtra richieste partner">
+          <div class="adm-search-wrap">
+            <i class="fa fa-search adm-search-icon" aria-hidden="true"></i>
+            <input
+              type="search"
+              class="adm-search"
+              id="partnerRequestsSearch"
+              placeholder="Cerca per attività, email o P.IVA…"
+              aria-label="Cerca richieste partner"
+              autocomplete="off"
+            >
+          </div>
+
+          <select class="adm-filter-select" id="partnerRequestsStatusFilter" aria-label="Filtra per stato">
+            <option value="">Tutti gli stati</option>
+            <option value="pending" selected>In attesa</option>
+            <option value="approved">Approvate</option>
+            <option value="rejected">Rifiutate</option>
+            <option value="archived">Archiviate</option>
+          </select>
+
+          <span class="adm-toolbar-count" id="partnerRequestsCount" aria-live="polite"></span>
+        </div>
+
+        <!-- Table card -->
+        <div class="adm-table-card">
+          <div class="adm-table-scroll">
+            <table class="adm-table" aria-label="Lista richieste partner">
+              <thead>
+                <tr>
+                  <th scope="col" class="adm-th-sortable" data-sort="businessName">
+                    Attività <span class="adm-th-sort-icon" aria-hidden="true">↕</span>
+                  </th>
+                  <th scope="col">Categoria</th>
+                  <th scope="col">Contatto</th>
+                  <th scope="col">Proposta</th>
+                  <th scope="col" class="adm-th-sortable" data-sort="status">
+                    Stato <span class="adm-th-sort-icon" aria-hidden="true">↕</span>
+                  </th>
+                  <th scope="col" class="adm-th-sortable sorted" data-sort="createdAt">
+                    Inviata <span class="adm-th-sort-icon" aria-hidden="true">↓</span>
+                  </th>
+                  <th scope="col" class="adm-td-actions">Azioni</th>
+                </tr>
+              </thead>
+              <tbody id="partnerRequestsTableBody">
+                <tr>
+                  <td colspan="7" style="text-align:center;padding:32px;">
+                    <div class="adm-empty">
+                      <span class="adm-empty-icon">📥</span>
+                      <span class="adm-empty-sub">Caricamento richieste…</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="adm-pagination" id="partnerRequestsPagination" aria-label="Paginazione richieste partner">
+            <span class="adm-pagination-info" id="partnerRequestsPaginationInfo"></span>
+            <div class="adm-pagination-controls" id="partnerRequestsPaginationControls" role="navigation" aria-label="Pagine"></div>
+            <div class="adm-pagination-size">
+              <label for="partnerRequestsPageSize">Righe:</label>
+              <select id="partnerRequestsPageSize" aria-label="Righe per pagina">
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     </main><!-- /adm-content -->
   </div><!-- /adm-column -->
 
@@ -669,14 +762,83 @@
 
 
 <!-- ═══════════════════════════════════════════════════
+     REJECT PARTNER REQUEST MODAL
+     Separate from the generic confirm modal because
+     it requires an optional notes textarea — the note
+     is stored as review_notes on the request record.
+═══════════════════════════════════════════════════ -->
+<div class="adm-modal-backdrop" id="admRejectModal" role="dialog" aria-modal="true" aria-labelledby="admRejectTitle">
+  <div class="adm-modal">
+    <p class="adm-modal-title" id="admRejectTitle">Rifiuta richiesta</p>
+    <p class="adm-modal-body" id="admRejectBody">
+      La richiesta verrà contrassegnata come rifiutata. Puoi aggiungere una nota interna.
+    </p>
+
+    <div class="adm-form-field" style="margin-bottom:16px;">
+      <label class="adm-form-label" for="admRejectNotes">Note interne (opzionale)</label>
+      <textarea
+        id="admRejectNotes"
+        class="adm-form-textarea"
+        rows="3"
+        placeholder="es. Attività già presente nella rete, richiesta incompleta…"
+        style="min-height:72px;"
+      ></textarea>
+    </div>
+
+    <div class="adm-modal-actions">
+      <button class="adm-btn adm-btn--secondary" id="admRejectCancel">Annulla</button>
+      <button class="adm-btn adm-btn--danger" id="admRejectOk">
+        <span class="adm-btn-spinner" aria-hidden="true"></span>
+        <span class="adm-btn-label">Rifiuta richiesta</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     PROPOSAL DETAIL MODAL
+     Read-only view of a partner request's full proposal.
+     Opened by clicking "Dettagli" in the Proposta column.
+═══════════════════════════════════════════════════ -->
+<div class="adm-modal-backdrop" id="admProposalModal" role="dialog" aria-modal="true" aria-labelledby="admProposalTitle">
+  <div class="adm-modal" style="max-width:520px;">
+    <p class="adm-modal-title" id="admProposalTitle">Proposta partner</p>
+    <p class="adm-modal-body" id="admProposalMeta" style="font-size:0.78rem;color:var(--loy-text-sec);margin-bottom:12px;"></p>
+    <div
+      id="admProposalBody"
+      style="
+        font-size:0.9rem;
+        color:var(--loy-text);
+        line-height:1.7;
+        background:var(--loy-bg-soft);
+        border:1px solid var(--loy-border);
+        border-radius:var(--r-md);
+        padding:14px 16px;
+        max-height:300px;
+        overflow-y:auto;
+        white-space:pre-wrap;
+        word-break:break-word;
+      "
+    ></div>
+    <div class="adm-modal-actions" style="margin-top:20px;">
+      <button class="adm-btn adm-btn--secondary" id="admProposalClose">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
      PARTNER FORM DRAWER
-     Single component for both "Nuovo partner" (create)
-     and "Modifica" (edit), opened from the Partners module.
-     - Create: ID Partner + Password temporanea visible,
-       Stato hidden.
-     - Edit: ID Partner + Password temporanea hidden,
-       Stato visible. Fields pre-filled via
-       GET /admin/partners/:id.
+     Single component for both "Nuovo partner" (create) and
+     "Modifica" (edit), opened from the Partners module, plus
+     "Approva" from the Partner Requests module.
+     - Create: Password temporanea visible, Stato hidden.
+     - Edit:   Password temporanea hidden,
+               Stato visible. Fields pre-filled via
+               GET /admin/partners/:id.
+     - Approve: Password temporanea visible, all request
+               fields pre-filled automatically.
 ═══════════════════════════════════════════════════ -->
 <div class="adm-drawer-backdrop" id="admPartnerDrawerBackdrop">
   <aside

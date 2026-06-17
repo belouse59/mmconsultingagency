@@ -14,11 +14,12 @@
  *   - All other handlers unchanged
  */
 
-const redemptionLoyaltyService = require("../../services/loyalty/redemptionLoyaltyService");
-const customerLoyaltyService   = require("../../services/loyalty/customerLoyaltyService");
-const partnerLoyaltyService    = require("../../services/loyalty/partnerLoyaltyService");
-const adminLoyaltyService      = require("../../services/loyalty/adminLoyaltyService");
-const offerLoyaltyService      = require("../../services/loyalty/offerLoyaltyService");
+const redemptionLoyaltyService     = require("../../services/loyalty/redemptionLoyaltyService");
+const customerLoyaltyService       = require("../../services/loyalty/customerLoyaltyService");
+const partnerLoyaltyService        = require("../../services/loyalty/partnerLoyaltyService");
+const partnerRequestLoyaltyService = require("../../services/loyalty/partnerRequestLoyaltyService");
+const adminLoyaltyService          = require("../../services/loyalty/adminLoyaltyService");
+const offerLoyaltyService          = require("../../services/loyalty/offerLoyaltyService");
 
 const { clean }          = require("../../utils/sanitizer");
 const { verifyPassword } = require("../../utils/argon2");
@@ -198,7 +199,6 @@ const adminGetPartnerById = asyncHandler(async (req, res) => {
 
 const adminCreatePartner = asyncHandler(async (req, res) => {
   const {
-    id,
     name,
     legalName,
     vatNumber,
@@ -216,7 +216,6 @@ const adminCreatePartner = asyncHandler(async (req, res) => {
   } = req.body;
 
   const result = await partnerLoyaltyService.createPartner({
-    id:               clean(id || ""),
     name:             clean(name || ""),
     legalName:        clean(legalName || ""),
     vatNumber:        clean(vatNumber || ""),
@@ -243,7 +242,7 @@ const adminCreatePartner = asyncHandler(async (req, res) => {
    Partial update — only keys present in the request
    body are changed. Used by the edit drawer.
 
-   id / password are not editable here
+   id / identifier / password are not editable here
    (id is immutable; password has its own flow via
    setPartnerPassword).
 ───────────────────────────────────────────── */
@@ -281,6 +280,107 @@ const adminUpdatePartner = asyncHandler(async (req, res) => {
   }
 
   const result = await partnerLoyaltyService.updatePartner(clean(id || ""), fields);
+
+  return res.json(result);
+});
+
+/* ─────────────────────────────────────────────
+   PARTNER REQUESTS — PAGINATED  ← NEW
+   GET /admin/partner-requests?page=&limit=&search=&sortBy=&sortOrder=&status=&category=
+
+   Recommended placement: Loyalty → Richieste Partner
+   (the entity has a direct FK to partners and its
+   approval action creates a partner).
+───────────────────────────────────────────── */
+
+const adminGetPartnerRequestsPaginated = asyncHandler(async (req, res) => {
+  const result = await adminLoyaltyService.getPartnerRequestsPaginated(req.pagination);
+
+  return res.json({
+    success:    true,
+    data:       result.data,
+    pagination: result.pagination,
+  });
+});
+
+/* ─────────────────────────────────────────────
+   PARTNER REQUESTS — APPROVE  ← NEW
+   POST /admin/partner-requests/:id/approve
+
+   Body: { id, tempPassword, ...any partner field overrides,
+           reviewNotes? }
+
+   id and tempPassword are required — they're the two pieces
+   of information the request itself can never provide.
+   Any other field left empty falls back to the value
+   originally submitted in the request
+   (see partnerRequestLoyaltyService.approveRequest).
+───────────────────────────────────────────── */
+
+const PARTNER_REQUEST_APPROVE_FIELDS = [
+  "name",
+  "legalName",
+  "vatNumber",
+  "email",
+  "phone",
+  "website",
+  "category",
+  "address",
+  "city",
+  "postalCode",
+  "description",
+  "offerDescription",
+  "notes",
+  "reviewNotes",
+];
+
+const adminApprovePartnerRequest = asyncHandler(async (req, res) => {
+  const { id: requestId } = req.params;
+
+  const overrides = {};
+
+  for (const key of PARTNER_REQUEST_APPROVE_FIELDS) {
+    if (req.body[key] !== undefined) {
+      overrides[key] = clean(String(req.body[key] ?? ""));
+    }
+  }
+
+  // tempPassword must not be passed through clean() (it's a secret,
+  // not display text — clean() may alter characters intended
+  // verbatim for the password).
+  if (req.body.tempPassword) {
+    overrides.tempPassword = req.body.tempPassword;
+  }
+
+  const adminEmail = req.session?.loyaltyAdmin?.email || null;
+
+  const result = await partnerRequestLoyaltyService.approveRequest(
+    clean(requestId || ""),
+    overrides,
+    adminEmail
+  );
+
+  return res.status(201).json(result);
+});
+
+/* ─────────────────────────────────────────────
+   PARTNER REQUESTS — REJECT  ← NEW
+   POST /admin/partner-requests/:id/reject
+
+   Body: { reviewNotes? }
+───────────────────────────────────────────── */
+
+const adminRejectPartnerRequest = asyncHandler(async (req, res) => {
+  const { id: requestId } = req.params;
+  const { reviewNotes }   = req.body;
+
+  const adminEmail = req.session?.loyaltyAdmin?.email || null;
+
+  const result = await partnerRequestLoyaltyService.rejectRequest(
+    clean(requestId || ""),
+    { reviewNotes: reviewNotes ? clean(reviewNotes) : "" },
+    adminEmail
+  );
 
   return res.json(result);
 });
@@ -398,6 +498,11 @@ module.exports = {
   adminCreatePartner,
   adminUpdatePartner,         // ← new
   adminSetPartnerActive,
+
+  // Partner Requests
+  adminGetPartnerRequestsPaginated,   // ← new
+  adminApprovePartnerRequest,         // ← new
+  adminRejectPartnerRequest,          // ← new
 
   // Offers
   adminGetOffers,

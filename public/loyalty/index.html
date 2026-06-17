@@ -41,6 +41,9 @@
   <!-- Loyalty landing page styles -->
   <link rel="stylesheet" href="/assets/css/loyalty-landing.css">
 
+  <!-- Shared FAQ component -->
+  <link rel="stylesheet" href="/assets/css/faq.css">
+
   <!-- SEO -->
   <title>M&M Energy Club | Convenzioni Esclusive per Clienti M&M Consulting — Messina</title>
   <meta name="description" content="Sei cliente M&M Consulting? Accedi gratuitamente all'Energy Club: sconti esclusivi presso bar, ristoranti, palestre e negozi selezionati a Messina con un solo QR code personale.">
@@ -217,8 +220,7 @@
 <!-- ═══════════════════════════════════════════════════════════
      HERO
 ═══════════════════════════════════════════════════════════ -->
-<section class="lc-hero-section" aria-labelledby="lcHeroHeading">
-<div class="lc-hero">
+<section class="lc-hero" aria-labelledby="lcHeroHeading">
 
   <!-- Left: editorial dark panel -->
   <div class="lc-hero-panel">
@@ -280,11 +282,11 @@
       -->
       <div class="member-card--hero-wrap">
 
-        
+        <!-- Badge above card -->
+        <div class="member-card__badge">Member Card</div>
+
         <!-- Card: .member-card + .member-card--hero -->
         <div class="member-card member-card--hero">
-          <!-- Badge above card -->
-          <div class="member-card__badge">Member Card</div>
 
           <div class="member-card__header">
             <span class="member-card__brand">M&amp;M · Energy Club</span>
@@ -370,10 +372,10 @@
             </div>
           </div>
 
-          <!-- Notification pill -->
-          <div class="member-card__notification">Sconto — Bar Centrale</div>
         </div>
 
+        <!-- Notification pill -->
+        <div class="member-card__notification">Sconto — Bar Centrale</div>
 
       </div>
 
@@ -384,7 +386,7 @@
   <div class="lc-scroll-hint" id="lcScrollHint" aria-hidden="true">
     <i class="fa fa-chevron-down"></i>
   </div>
-</div>
+
 </section>
 
 
@@ -943,17 +945,17 @@
     </div>
   </div>
 
-  <div class="lc-faq-list" role="list">
+  <div class="faq-list" role="list" style="padding: 0 var(--sp-6);">
 
-    <div class="lc-faq-item reveal" role="listitem">
-      <button class="lc-faq-q" aria-expanded="false">
+    <div class="faq-item reveal" role="listitem">
+      <button class="faq-btn" aria-expanded="false" aria-controls="lcfaq1">
         Il programma è davvero gratuito?
-        <span class="lc-faq-chevron" aria-hidden="true">
+        <span class="faq-chevron" aria-hidden="true">
           <i class="fa fa-chevron-down"></i>
         </span>
       </button>
-      <div class="lc-faq-answer">
-        <div class="lc-faq-answer-inner">
+      <div class="faq-answer" id="lcfaq1" hidden>
+        <div class="faq-answer-inner">
           <p>
             Sì, completamente. L'Energy Club è un beneficio incluso per tutti i clienti
             con contratto energetico attivo con M&amp;M Consulting. Nessun canone,
@@ -963,15 +965,15 @@
       </div>
     </div>
 
-    <div class="lc-faq-item reveal reveal-delay-1" role="listitem">
-      <button class="lc-faq-q" aria-expanded="false">
+    <div class="faq-item reveal reveal-delay-1" role="listitem">
+      <button class="faq-btn" aria-expanded="false" aria-controls="lcfaq2">
         Come funziona il QR dinamico? È sicuro?
-        <span class="lc-faq-chevron" aria-hidden="true">
+        <span class="faq-chevron" aria-hidden="true">
           <i class="fa fa-chevron-down"></i>
         </span>
       </button>
-      <div class="lc-faq-answer">
-        <div class="lc-faq-answer-inner">
+      <div class="faq-answer" id="lcfaq2" hidden>
+        <div class="faq-answer-inner">
           <p>
             Il tuo QR si rigenera automaticamente ogni 5 minuti. Non può essere
             catturato con uno screenshot e riutilizzato da un'altra persona. Ogni
@@ -982,15 +984,15 @@
       </div>
     </div>
 
-    <div class="lc-faq-item reveal reveal-delay-2" role="listitem">
-      <button class="lc-faq-q" aria-expanded="false">
+    <div class="faq-item reveal reveal-delay-2" role="listitem">
+      <button class="faq-btn" aria-expanded="false" aria-controls="lcfaq3">
         Posso usare la stessa offerta più volte?
-        <span class="lc-faq-chevron" aria-hidden="true">
+        <span class="faq-chevron" aria-hidden="true">
           <i class="fa fa-chevron-down"></i>
         </span>
       </button>
-      <div class="lc-faq-answer">
-        <div class="lc-faq-answer-inner">
+      <div class="faq-answer" id="lcfaq3" hidden>
+        <div class="faq-answer-inner">
           <p>
             Dipende dalle condizioni definite da ciascun partner. La maggior parte
             delle offerte è valida una volta per visita. Alcuni partner consentono
@@ -1001,18 +1003,18 @@
       </div>
     </div>
 
-    <div class="lc-faq-item reveal" role="listitem">
-      <button class="lc-faq-q" aria-expanded="false">
+    <div class="faq-item reveal" role="listitem">
+      <button class="faq-btn" aria-expanded="false" aria-controls="lcfaq4">
         Non sono ancora cliente M&amp;M. Posso iscrivermi?
-        <span class="lc-faq-chevron" aria-hidden="true">
+        <span class="faq-chevron" aria-hidden="true">
           <i class="fa fa-chevron-down"></i>
         </span>
       </button>
-      <div class="lc-faq-answer">
-        <div class="lc-faq-answer-inner">
+      <div class="faq-answer" id="lcfaq4" hidden>
+        <div class="faq-answer-inner">
           <p>
             L'Energy Club è riservato ai clienti con fornitura energetica attiva.
-            Se non sei ancora cliente, <a href="/#contact">contattaci per una consulenza gratuita</a>:
+            Se non sei ancora cliente, <a href="#loyalty-contact">contattaci per una consulenza gratuita</a>:
             analizziamo la tua bolletta senza impegno e, una volta attivato il
             contratto, hai accesso immediato al Club.
           </p>
@@ -1020,15 +1022,15 @@
       </div>
     </div>
 
-    <div class="lc-faq-item reveal reveal-delay-1" role="listitem">
-      <button class="lc-faq-q" aria-expanded="false">
+    <div class="faq-item reveal reveal-delay-1" role="listitem">
+      <button class="faq-btn" aria-expanded="false" aria-controls="lcfaq5">
         Devo scaricare un'app?
-        <span class="lc-faq-chevron" aria-hidden="true">
+        <span class="faq-chevron" aria-hidden="true">
           <i class="fa fa-chevron-down"></i>
         </span>
       </button>
-      <div class="lc-faq-answer">
-        <div class="lc-faq-answer-inner">
+      <div class="faq-answer" id="lcfaq5" hidden>
+        <div class="faq-answer-inner">
           <p>
             No. Il portale funziona su qualsiasi browser, su qualsiasi smartphone.
             Puoi aggiungere la pagina alla schermata home per un accesso rapido —
@@ -1038,15 +1040,15 @@
       </div>
     </div>
 
-    <div class="lc-faq-item reveal reveal-delay-2" role="listitem">
-      <button class="lc-faq-q" aria-expanded="false">
+    <div class="faq-item reveal reveal-delay-2" role="listitem">
+      <button class="faq-btn" aria-expanded="false" aria-controls="lcfaq6">
         Come posso contattare M&amp;M Consulting?
-        <span class="lc-faq-chevron" aria-hidden="true">
+        <span class="faq-chevron" aria-hidden="true">
           <i class="fa fa-chevron-down"></i>
         </span>
       </button>
-      <div class="lc-faq-answer">
-        <div class="lc-faq-answer-inner">
+      <div class="faq-answer" id="lcfaq6" hidden>
+        <div class="faq-answer-inner">
           <p>
             Chiamaci allo <a href="tel:+390909412150">090 941 2150</a>, scrivici su
             WhatsApp o vieni a trovarci in Via Industriale 120, Messina.
@@ -1062,8 +1064,189 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     FINAL CTA BAND
+     LOYALTY CONTACT FORM
+     Dedicated contact form for loyalty-page visitors.
+     Sends to the existing /api/contacts endpoint with
+     source: "loyalty" for lead-source tracking.
+     Does NOT include energyType — loyalty visitors are not
+     necessarily energy leads yet.
 ═══════════════════════════════════════════════════════════ -->
+<section
+  class="lc-section"
+  id="loyalty-contact"
+  aria-labelledby="lcContactTitle"
+>
+  <div class="container">
+
+    <div class="section-header reveal">
+      <p class="lc-eyebrow" style="justify-content:center;">
+        <span class="eyebrow-line"></span>
+        Hai domande?
+      </p>
+      <h2 class="section-title" id="lcContactTitle">
+        Parla con un consulente
+      </h2>
+      <div class="section-title-line"></div>
+      <p class="section-sub">
+        Vuoi diventare cliente M&amp;M o hai domande sull'Energy Club?
+        Risposta garantita entro 24 ore lavorative. Nessun impegno.
+      </p>
+    </div>
+
+    <form
+      class="contact-form"
+      id="lcContactForm"
+      novalidate
+      aria-label="Modulo di contatto Energy Club"
+      style="max-width:560px;margin:0 auto;"
+    >
+      <!-- Honeypot -->
+      <input type="text" name="company" class="honeypot" aria-hidden="true" tabindex="-1" autocomplete="off">
+
+      <div class="form-row">
+        <div class="field-wrap">
+          <input
+            type="text"
+            name="firstname"
+            id="lcFirstname"
+            placeholder=" "
+            required
+            autocomplete="given-name"
+            aria-required="true"
+          >
+          <label for="lcFirstname">
+            Nome <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr>
+          </label>
+        </div>
+        <div class="field-wrap">
+          <input
+            type="text"
+            name="lastname"
+            id="lcLastname"
+            placeholder=" "
+            required
+            autocomplete="family-name"
+            aria-required="true"
+          >
+          <label for="lcLastname">
+            Cognome <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field-wrap">
+          <input
+            type="email"
+            name="email"
+            id="lcEmail"
+            placeholder=" "
+            required
+            autocomplete="email"
+            aria-required="true"
+          >
+          <label for="lcEmail">
+            Email <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr>
+          </label>
+        </div>
+        <div class="field-wrap" id="lcPhoneWrap" style="display:none;">
+          <input
+            type="tel"
+            name="phone"
+            id="lcPhone"
+            placeholder=" "
+            autocomplete="tel"
+          >
+          <label for="lcPhone">Telefono</label>
+        </div>
+      </div>
+
+      <!-- Phone toggle — same pattern as homepage -->
+      <div class="form-row form-row--toggle">
+        <label class="toggle-switch" for="lcPhoneToggle">
+          <input type="checkbox" id="lcPhoneToggle" role="switch" aria-checked="false">
+          <span class="toggle-switch-track" aria-hidden="true"></span>
+        </label>
+        <span class="toggle-switch-label">
+          Desidero essere contattato/a telefonicamente
+        </span>
+      </div>
+
+      <!-- Contact time (shown when toggle on) -->
+      <div class="form-row form-row--single" id="lcContactTimeRow" style="display:none;">
+        <div class="field-wrap field-wrap--select">
+          <select name="contactTime" id="lcContactTime">
+            <option value="" disabled selected hidden></option>
+            <option value="morning">Mattina (8:00 – 12:00)</option>
+            <option value="afternoon">Pomeriggio (12:00 – 17:00)</option>
+            <option value="evening">Sera (17:00 – 20:00)</option>
+          </select>
+          <label for="lcContactTime">Orario preferito per il contatto</label>
+        </div>
+      </div>
+
+      <!-- Message -->
+      <div class="form-row">
+        <div class="field-wrap field-wrap--full">
+          <textarea
+            name="message"
+            id="lcMessage"
+            placeholder=" "
+            rows="4"
+            aria-label="Messaggio"
+          ></textarea>
+          <label for="lcMessage">Come possiamo aiutarti? (opzionale)</label>
+        </div>
+      </div>
+
+      <!-- GDPR consent — same pattern as homepage -->
+      <div class="consent-block" role="group" aria-labelledby="lcConsentLabel">
+        <label class="consent-label" for="lcConsent" id="lcConsentLabel">
+          <input type="checkbox" id="lcConsent" required aria-required="true">
+          <span class="consent-checkbox" aria-hidden="true"></span>
+          <span class="consent-text">
+            Accetto di essere contattato/a in merito alla mia richiesta e accetto l'
+            <a href="/privacy-page.html" aria-label="Leggi l'informativa sulla privacy">
+              informativa sulla privacy
+            </a>.
+          </span>
+        </label>
+        <span class="consent-error" id="lcConsentError" role="alert" aria-live="polite">
+          Devi accettare l'informativa sulla privacy per continuare.
+        </span>
+        <p class="consent-note">
+          <i class="fa fa-lock" aria-hidden="true"></i>
+          I tuoi dati sono protetti e non verranno mai ceduti a terzi.
+        </p>
+      </div>
+
+      <!-- Feedback -->
+      <div
+        class="loyalty-error"
+        id="lcContactError"
+        role="alert"
+        aria-live="polite"
+        style="margin-bottom:12px;"
+      >
+        <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
+        <span id="lcContactErrorMsg"></span>
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-gold btn-full btn-submit"
+        id="lcContactSubmit"
+      >
+        <span class="btn-text">Invia richiesta</span>
+        <span class="btn-dots" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+      </button>
+
+    </form>
+
+  </div>
+</section>
 <section class="lc-cta-band" aria-labelledby="lcCtaTitle">
   <div class="lc-cta-inner reveal">
 
@@ -1087,7 +1270,7 @@
         Registrati Gratis
         <i class="fa fa-arrow-right" aria-hidden="true"></i>
       </a>
-      <a href="/#contact" class="btn btn-ghost">
+      <a href="#loyalty-contact" class="btn btn-ghost">
         Parla con un consulente
       </a>
     </div>
@@ -1237,18 +1420,9 @@
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════
-     JAVASCRIPT
-     Loads the site-wide app.js (nav burger, WhatsApp widget,
-     reveal observer, newsletter form) then adds page-specific
-     behaviour inline below.
-═══════════════════════════════════════════════════════════ -->
-
 <!-- Site-wide module — handles nav burger, WhatsApp, scroll reveal, newsletter -->
 <script type="module" src="/js/features/loyalty/landing-loyalty-app.js"></script>
 <script type="module" src="/js/features/loyalty/landing-loyalty.js"></script>
-
-<!-- Page-specific script (non-module, runs after app.js) -->
 
 </body>
 </html>

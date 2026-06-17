@@ -39,13 +39,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
    HELPERS
 ───────────────────────────────────────────── */
 
-function normalizePartnerId(value = "") {
-  return clean(value)
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-");
-}
-
 function validatePassword(password, field = "password") {
   if (!password || password.length < 8) {
     throw makeError(
@@ -122,7 +115,6 @@ async function getPartners() {
 ───────────────────────────────────────────── */
 
 async function createPartner({
-  id,
   name,
   legalName,
   vatNumber,
@@ -140,7 +132,7 @@ async function createPartner({
 }) {
   if (!name?.trim() || !tempPassword) {
     throw makeError(
-      "ID, nome e password temporanea sono obbligatori.",
+      "Nome e password temporanea sono obbligatori.",
       400
     );
   }
@@ -154,33 +146,43 @@ async function createPartner({
 
   validateEmail(normalizedEmail);
 
-  const partnerId    = generateUUID('p')
-  const passwordHash = await hashPassword(tempPassword);
+  // ID generated server-side — never supplied by the frontend.
+  // Up to 3 retries on the extremely unlikely collision (unique index
+  // on partners.id would throw a 23505 error).
+  let partnerId;
+  let passwordHash;
+  let attempts = 0;
 
-  try {
-    await partnerRepo.createPartner({
-      id:               partnerId,
-      name:             clean(name).trim(),
-      legalName:        normalizeOptional(legalName),
-      vatNumber:        normalizeOptional(vatNumber),
-      email:            normalizedEmail,
-      phone:            normalizeOptional(phone),
-      website:          normalizeOptional(website),
-      category:         clean(category).trim(),
-      address:          normalizeOptional(address),
-      city:             normalizeOptional(city),
-      postalCode:       normalizeOptional(postalCode),
-      description:      normalizeOptional(description),
-      offerDescription: normalizeOptional(offerDescription),
-      notes:            normalizeOptional(notes),
-      passwordHash,
-    });
+  passwordHash = await hashPassword(tempPassword);
 
-  } catch (err) {
-    if (err.code === "23505") {
-      throw makeError("Un partner con questo ID esiste già.", 409);
+  while (attempts < 3) {
+    partnerId = generateUUID('p');
+    try {
+      await partnerRepo.createPartner({
+        id:               partnerId,
+        name:             clean(name).trim(),
+        legalName:        normalizeOptional(legalName),
+        vatNumber:        normalizeOptional(vatNumber),
+        email:            normalizedEmail,
+        phone:            normalizeOptional(phone),
+        website:          normalizeOptional(website),
+        category:         clean(category).trim(),
+        address:          normalizeOptional(address),
+        city:             normalizeOptional(city),
+        postalCode:       normalizeOptional(postalCode),
+        description:      normalizeOptional(description),
+        offerDescription: normalizeOptional(offerDescription),
+        notes:            normalizeOptional(notes),
+        passwordHash,
+      });
+      break; // success
+    } catch (err) {
+      if (err.code === "23505" && attempts < 2) {
+        attempts++;
+        continue; // retry with a new suffix
+      }
+      throw err;
     }
-    throw err;
   }
 
   return {
@@ -195,7 +197,7 @@ async function createPartner({
    loyalty-program / admin fields, plus active status.
 
    NOT editable here (by design — separate flows exist):
-     - id                (immutable after creation)
+     - id / identifier   (immutable after creation)
      - password          (setPartnerPassword)
      - mustChangePassword (set internally on password change)
 
@@ -278,13 +280,13 @@ async function updatePartner(partnerId, fields = {}) {
    LOGIN (existing — unchanged)
 ───────────────────────────────────────────── */
 
-async function loginPartner({ email, password }) {
-  if (!email?.trim() || !password) {
+async function loginPartner({ partnerId, password }) {
+  if (!partnerId?.trim() || !password) {
     throw makeError("Credenziali non valide.", 401);
   }
 
   const partner = await partnerRepo.findPartnerByIdentifier(
-    normalizePartnerId(email)
+    normalizePartnerId(partnerId)
   );
 
   if (!partner) {

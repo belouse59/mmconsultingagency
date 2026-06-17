@@ -90,28 +90,7 @@
   }
 
 
-  /* ── 5. FAQ accordion ── */
-  document.querySelectorAll('.lc-faq-q').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var item   = this.closest('.lc-faq-item');
-      var isOpen = item.classList.contains('open');
-
-      // Close all
-      document.querySelectorAll('.lc-faq-item.open').forEach(function (i) {
-        i.classList.remove('open');
-        i.querySelector('.lc-faq-q').setAttribute('aria-expanded', 'false');
-      });
-
-      // Open clicked if it was closed
-      if (!isOpen) {
-        item.classList.add('open');
-        this.setAttribute('aria-expanded', 'true');
-      }
-    });
-  });
-
-
-  /* ── 6. Card QR timer countdown (cosmetic) ── */
+  /* ── 5. Card QR timer countdown (cosmetic) ── */
   var timerLabel = document.getElementById('lcCardTimer');
   if (timerLabel) {
     var remaining = 222; // start mid-cycle for realism
@@ -187,6 +166,110 @@
       } finally {
         submitBtn.classList.remove('loading');
         submitBtn.disabled = false;
+      }
+    });
+  }
+
+
+  /* ─────────────────────────────────────────
+     9. LOYALTY CONTACT FORM
+     Sends to /api/contacts with source:'loyalty'
+     for lead-source tracking in the admin console.
+     Reuses the same endpoint and notifyNewLead()
+     as the homepage form — no new backend needed.
+  ───────────────────────────────────────────── */
+
+  var lcContactForm   = document.getElementById('lcContactForm');
+  var lcContactSubmit = document.getElementById('lcContactSubmit');
+  var lcContactError  = document.getElementById('lcContactError');
+  var lcContactErrMsg = document.getElementById('lcContactErrorMsg');
+
+  // Phone toggle
+  var lcPhoneToggle      = document.getElementById('lcPhoneToggle');
+  var lcPhoneWrap        = document.getElementById('lcPhoneWrap');
+  var lcContactTimeRow   = document.getElementById('lcContactTimeRow');
+
+  if (lcPhoneToggle) {
+    lcPhoneToggle.addEventListener('change', function () {
+      var on = this.checked;
+      this.setAttribute('aria-checked', String(on));
+      if (lcPhoneWrap)      lcPhoneWrap.style.display      = on ? '' : 'none';
+      if (lcContactTimeRow) lcContactTimeRow.style.display  = on ? '' : 'none';
+    });
+  }
+
+  function showContactError(msg) {
+    if (lcContactErrMsg) lcContactErrMsg.textContent = msg;
+    if (lcContactError)  lcContactError.classList.add('visible');
+  }
+
+  function hideContactError() {
+    if (lcContactError) lcContactError.classList.remove('visible');
+  }
+
+  if (lcContactForm) {
+    lcContactForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      hideContactError();
+
+      var firstname = (lcContactForm.firstname.value || '').trim();
+      var lastname  = (lcContactForm.lastname.value  || '').trim();
+      var email     = (lcContactForm.email.value     || '').trim();
+      var consent   = document.getElementById('lcConsent');
+
+      if (!firstname || !lastname) {
+        showContactError('Inserisci nome e cognome.');
+        return;
+      }
+      if (!email) {
+        showContactError('Inserisci un indirizzo email valido.');
+        return;
+      }
+      if (consent && !consent.checked) {
+        var errEl = document.getElementById('lcConsentError');
+        if (errEl) errEl.classList.add('visible');
+        return;
+      }
+
+      // Honeypot guard
+      var honeypot = lcContactForm.querySelector('[name="company"]');
+      if (honeypot && honeypot.value) return;
+
+      if (lcContactSubmit) lcContactSubmit.disabled = true;
+
+      try {
+        var payload = {
+          firstName:            firstname,
+          lastName:             lastname,
+          email:                email,
+          phone:                (lcContactForm.phone ? lcContactForm.phone.value : '') || '',
+          preferredContactTime: lcContactForm.contactTime ? lcContactForm.contactTime.value : '',
+          message:              lcContactForm.message ? lcContactForm.message.value.trim() : '',
+          // Source tracking — identifies this as a loyalty-page lead
+          // in admin reporting and notifyNewLead() emails.
+          source:               'loyalty',
+          formType:             'loyalty_contact',
+        };
+
+        var res = await fetch('/api/contacts', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body:    JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          lcContactForm.innerHTML =
+            '<div style="text-align:center;padding:32px 0;">' +
+            '<p style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--text-primary);margin-bottom:8px;">Grazie! Messaggio inviato.</p>' +
+            '<p style="font-size:0.9rem;color:var(--text-secondary);">Ti risponderemo entro 24 ore lavorative.</p>' +
+            '</div>';
+        } else {
+          showContactError('Si è verificato un errore. Riprova o contattaci direttamente.');
+        }
+      } catch (_) {
+        showContactError('Connessione non riuscita. Contattaci via WhatsApp o telefono.');
+      } finally {
+        if (lcContactSubmit) lcContactSubmit.disabled = false;
       }
     });
   }

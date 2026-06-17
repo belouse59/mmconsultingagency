@@ -12,10 +12,11 @@
  *   - All other methods unchanged.
  */
 
-const customerRepo   = require("../../repositories/loyalty/customersRepository");
-const offerRepo      = require("../../repositories/loyalty/offersRepository");
-const redemptionRepo = require("../../repositories/loyalty/redemptionsRepository");
-const partnerRepo    = require("../../repositories/loyalty/partnersRepository");
+const customerRepo       = require("../../repositories/loyalty/customersRepository");
+const offerRepo          = require("../../repositories/loyalty/offersRepository");
+const redemptionRepo     = require("../../repositories/loyalty/redemptionsRepository");
+const partnerRepo        = require("../../repositories/loyalty/partnersRepository");
+const partnerRequestRepo = require("../../repositories/loyalty/partnerRequestsRepository");
 
 const { buildPaginationMeta } = require("../../utils/paginate");
 
@@ -129,6 +130,29 @@ async function getRedemptionsPaginated(pagination) {
 }
 
 /* ─────────────────────────────────────────────
+   PARTNER REQUESTS — PAGINATED  ← NEW
+   List-only. Mutations (approve/reject) live in
+   partnerRequestLoyaltyService — the same layering
+   used for partner create/update.
+
+   @param {{ page, limit, offset, search, sortBy, sortOrder, filters }} pagination
+   @returns {{ data: PartnerRequest[], pagination: PaginationMeta }}
+───────────────────────────────────────────── */
+
+async function getPartnerRequestsPaginated(pagination) {
+  const { rows, total } = await partnerRequestRepo.findPartnerRequestsPaginated(pagination);
+
+  return {
+    data:       rows,
+    pagination: buildPaginationMeta({
+      page:  pagination.page,
+      limit: pagination.limit,
+      total,
+    }),
+  };
+}
+
+/* ─────────────────────────────────────────────
    EXPORTS
 ───────────────────────────────────────────── */
 
@@ -147,4 +171,5 @@ module.exports = {
   getPartnersPaginated,
   getOffersPaginated,
   getRedemptionsPaginated,
+  getPartnerRequestsPaginated,   // ← new
 };
