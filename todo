@@ -6,6 +6,6 @@ need add columns to partner table and so in the creation form in the admin based
 
 loyaltyRoutes may be move them to their own router
 
-need to modulize the faq section 
+need to modulize the faq section need to check homepage now to adapt it.
 
 check to do someting similar to all columns in the admin 32 lengths... then modal for details

@@ -82,6 +82,7 @@
 /* ── Chevron icon ── */
 .faq-chevron {
   flex-shrink: 0;
+  padding: 0 2px;
   width: 26px;
   height: 26px;
   background: var(--bg-soft);

@@ -181,6 +181,7 @@ function buildVariable(headVars, variables, outputFile) {
   headVars.robots = variables.robots
   headVars.STRUCTURED_DATA_BUSINESS = variables.STRUCTURED_DATA_BUSINESS || "";
   headVars.STRUCTURED_DATA_FAQ = variables.STRUCTURED_DATA_BUSINESS || "";
+  headVars.EXTRA_CSS = variables.EXTRA_CSS || ""
 
 }
 
@@ -277,7 +278,9 @@ buildPage({
       ]
     }
   </script>`,
-    robots: "index, follow"
+    robots: "index, follow",
+    EXTRA_CSS:`<link rel="stylesheet" href="/assets/css/member-card.css">
+  <link rel="stylesheet" href="/assets/css/faq.css"></link>`
   }
 });
 
