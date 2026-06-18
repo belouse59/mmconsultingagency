@@ -39,7 +39,7 @@ adminLoginForm?.addEventListener("submit", async (e) => {
 
         if (res.ok && success) {
             window.location.href = "/loyalty/admin/dashboard";
-             _setLoading(loginSubmitBtn, false);
+             setLoading(loginSubmitBtn, false);
             return;
         }
 
@@ -47,7 +47,7 @@ adminLoginForm?.addEventListener("submit", async (e) => {
     } catch {
         loginErrorText.textContent = "Errore di connessione. Riprova.";
         loginError.classList.add("visible");
-        _setLoading(loginSubmitBtn, false);
+        setLoading(loginSubmitBtn, false);
     }
 });
 
