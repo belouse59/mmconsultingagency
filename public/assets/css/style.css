@@ -19,14 +19,13 @@
    14. Team Carousel
    15. Approach / Methodology
    16. Reviews
-   17. FAQ
-   18. Contact Form
-   19. Find Us / Map
-   20. Footer
-   21. WhatsApp Widget
-   22. Toast Notifications
-   23. Animations (@keyframes)
-   24. Media Queries (consolidated)
+   17. Contact Form
+   18. Find Us / Map
+   19. Footer
+   20. WhatsApp Widget
+   21. Toast Notifications
+   22. Animations (@keyframes)
+   23. Media Queries (consolidated)
 ============================================================ */
 
 
@@ -2539,126 +2538,8 @@ abbr[title] {
     right: -8px;
 }
 
-
 /* ============================================================
-   17. FAQ
-============================================================ */
-/*
-.faq {
-    padding: var(--sp-24) 0;
-    background: var(--bg-soft);
-}
-
-.faq-list {
-    max-width: 720px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-3);
-}
-
-.faq-item {
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
-    overflow: hidden;
-    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
-}
-
-.faq-item:hover {
-    border-color: var(--gold-border);
-}
-
-.faq-item.active {
-    border-color: var(--gold-border);
-    box-shadow: 0 4px 20px var(--gold-glow);
-}
-
-.faq-question {
-    width: 100%;
-    background: var(--bg);
-    border: none;
-    padding: var(--sp-5) var(--sp-6);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--sp-4);
-    text-align: left;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: background var(--dur-fast);
-    font-family: var(--font-body);
-}
-
-.faq-question:hover {
-    background: var(--bg-soft);
-}
-
-.faq-item.active .faq-question {
-    background: var(--gold-glow);
-}
-
-.faq-icon {
-    width: 26px;
-    height: 26px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    font-weight: 400;
-    color: var(--text-secondary);
-    line-height: 1;
-    transition: transform var(--dur-fast), background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
-}
-
-.faq-item.active .faq-icon {
-    transform: rotate(45deg);
-    background: var(--gold);
-    color: var(--navy);
-    border-color: var(--gold);
-}
-*/
-/* Legacy span support */
-/*
-.faq-item span {
-    font-size: 1.3rem;
-    transition: transform 0.3s;
-    display: inline-block;
-}
-
-.faq-item.active span {
-    transform: rotate(45deg);
-}
-
-.faq-answer {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease, padding 0.3s;
-    padding: 0 var(--sp-6);
-    background: var(--bg);
-}
-
-.faq-item.active .faq-answer {
-    max-height: 300px;
-    padding: 0 var(--sp-6) var(--sp-5);
-}
-
-.faq-answer p {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    line-height: 1.70;
-    padding-top: var(--sp-4);
-    border-top: 1px solid var(--border);
-}
-
-*/
-/* ============================================================
-   18. CONTACT FORM
+   17. CONTACT FORM
 ============================================================ */
 
 .contact {
@@ -2983,7 +2864,7 @@ abbr[title] {
 
 
 /* ============================================================
-   19. FIND US / MAP
+   18. FIND US / MAP
 ============================================================ */
 
 .find-us {
@@ -3009,7 +2890,7 @@ abbr[title] {
 
 
 /* ============================================================
-   20. FOOTER
+   19. FOOTER
 ============================================================ */
 
 .site-footer {
@@ -3225,7 +3106,7 @@ abbr[title] {
 
 
 /* ============================================================
-   21. WHATSAPP WIDGET
+   20. WHATSAPP WIDGET
 ============================================================ */
 
 .wa-float {
@@ -3433,7 +3314,7 @@ abbr[title] {
 
 
 /* ============================================================
-   22. TOAST NOTIFICATIONS
+   21. TOAST NOTIFICATIONS
 ============================================================ */
 
 .toast {
@@ -3470,7 +3351,7 @@ abbr[title] {
 }
 
 /* ============================================================
-   23. ANIMATIONS
+   22. ANIMATIONS
 ============================================================ */
 
 @keyframes bounce {
@@ -3554,7 +3435,7 @@ abbr[title] {
 
 
 /* ============================================================
-   24. MEDIA QUERIES — consolidated, descending
+   23. MEDIA QUERIES — consolidated, descending
 ============================================================ */
 
 /* ─── 1200px ─── */
