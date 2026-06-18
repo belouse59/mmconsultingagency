@@ -994,8 +994,8 @@
 /* ============================================================
    11. FINAL CTA BAND
 ============================================================ */
-#loyalty-contact: {
-position: relative;
+#loyalty-contact {
+   position: relative;
 }
 
 #loyalty-contact::before {
