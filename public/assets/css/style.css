@@ -2543,7 +2543,7 @@ abbr[title] {
 /* ============================================================
    17. FAQ
 ============================================================ */
-
+/*
 .faq {
     padding: var(--sp-24) 0;
     background: var(--bg-soft);
@@ -2622,8 +2622,9 @@ abbr[title] {
     color: var(--navy);
     border-color: var(--gold);
 }
-
+*/
 /* Legacy span support */
+/*
 .faq-item span {
     font-size: 1.3rem;
     transition: transform 0.3s;
@@ -2655,7 +2656,7 @@ abbr[title] {
     border-top: 1px solid var(--border);
 }
 
-
+*/
 /* ============================================================
    18. CONTACT FORM
 ============================================================ */
