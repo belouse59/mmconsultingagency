@@ -389,7 +389,7 @@
     border-radius: var(--r-full);
     white-space: nowrap;
     box-shadow: 0 6px 24px rgba(15, 122, 60, 0.40);
-    animation: mc-fade-up 0.5s 0.7s var(--ease) both;
+   /* animation: mc-fade-up 0.5s 0.7s var(--ease) both;*/
     display: flex;
     align-items: center;
     gap: var(--sp-2);
