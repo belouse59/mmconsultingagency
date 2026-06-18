@@ -994,7 +994,17 @@
 /* ============================================================
    11. FINAL CTA BAND
 ============================================================ */
-
+#loyalty-contact::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: var(--gold);
+    border-radius: var(--r-full);
+}
 .lc-cta-band {
     background: var(--navy);
     padding: clamp(80px, 10vw, 120px) 0;
