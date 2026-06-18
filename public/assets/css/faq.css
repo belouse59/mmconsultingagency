@@ -17,7 +17,11 @@
            .faq-answer-inner
              p / a …
 ============================================================ */
-
+/*── section ── */
+.faq {
+   padding: var(--sp-24) 0;
+   background: var(--bg-soft);
+}
 /* ── Container ── */
 .faq-list {
   max-width: 720px;
