@@ -39,6 +39,7 @@ adminLoginForm?.addEventListener("submit", async (e) => {
 
         if (res.ok && success) {
             window.location.href = "/loyalty/admin/dashboard";
+             _setLoading(loginSubmitBtn, false);
             return;
         }
 
