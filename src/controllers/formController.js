@@ -5,6 +5,20 @@ const newsletterService = require("../services/form/newsletterService");
 const simulatorService  = require("../services/form/simulatorService");
 const { verifyToken }   = require("../services/tokenService");
 
+/**
+ * A "loyalty" contact form submission is the same underlying
+ * entity as a "contact" submission — a contacts row + a
+ * contact_requests row — just from a different page with a
+ * different category vocabulary (Cliente/Partner/Info instead
+ * of Gas/Elettricità/Entrambi). Both route to the same service;
+ * contactService.submit() reads `source`/`category` generically
+ * to tell them apart.
+ *
+ * Any future contact-style form (e.g. a partner-page contact
+ * form) can be added to this same list without a new service.
+ */
+const CONTACT_FORM_TYPES = ["contact", "loyalty", "energy"];
+
 async function submitForm(req, res) {
   try {
 
@@ -12,25 +26,20 @@ async function submitForm(req, res) {
 
     let result;
 
-    switch (formType) {
+    if (CONTACT_FORM_TYPES.includes(formType)) {
+      result = await contactService.submit(req.body);
 
-      case "contact":
-        result = await contactService.submit(req.body);
-        break;
+    } else if (formType === "newsletter") {
+      result = await newsletterService.subscribe(req.body);
 
-      case "newsletter":
-        result = await newsletterService.subscribe(req.body);
-        break;
+    } else if (formType === "simulator") {
+      result = await simulatorService.submit(req.body);
 
-      case "simulator":
-        result = await simulatorService.submit(req.body);
-        break;
-
-      default:
-        return res.status(400).json({
-          success:false,
-          message:"Tipo modulo non valido"
-        });
+    } else {
+      return res.status(400).json({
+        success:  false,
+        message:  "Tipo modulo non valido",
+      });
     }
 
     return res.json(result);

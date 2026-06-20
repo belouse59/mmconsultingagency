@@ -68,6 +68,18 @@
       word-break: break-word;
     }
 
+    .badge {
+      display: inline-block;
+      background: #FBF3E0;
+      color: #B8860B;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
     .cta {
       margin: 24px 0 0;
       background: #D4A017;
@@ -94,10 +106,11 @@
   <div class="wrap">
     <div class="header">
       <h1>Nuova richiesta di contatto</h1>
-      <p>M&amp;M Consulting · {{DATE}}</p>
+      <p>M&amp;M Consulting · {{DATE}} · {{SOURCE}}</p>
     </div>
 
     <div class="body">
+
       <div class="row">
         <span class="key">Nome</span>
         <span class="val">{{FIRSTNAME}} {{LASTNAME}}</span>
@@ -113,9 +126,12 @@
         <span class="val">{{PHONE}}</span>
       </div>
 
+      <!-- Dynamic label: "Energia" for homepage leads,
+           "Richiesta" for loyalty leads, etc. — set by
+           notifyNewLead() based on data.source. -->
       <div class="row">
-        <span class="key">Energia</span>
-        <span class="val">{{ENERGY_TYPE}}</span>
+        <span class="key">{{CATEGORY_ROW_LABEL}}</span>
+        <span class="val"><span class="badge">{{CATEGORY}}</span></span>
       </div>
 
       <div class="row">
@@ -127,6 +143,7 @@
         <span class="key">Messaggio</span>
         <span class="val">{{MESSAGE}}</span>
       </div>
+
       <div class="row">
         <span class="key">Tipo form</span>
         <span class="val">{{FORM_TYPE}}</span>

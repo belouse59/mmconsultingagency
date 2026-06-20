@@ -21,9 +21,9 @@ const API_BASE = "";
  * @param {Object} payload
  * @returns {Promise<{ success: boolean, message: string }>}
  */
-export async function postForm(payload) {
+export async function postForm(payload, endpoint="/api/form/submit") {
   try {
-    const res = await fetch("/api/form/submit", {
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

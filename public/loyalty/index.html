@@ -354,6 +354,9 @@
           <div class="lc-scroll-hint" id="lcScrollHint" aria-hidden="true">
             <i class="fa fa-chevron-down"></i>
           </div>
+        </div> <!-- /.lc-hero-visual -->
+
+      </div> <!-- /.lc-hero -->
 
     </section>
 
@@ -982,11 +985,10 @@
 
     <!-- ═══════════════════════════════════════════════════════════
      LOYALTY CONTACT FORM
-     Dedicated contact form for loyalty-page visitors.
-     Sends to the existing /api/contacts endpoint with
-     source: "loyalty" for lead-source tracking.
-     Does NOT include energyType — loyalty visitors are not
-     necessarily energy leads yet.
+     Handled by public/js/components/contactForm.js
+     configured with source="loyalty", formType="loyalty".
+     Sends to /api/contacts with category (Cliente|Partner)
+     for lead classification and admin reporting.
 ═══════════════════════════════════════════════════════════ -->
     <section class="lc-section" id="loyalty-contact" aria-labelledby="lcContactTitle">
       <div class="container">
@@ -1011,6 +1013,7 @@
           <!-- Honeypot -->
           <input type="text" name="company" class="honeypot" aria-hidden="true" tabindex="-1" autocomplete="off">
 
+          <!-- Name row -->
           <div class="form-row">
             <div class="field-wrap">
               <input type="text" name="firstname" id="lcFirstname" placeholder=" " required autocomplete="given-name"
@@ -1028,6 +1031,7 @@
             </div>
           </div>
 
+          <!-- Email + Phone (phone hidden until toggle) -->
           <div class="form-row">
             <div class="field-wrap">
               <input type="email" name="email" id="lcEmail" placeholder=" " required autocomplete="email"
@@ -1036,16 +1040,16 @@
                 Email <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr>
               </label>
             </div>
-            <div class="field-wrap" id="lcPhoneWrap" style="display:none;">
+            <div class="field-wrap" data-phone-wrap style="display:none;">
               <input type="tel" name="phone" id="lcPhone" placeholder=" " autocomplete="tel">
               <label for="lcPhone">Telefono</label>
             </div>
           </div>
 
-          <!-- Phone toggle — same pattern as homepage -->
+          <!-- Phone toggle -->
           <div class="form-row form-row--toggle">
             <label class="toggle-switch" for="lcPhoneToggle">
-              <input type="checkbox" id="lcPhoneToggle" role="switch" aria-checked="false">
+              <input type="checkbox" id="lcPhoneToggle" data-phone-toggle role="switch" aria-checked="false">
               <span class="toggle-switch-track" aria-hidden="true"></span>
             </label>
             <span class="toggle-switch-label">
@@ -1054,7 +1058,7 @@
           </div>
 
           <!-- Contact time (shown when toggle on) -->
-          <div class="form-row form-row--single" id="lcContactTimeRow" style="display:none;">
+          <div class="form-row form-row--single" data-contact-time-row style="display:none;">
             <div class="field-wrap field-wrap--select">
               <select name="contactTime" id="lcContactTime">
                 <option value="" disabled selected hidden></option>
@@ -1066,6 +1070,26 @@
             </div>
           </div>
 
+          <!-- Category select — classifies the lead for backend reporting.
+           name="contactType" maps to payload.category via selectField config.
+           Options are loyalty-specific: Cliente | Partner.
+           The homepage uses energyType (Gas/Elettricità/Entrambi) — same
+           component, different selectField + options. -->
+          <div class="form-row form-row--single">
+            <div class="field-wrap field-wrap--select">
+              <select name="contactType" id="lcContactType" required aria-required="true">
+                <option value="" disabled selected hidden></option>
+                <option value="Cliente">Voglio diventare cliente M&amp;M</option>
+                <option value="Partner">Voglio diventare partner</option>
+                <option value="Info">Informazioni sull'Energy Club</option>
+              </select>
+              <label for="lcContactType">
+                Tipo di richiesta
+                <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr>
+              </label>
+            </div>
+          </div>
+
           <!-- Message -->
           <div class="form-row">
             <div class="field-wrap field-wrap--full">
@@ -1074,10 +1098,12 @@
             </div>
           </div>
 
-          <!-- GDPR consent — same pattern as homepage -->
-          <div class="consent-block" role="group" aria-labelledby="lcConsentLabel">
+          <!-- GDPR consent — same structure as homepage.
+           data-consent-block / data-consent / data-consent-error hooks
+           let the shared component find these without relying on IDs. -->
+          <div class="consent-block" data-consent-block role="group" aria-labelledby="lcConsentLabel">
             <label class="consent-label" for="lcConsent" id="lcConsentLabel">
-              <input type="checkbox" id="lcConsent" required aria-required="true">
+              <input type="checkbox" id="lcConsent" name="consent" data-consent required aria-required="true">
               <span class="consent-checkbox" aria-hidden="true"></span>
               <span class="consent-text">
                 Accetto di essere contattato/a in merito alla mia richiesta e accetto l'
@@ -1086,19 +1112,13 @@
                 </a>.
               </span>
             </label>
-            <span class="consent-error" id="lcConsentError" role="alert" aria-live="polite">
+            <span class="consent-error" data-consent-error role="alert" aria-live="polite">
               Devi accettare l'informativa sulla privacy per continuare.
             </span>
             <p class="consent-note">
               <i class="fa fa-lock" aria-hidden="true"></i>
               I tuoi dati sono protetti e non verranno mai ceduti a terzi.
             </p>
-          </div>
-
-          <!-- Feedback -->
-          <div class="loyalty-error" id="lcContactError" role="alert" aria-live="polite" style="margin-bottom:12px;">
-            <span class="loyalty-error-icon" aria-hidden="true">⚠</span>
-            <span id="lcContactErrorMsg"></span>
           </div>
 
           <button type="submit" class="btn btn-gold btn-full btn-submit" id="lcContactSubmit">
@@ -1285,12 +1305,9 @@
       </button>
     </div>
   </div>
-
-
   <!-- Site-wide module — handles nav burger, WhatsApp, scroll reveal, newsletter -->
   <script type="module" src="/js/features/loyalty/landing-loyalty-app.js"></script>
   <script type="module" src="/js/features/loyalty/landing-loyalty.js"></script>
-
 </body>
 
 </html>

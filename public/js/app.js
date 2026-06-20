@@ -34,7 +34,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   initWhatsApp();
 
-  initContactForm();
+  initContactForm({
+    formId:         "contactForm",
+    submitBtnId:    "contact-btn",
+    source:         "home",
+    formType:       "energy",
+    selectField:    "energyType",
+    successMessage: "✓ Richiesta inviata! Ti risponderemo entro 24 ore.",
+  });
   initNewsletter();
 
   logicTeamCarousel();
