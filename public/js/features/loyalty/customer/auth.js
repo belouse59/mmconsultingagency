@@ -13,6 +13,7 @@
 import { $ } from "../../../core/dom.js";
 import { logout } from "../../../core/logout.js";
 import { enablePasswordReveal } from "../../../core/passwordChecker.js";
+import { setLoading, showError, hideError, safeRedirect } from "../../../core/loyaltyUtils.js";
 const form         = $("#loginForm");
 const identifierEl = $("#identifier");
 const passwordEl   = $("#password");
@@ -20,7 +21,6 @@ const submitBtn    = $("#submitBtn");
 const errorBox     = $("#loginError");
 const errorText    = $("#loginErrorText");
 const $logout = $("#logoutBtn");
-import { setLoading, showError, hideError, safeRedirect } from "../../../core/loyaltyUtils.js";
 
 /* ── Form submit ── */
 form.addEventListener("submit", async (e) => {

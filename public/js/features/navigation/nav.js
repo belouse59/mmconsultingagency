@@ -8,6 +8,7 @@
  *   - Scroll hint visibility
  *   - Footer copyright year
  *   - Backward compatibility for legacy pipe-ID selectors
+ *   - Session-aware "Accedi" link (NEW)
  */
 
 import { $, $$ } from "../../core/dom.js";
@@ -22,11 +23,10 @@ export function initNav() {
   _initActiveHighlight();
   _initFooterYear();
   _initLegacyPipeLinks();
+  _initAuthLink();
 }
 
-/* ── CTA button ─────────────────────────────────────────────
-   On mobile: becomes a tel: link so the OS phone dialler opens.
-   On desktop: smooth scrolls to the contact section.           */
+/* ── CTA button (unchanged) ── */
 function _initCTA() {
   const ctaBtn = $("#navCtaBtn");
   if (!ctaBtn) return;
@@ -40,8 +40,7 @@ function _initCTA() {
   }
 }
 
-/* ── Hamburger ──────────────────────────────────────────────
-   Toggles .open on the mobile menu and updates aria-expanded. */
+/* ── Hamburger (unchanged) ── */
 function _initHamburger() {
   const burger     = $("#navBurger");
   const mobileMenu = $("#mobileMenu");
@@ -54,9 +53,7 @@ function _initHamburger() {
   });
 }
 
-/* ── Delegated smooth scroll ────────────────────────────────
-   Single listener at document level handles every [data-target]
-   element — nav links, mobile links, hero CTAs, highlight CTAs. */
+/* ── Delegated smooth scroll (unchanged) ── */
 function _initScrollLinks() {
   const burger     = $("#navBurger");
   const mobileMenu = $("#mobileMenu");
@@ -68,13 +65,11 @@ function _initScrollLinks() {
     const targetId = link.dataset.target;
     if (!targetId) return;
 
-    /* Let tel: links behave normally on mobile */
     if (isMobile() && link.getAttribute("href")?.startsWith("tel:")) return;
 
     e.preventDefault();
     smoothScrollTo(targetId);
 
-    /* Close mobile menu if open */
     if (mobileMenu?.classList.contains("open")) {
       mobileMenu.classList.remove("open");
       burger?.setAttribute("aria-expanded", "false");
@@ -82,9 +77,7 @@ function _initScrollLinks() {
   });
 }
 
-/* ── Active nav link on scroll ──────────────────────────────
-   Uses scroll listener + offsetTop comparison to mark the
-   currently visible section in the nav.                       */
+/* ── Active nav link on scroll (unchanged) ── */
 function _initActiveHighlight() {
   const sections   = $$("section[id]");
   const navLinks   = $$(".nav-link");
@@ -93,7 +86,6 @@ function _initActiveHighlight() {
   const onScroll = () => {
     const scrollY = window.scrollY;
 
-    /* Hide the bouncing chevron once user starts scrolling */
     if (scrollHint) scrollHint.classList.toggle("hidden", scrollY > 120);
 
     let current = "";
@@ -107,19 +99,16 @@ function _initActiveHighlight() {
   };
 
   window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll(); // run once on load so active state is set immediately
+  onScroll();
 }
 
-/* ── Footer year ────────────────────────────────────────────
-   Keeps the copyright year current without editing HTML.      */
+/* ── Footer year (unchanged) ── */
 function _initFooterYear() {
   const yearEl = $("#currentYear");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 }
 
-/* ── Legacy pipe-ID links ───────────────────────────────────
-   Backward compat: some older HTML used id="Banner|contact"
-   as a routing convention. This gracefully handles those.    */
+/* ── Legacy pipe-ID links (unchanged) ── */
 function _initLegacyPipeLinks() {
   $$("[id*='|']").forEach((el) => {
     el.addEventListener("click", (e) => {
@@ -130,4 +119,49 @@ function _initLegacyPipeLinks() {
       smoothScrollTo(id);
     });
   });
+}
+
+/* ── Session-aware "Accedi" link ──────────────────────────────
+   NEW. Checks GET /api/loyalty/session once on load and, if a
+   session exists, swaps every [data-auth-link] element's label
+   and href to the role-appropriate (label, dashboardUrl) pair
+   returned by the backend — no role→URL mapping table here,
+   the backend (sessionLoyaltyController.js) is the single
+   source of truth for that.
+
+   Targets every element with [data-auth-link] so the same logic
+   covers both the desktop nav-link and the mobile-menu entry
+   without two separate code paths.
+
+   Fails silently (network error, non-200, etc.) — an anonymous
+   "Accedi" link is always a safe default to leave in place if
+   the session check can't complete for any reason.
+─────────────────────────────────────────────────────────────── */
+async function _initAuthLink() {
+  const links = $$("[data-auth-link]");
+  if (!links.length) return;
+
+  try {
+    const res = await fetch("/api/loyalty/session", {
+      credentials: "same-origin",
+    });
+    if (!res.ok) return;
+
+    const data = await res.json();
+    if (!data.authenticated) return;
+
+    links.forEach((link) => {
+      link.href = data.dashboardUrl;
+      link.removeAttribute("data-target"); // ensure smooth-scroll delegation doesn't intercept it
+
+      const textEl = link.querySelector("[data-auth-link-text]");
+      if (textEl) {
+        textEl.textContent = data.label;
+      } else {
+        link.textContent = data.label;
+      }
+    });
+  } catch {
+    /* Anonymous "Accedi" stays as the safe default. */
+  }
 }

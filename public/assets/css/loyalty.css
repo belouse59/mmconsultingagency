@@ -440,6 +440,7 @@ textarea {
   opacity: 1;
   cursor: pointer;
 }
+
 .password-toggle.reveal:hover {
   opacity: 0.8;
 }

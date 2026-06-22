@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" data-initial-tab="partner">
 
 <head>
   <meta charset="UTF-8">
@@ -12,7 +12,22 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap"
     rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="/assets/css/loyalty.css">
+  <link rel="stylesheet" href="/assets/css/loyalty-login-tabs.css">
+
+  <!--
+    PERMANENT FAST-PATH ROUTE for partners.
+
+    This is the page partners should bookmark / save as a
+    homescreen shortcut for scanning customer QR codes —
+    data-initial-tab="partner" is correct from the first byte,
+    no inline script, no localStorage read, no flicker, ever.
+    This is the answer to "partners log in as often as customers
+    and need it fast": this URL is exactly as fast as the old
+    standalone loginPartner.html was.
+  -->
 </head>
 
 <body>
@@ -24,21 +39,28 @@
         <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
         <span class="loyalty-topbar-brand">Partner</span>
       </a>
-      <div class="loyalty-topbar-actions">
-        <span class="loyalty-topbar-user" id="topbarUserName" aria-live="polite"></span>
-        <button class="loyalty-topbar-logout" id="logoutBtn" aria-label="Esci dall'account">
-          Esci
-        </button>
-      </div>
     </header>
 
     <main class="loyalty-main" id="main-content">
-      <div class="loyalty-card loyalty-fade-in">
+      <div class="loyalty-card loyalty-fade-in" id="loginCard">
+
+        <div class="loyalty-login-tabs" role="tablist" aria-label="Tipo di accesso">
+          <button type="button" class="loyalty-login-tab" id="tabCustomer" role="tab"
+            data-tab="customer" aria-selected="false" aria-controls="loginForm">
+            <i class="fa fa-user" aria-hidden="true"></i>
+            Cliente
+          </button>
+          <button type="button" class="loyalty-login-tab" id="tabPartner" role="tab"
+            data-tab="partner" aria-selected="false" aria-controls="loginForm">
+            <i class="fa fa-store" aria-hidden="true"></i>
+            Partner
+          </button>
+        </div>
 
         <div class="loyalty-auth-header">
-          <div class="loyalty-auth-icon" aria-hidden="true">🏪</div>
-          <h1 class="loyalty-auth-title">Accesso Partner</h1>
-          <p class="loyalty-auth-sub">
+          <div class="loyalty-auth-icon" aria-hidden="true" id="authIcon">🏪</div>
+          <h1 class="loyalty-auth-title" id="authTitle">Accesso Partner</h1>
+          <p class="loyalty-auth-sub" id="authSub">
             Accedi per scansionare i QR dei clienti e applicare gli sconti convenzionati.
           </p>
         </div>
@@ -48,27 +70,28 @@
           <span id="loginErrorText"></span>
         </div>
 
-        <form id="partnerLoginForm" novalidate>
+        <form id="loginForm" novalidate>
 
           <div class="loyalty-field">
-            <label for="identifier">Email o numero di telefono</label>
-            <input type="text" id="identifier" name="identifier" placeholder="mario@email.com oppure +39 333 000 0000"
+            <label for="identifier" id="identifierLabel">Email o numero di telefono</label>
+            <input type="text" id="identifier" name="identifier"
+              placeholder="mario@email.com oppure +39 333 000 0000"
               autocomplete="username" inputmode="email" required aria-required="true">
           </div>
 
           <div class="loyalty-field">
             <label for="password">Password</label>
             <div class="password-wrapper">
-
               <input type="password" id="password" name="password" placeholder="••••••••"
                 autocomplete="current-password" required aria-required="true">
               <button type="button" class="password-toggle" data-target="password" aria-label="Mostra password">
-                <img src="../../assets/images/eye-slash-solid-full.svg" alt="" aria-hidden="true">
+                <img src="/assets/images/eye-slash-solid-full.svg" alt="" aria-hidden="true">
               </button>
             </div>
           </div>
+
           <div class="loyalty-password-actions">
-            <a href="/loyalty/partner/forgot-password.html" class="loyalty-forgot-password">
+            <a href="/loyalty/partner/forgot-password.html" class="loyalty-forgot-password" id="forgotPasswordLink">
               Password dimenticata?
             </a>
           </div>
@@ -80,9 +103,14 @@
 
         </form>
 
-        <p class="loyalty-auth-footer">
+        <p class="loyalty-auth-footer loyalty-login-footer" data-for="customer">
+          Non hai ancora un account?
+          <a href="/loyalty/customer/register.html">Registrati gratuitamente</a>
+        </p>
+
+        <p class="loyalty-auth-footer loyalty-login-footer" data-for="partner">
           Non hai ancora accesso?
-          <a href="mailto:info@mmconsulting.it">Contatta M&amp;M Consulting</a>
+          <a href="/loyalty/index.html#partner">Richiedi di diventare partner</a>
         </p>
 
       </div>
@@ -90,7 +118,7 @@
 
   </div>
 
-  <script type="module" src="/js/features/loyalty/partner/login.js"></script>
+  <script type="module" src="/js/features/loyalty/login.js"></script>
 </body>
 
 </html>

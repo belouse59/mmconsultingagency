@@ -280,13 +280,16 @@ async function updatePartner(partnerId, fields = {}) {
    LOGIN (existing — unchanged)
 ───────────────────────────────────────────── */
 
-async function loginPartner({ partnerId, password }) {
-  if (!partnerId?.trim() || !password) {
+async function loginPartner({ email, password }) {
+  if (!email?.trim() || !password) {
     throw makeError("Credenziali non valide.", 401);
   }
-
+    const normalizedEmail = email
+    ? clean(email).toLowerCase().trim()
+    : null;
+    
   const partner = await partnerRepo.findPartnerByIdentifier(
-    normalizePartnerId(partnerId)
+    normalizedEmail
   );
 
   if (!partner) {

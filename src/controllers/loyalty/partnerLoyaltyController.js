@@ -29,6 +29,33 @@ const {
    HELPERS
 ───────────────────────────────────────────── */
 
+function normalizeIdentifier(
+  identifier
+) {
+
+  const value =
+    identifier
+      .trim()
+      .toLowerCase();
+
+  if (
+    value.includes("@")
+  ) {
+    return value;
+  }
+
+  return value
+    .replace(
+      /^[+]/,
+      "+"
+    )
+    .replace(
+      /[^\d+]/g,
+      ""
+    );
+
+}
+
 async function createPartnerSession(
   req,
   partner
@@ -56,45 +83,6 @@ async function createPartnerSession(
 
 }
 
-function validatePasswordChange(
-  newPassword,
-  confirmPassword
-) {
-
-  if (
-    !newPassword ||
-    newPassword.length < 8
-  ) {
-    const err =
-      new Error(
-        "La nuova password deve avere almeno 8 caratteri."
-      );
-
-    err.statusCode =
-      400;
-
-    throw err;
-  }
-
-  if (
-    newPassword !==
-    confirmPassword
-  ) {
-
-    const err =
-      new Error(
-        "Le password non coincidono."
-      );
-
-    err.statusCode =
-      400;
-
-    throw err;
-
-  }
-
-}
-
 /* ─────────────────────────────────────────────
    LOGIN
 ───────────────────────────────────────────── */
@@ -113,7 +101,7 @@ const loginPartner =
             email:
               clean(
                 req.body
-                  ?.email || ""
+                  ?.identifier || ""
               ),
 
             password:

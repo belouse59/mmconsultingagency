@@ -115,7 +115,7 @@ async function forgotPassword({
   const resetRecord =
     await passwordResetRepo
       .createPasswordReset({
-        id: generateUUID(),
+        id: generateUUID("reset"),
         userId: user.id,
         tokenHash,
         expiresAt,

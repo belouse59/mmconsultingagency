@@ -108,6 +108,7 @@
 const express      = require("express");
 const rateLimit    = require("express-rate-limit");
 
+const sessionLoyaltyCtrl  = require("../controllers/loyalty/sessionLoyaltyController");
 const adminCtrl           = require("../controllers/loyalty/adminLoyaltyController");
 const customerCtrl        = require("../controllers/loyalty/customerLoyaltyController");
 const passwordCtrl        = require("../controllers/loyalty/passwordResetLoyaltyController");
@@ -317,6 +318,18 @@ function requireIdempotency(
 
     next();
 }
+
+/* ──────────────────────────────────────────────
+   SESSION REQUEST ROUTER
+────────────────────────────────────────────── */
+
+const sessionLoyaltyRouter =
+express.Router();
+
+sessionLoyaltyRouter.get(
+    "/",
+    sessionLoyaltyCtrl.getLoyaltySession
+);
 
 /* ──────────────────────────────────────────────
    PARTNER REQUEST ROUTER
@@ -614,6 +627,10 @@ adminRouter.post(
 /* ──────────────────────────────────────────────
    MOUNT
 ────────────────────────────────────────────── */
+router.use(
+    "/session",
+    sessionLoyaltyRouter
+);
 
 router.use(
     "/customer",

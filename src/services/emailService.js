@@ -44,7 +44,7 @@ async function sendCustomerPasswordReset({user, token, expiresAt, origin}) {
 
   return resend.emails.send({
     from: `${process.env.BRAND_NAME} <${process.env.RESEND_FROM_EMAIL}>`,
-    to: user.identifier,
+    to: user.identifier || user.email,
     subject: "Conferma la tua richiesta",
     html
   });

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="it" data-initial-tab="customer">
+<html lang="it">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>Accesso Cliente — Convenzioni M&M Consulting</title>
+  <title>Accedi — Convenzioni M&M Consulting</title>
   <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,22 +16,7 @@
     crossorigin="anonymous" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="/assets/css/loyalty.css">
   <link rel="stylesheet" href="/assets/css/loyalty-login-tabs.css">
-
-  <!--
-    PERMANENT FAST-PATH ROUTE — for users who bookmark or
-    save this exact URL (e.g. as a homescreen shortcut).
-
-    Unlike /loyalty/login, this page needs NO inline pre-paint
-    script: data-initial-tab="customer" is already correct in
-    the static HTML as served, so there is zero parsing, zero
-    localStorage read, zero flicker — the tab is right from the
-    very first byte. login.js reads this attribute the same way
-    it reads the one /loyalty/login sets via its inline script.
-
-    Still persists to localStorage on load so that if this same
-    browser later visits the unified /loyalty/login page, it
-    also remembers "customer" as the preference.
-  -->
+  <script src="/js/features/loyalty/getLocalStorage.js"></script>
 </head>
 
 <body>
@@ -48,14 +33,29 @@
     <main class="loyalty-main" id="main-content">
       <div class="loyalty-card loyalty-fade-in" id="loginCard">
 
+        <!-- Tab control -->
         <div class="loyalty-login-tabs" role="tablist" aria-label="Tipo di accesso">
-          <button type="button" class="loyalty-login-tab" id="tabCustomer" role="tab"
-            data-tab="customer" aria-selected="false" aria-controls="loginForm">
+          <button
+            type="button"
+            class="loyalty-login-tab"
+            id="tabCustomer"
+            role="tab"
+            data-tab="customer"
+            aria-selected="false"
+            aria-controls="loginForm"
+          >
             <i class="fa fa-user" aria-hidden="true"></i>
             Cliente
           </button>
-          <button type="button" class="loyalty-login-tab" id="tabPartner" role="tab"
-            data-tab="partner" aria-selected="false" aria-controls="loginForm">
+          <button
+            type="button"
+            class="loyalty-login-tab"
+            id="tabPartner"
+            role="tab"
+            data-tab="partner"
+            aria-selected="false"
+            aria-controls="loginForm"
+          >
             <i class="fa fa-store" aria-hidden="true"></i>
             Partner
           </button>
@@ -74,20 +74,38 @@
           <span id="loginErrorText"></span>
         </div>
 
+        <!-- Single form — submit target and forgot-password link
+             are swapped by JS based on the active tab. Field set
+             is identical for both account types (identifier + password),
+             so there is no markup duplication between tabs. -->
         <form id="loginForm" novalidate>
 
           <div class="loyalty-field">
             <label for="identifier" id="identifierLabel">Email o numero di telefono</label>
-            <input type="text" id="identifier" name="identifier"
+            <input
+              type="text"
+              id="identifier"
+              name="identifier"
               placeholder="mario@email.com oppure +39 333 000 0000"
-              autocomplete="username" inputmode="email" required aria-required="true">
+              autocomplete="username"
+              inputmode="email"
+              required
+              aria-required="true"
+            >
           </div>
 
           <div class="loyalty-field">
             <label for="password">Password</label>
             <div class="password-wrapper">
-              <input type="password" id="password" name="password" placeholder="••••••••"
-                autocomplete="current-password" required aria-required="true">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+                aria-required="true"
+              >
               <button type="button" class="password-toggle" data-target="password" aria-label="Mostra password">
                 <img src="/assets/images/eye-slash-solid-full.svg" alt="" aria-hidden="true">
               </button>
@@ -107,6 +125,9 @@
 
         </form>
 
+        <!-- Per-tab footer CTA — only one visible at a time,
+             toggled via [data-active-tab] on #loginCard (see
+             loyalty-login-tabs.css). No JS innerHTML swap needed. -->
         <p class="loyalty-auth-footer loyalty-login-footer" data-for="customer">
           Non hai ancora un account?
           <a href="/loyalty/customer/register.html">Registrati gratuitamente</a>

@@ -1,0 +1,70 @@
+/* ── Segmented tab control ── */
+.loyalty-login-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--loy-bg-soft, #FAFAF8);
+  border: 1px solid var(--loy-border, #E4E4E0);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.loyalty-login-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-family: var(--loy-font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--loy-text-sec);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.loyalty-login-tab i {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.loyalty-login-tab:hover {
+  color: var(--loy-text, #1A1A2E);
+}
+
+.loyalty-login-tab.active {
+  background: #fff;
+  color: var(--loy-navy, #0A1628);
+  box-shadow: 0 1px 4px rgba(10, 22, 40, 0.12);
+}
+
+.loyalty-login-tab.active i {
+  color: var(--loy-gold, #D4A017);
+  opacity: 1;
+}
+
+/* ── Per-tab panel visibility ──
+   Both panels share the same form fields visually; only the
+   footer CTA and forgot-password target differ. We toggle a
+   data attribute on the root card rather than swapping full
+   markup, so there's no flash of empty content on tab switch. */
+.loyalty-login-footer[data-for="customer"],
+.loyalty-login-footer[data-for="partner"] {
+  display: none;
+}
+
+[data-active-tab="customer"] .loyalty-login-footer[data-for="customer"],
+[data-active-tab="partner"] .loyalty-login-footer[data-for="partner"] {
+  display: block;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .loyalty-login-tab {
+    transition: none;
+  }
+}

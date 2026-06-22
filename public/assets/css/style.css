@@ -473,6 +473,16 @@ abbr[title] {
     border-radius: var(--r-full);
     transition: width var(--dur-med) var(--ease);
 }
+.nav-link--auth {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+ 
+  .nav-link--auth i {
+    font-size: 0.85em;
+    opacity: 0.75;
+  }
 
 .nav-link:hover {
     color: #fff;

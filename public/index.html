@@ -184,16 +184,12 @@
 
       <!-- NEW -->
       <li>
-        <a href="/loyalty/customer/login.html" class="nav-link">
-          Convenzioni
+        <a href="/loyalty/login.html" class="nav-link nav-link--auth" data-auth-link>
+          <i class="fa fa-right-to-bracket" aria-hidden="true"></i>
+          <span data-auth-link-text>Accedi</span>
         </a>
       </li>
 
-      <li>
-        <a href="/loyalty/partner/login.html" class="nav-link">
-          Partner
-        </a>
-      </li>
     </ul>
 
     <!-- CTA -->
@@ -252,14 +248,9 @@
 
       <!-- NEW -->
       <li>
-        <a href="/loyalty/customer/login.html" class="mobile-link">
-          Convenzioni
-        </a>
-      </li>
-
-      <li>
-        <a href="/loyalty/partner/login.html" class="mobile-link">
-          Partner
+        <a href="/loyalty/login.html" class="nav-link nav-link--auth" data-auth-link>
+          <i class="fa fa-right-to-bracket" aria-hidden="true"></i>
+          <span data-auth-link-text>Accedi</span>
         </a>
       </li>
 
@@ -1505,133 +1496,130 @@
   <!-- ═══════════════════════════════════════════
          CONTACT FORM
     ═══════════════════════════════════════════ -->
-<!-- ═══════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════
      CONTACT FORM
      Handled by public/js/components/contactForm.js
      configured with source="home", formType="energy".
 ═══════════════════════════════════════════ -->
-<section id="contact" class="contact reveal" aria-labelledby="contactHeading">
-  <div class="container">
-    <div class="section-header">
-      <h2 id="contactHeading" class="section-title">Parlaci delle tue esigenze</h2>
-      <div class="section-title-line" aria-hidden="true"></div>
-      <p class="section-sub">Risposta garantita entro 24 ore lavorative. Analisi gratuita, nessun impegno.</p>
-    </div>
-
-    <form class="contact-form" id="contactForm" novalidate aria-label="Modulo di contatto">
-
-      <div class="form-row">
-        <div class="field-wrap">
-          <input type="text" name="firstname" id="firstname" placeholder=" " required autocomplete="given-name" aria-required="true">
-          <label for="firstname">Nome <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr></label>
-        </div>
-        <div class="field-wrap">
-          <input type="text" name="lastname" id="lastname" placeholder=" " required autocomplete="family-name" aria-required="true">
-          <label for="lastname">Cognome <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr></label>
-        </div>
+  <section id="contact" class="contact reveal" aria-labelledby="contactHeading">
+    <div class="container">
+      <div class="section-header">
+        <h2 id="contactHeading" class="section-title">Parlaci delle tue esigenze</h2>
+        <div class="section-title-line" aria-hidden="true"></div>
+        <p class="section-sub">Risposta garantita entro 24 ore lavorative. Analisi gratuita, nessun impegno.</p>
       </div>
 
-      <div class="form-row">
-        <div class="field-wrap">
-          <input type="email" name="email" id="email" placeholder=" " required autocomplete="email" aria-required="true">
-          <label for="email">Email <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr></label>
-        </div>
-        <div class="field-wrap" data-phone-wrap id="phoneFieldWrap" style="display:none;">
-          <input
-            type="tel"
-            name="phone"
-            id="phoneInput"
-            placeholder=" "
-            pattern="^\+?[\d\s\-]{7,15}$"
-            autocomplete="tel"
-            title="Inserisci un numero valido, es. +39 090 941 2150"
-          >
-          <label for="phoneInput">Telefono</label>
-        </div>
-      </div>
+      <form class="contact-form" id="contactForm" novalidate aria-label="Modulo di contatto">
 
-      <!-- Category select — energy type for this form variant.
+        <div class="form-row">
+          <div class="field-wrap">
+            <input type="text" name="firstname" id="firstname" placeholder=" " required autocomplete="given-name"
+              aria-required="true">
+            <label for="firstname">Nome <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr></label>
+          </div>
+          <div class="field-wrap">
+            <input type="text" name="lastname" id="lastname" placeholder=" " required autocomplete="family-name"
+              aria-required="true">
+            <label for="lastname">Cognome <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr></label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field-wrap">
+            <input type="email" name="email" id="email" placeholder=" " required autocomplete="email"
+              aria-required="true">
+            <label for="email">Email <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr></label>
+          </div>
+          <div class="field-wrap" data-phone-wrap id="phoneFieldWrap" style="display:none;">
+            <input type="tel" name="phone" id="phoneInput" placeholder=" " pattern="^\+?[\d\s\-]{7,15}$"
+              autocomplete="tel" title="Inserisci un numero valido, es. +39 090 941 2150">
+            <label for="phoneInput">Telefono</label>
+          </div>
+        </div>
+
+        <!-- Category select — energy type for this form variant.
            name="energyType" maps to payload.category via selectField config.
            The loyalty form uses name="contactType" with Cliente/Partner
            options — same shared component, different selectField + options. -->
-      <div class="form-row form-row--single">
-        <div class="field-wrap field-wrap--select">
-          <select name="energyType" id="energyType" required aria-required="true">
-            <option value="" disabled selected hidden></option>
-            <option value="Gas">Gas</option>
-            <option value="Electricity">Elettricità</option>
-            <option value="Both">Entrambi</option>
-          </select>
-          <label for="energyType">Tipo di energia <abbr title="Campo obbligatorio" aria-label="obbligatorio">*</abbr></label>
+        <div class="form-row form-row--single">
+          <div class="field-wrap field-wrap--select">
+            <select name="energyType" id="energyType" required aria-required="true">
+              <option value="" disabled selected hidden></option>
+              <option value="Gas">Gas</option>
+              <option value="Electricity">Elettricità</option>
+              <option value="Both">Entrambi</option>
+            </select>
+            <label for="energyType">Tipo di energia <abbr title="Campo obbligatorio"
+                aria-label="obbligatorio">*</abbr></label>
+          </div>
         </div>
-      </div>
 
-      <!-- Phone toggle -->
-      <div class="form-row form-row--toggle">
-        <label class="toggle-switch" for="phoneToggle">
-          <input type="checkbox" id="phoneToggle" data-phone-toggle role="switch" aria-checked="false">
-          <span class="toggle-switch-track" aria-hidden="true"></span>
-        </label>
-        <span class="toggle-switch-label" id="phoneToggleLabel">
-          Desidero essere contattato/a telefonicamente
-        </span>
-      </div>
-
-      <!-- Contact time (shown when toggle is on) -->
-      <div class="form-row form-row--single" data-contact-time-row id="contactTimeRow" style="display:none;">
-        <div class="field-wrap field-wrap--select">
-          <select name="contactTime" id="contactTime">
-            <option value="" disabled selected hidden></option>
-            <option value="morning">Mattina (8:00 – 12:00)</option>
-            <option value="afternoon">Pomeriggio (12:00 – 17:00)</option>
-            <option value="evening">Sera (17:00 – 20:00)</option>
-          </select>
-          <label for="contactTime">Orario preferito per il contatto</label>
-        </div>
-      </div>
-
-      <!-- Message -->
-      <div class="form-row">
-        <div class="field-wrap field-wrap--full">
-          <textarea name="message" id="message" placeholder=" " rows="4" aria-label="Messaggio"></textarea>
-          <label for="message">Raccontaci le tue esigenze (opzionale)</label>
-        </div>
-      </div>
-
-      <!-- GDPR Consent -->
-      <div class="consent-block" data-consent-block role="group" aria-labelledby="consentLabel">
-        <label class="consent-label" for="consentCheckbox" id="consentLabel">
-          <input type="checkbox" id="consentCheckbox" name="consent" data-consent required aria-required="true">
-          <span class="consent-checkbox" aria-hidden="true"></span>
-          <span class="consent-text">
-            Accetto di essere contattato/a in merito alla mia richiesta e accetto l'
-            <a href="/privacy-page.html" aria-label="Leggi l'informativa sulla privacy">informativa sulla privacy</a>.
+        <!-- Phone toggle -->
+        <div class="form-row form-row--toggle">
+          <label class="toggle-switch" for="phoneToggle">
+            <input type="checkbox" id="phoneToggle" data-phone-toggle role="switch" aria-checked="false">
+            <span class="toggle-switch-track" aria-hidden="true"></span>
+          </label>
+          <span class="toggle-switch-label" id="phoneToggleLabel">
+            Desidero essere contattato/a telefonicamente
           </span>
-        </label>
-        <span class="consent-error" data-consent-error id="consentError" role="alert" aria-live="polite">
-          Devi accettare l'informativa sulla privacy per continuare.
-        </span>
-        <p class="consent-note">
-          <i class="fa fa-lock" aria-hidden="true"></i>
-          I tuoi dati sono protetti e non verranno mai venduti a terzi.
-        </p>
-      </div>
+        </div>
 
-      <!-- Honeypot: hidden from everyone, including screen readers -->
-      <input type="text" name="company" class="honeypot" aria-hidden="true" tabindex="-1" autocomplete="off">
+        <!-- Contact time (shown when toggle is on) -->
+        <div class="form-row form-row--single" data-contact-time-row id="contactTimeRow" style="display:none;">
+          <div class="field-wrap field-wrap--select">
+            <select name="contactTime" id="contactTime">
+              <option value="" disabled selected hidden></option>
+              <option value="morning">Mattina (8:00 – 12:00)</option>
+              <option value="afternoon">Pomeriggio (12:00 – 17:00)</option>
+              <option value="evening">Sera (17:00 – 20:00)</option>
+            </select>
+            <label for="contactTime">Orario preferito per il contatto</label>
+          </div>
+        </div>
 
-      <button id="contact-btn" type="submit" class="btn btn-gold btn-full btn-submit">
-        <span class="btn-text">Invia richiesta gratuita</span>
-        <span class="btn-dots" aria-hidden="true">
-          <span></span><span></span><span></span>
-        </span>
-      </button>
+        <!-- Message -->
+        <div class="form-row">
+          <div class="field-wrap field-wrap--full">
+            <textarea name="message" id="message" placeholder=" " rows="4" aria-label="Messaggio"></textarea>
+            <label for="message">Raccontaci le tue esigenze (opzionale)</label>
+          </div>
+        </div>
 
-    </form>
-  </div>
-</section>
+        <!-- GDPR Consent -->
+        <div class="consent-block" data-consent-block role="group" aria-labelledby="consentLabel">
+          <label class="consent-label" for="consentCheckbox" id="consentLabel">
+            <input type="checkbox" id="consentCheckbox" name="consent" data-consent required aria-required="true">
+            <span class="consent-checkbox" aria-hidden="true"></span>
+            <span class="consent-text">
+              Accetto di essere contattato/a in merito alla mia richiesta e accetto l'
+              <a href="/privacy-page.html" aria-label="Leggi l'informativa sulla privacy">informativa sulla privacy</a>.
+            </span>
+          </label>
+          <span class="consent-error" data-consent-error id="consentError" role="alert" aria-live="polite">
+            Devi accettare l'informativa sulla privacy per continuare.
+          </span>
+          <p class="consent-note">
+            <i class="fa fa-lock" aria-hidden="true"></i>
+            I tuoi dati sono protetti e non verranno mai venduti a terzi.
+          </p>
+        </div>
 
-<!--
+        <!-- Honeypot: hidden from everyone, including screen readers -->
+        <input type="text" name="company" class="honeypot" aria-hidden="true" tabindex="-1" autocomplete="off">
+
+        <button id="contact-btn" type="submit" class="btn btn-gold btn-full btn-submit">
+          <span class="btn-text">Invia richiesta gratuita</span>
+          <span class="btn-dots" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+        </button>
+
+      </form>
+    </div>
+  </section>
+
+  <!--
   ═══════════════════════════════════════════════════════════
 
          FIND US / MAP
@@ -1652,7 +1640,6 @@
     </div>
   </section>
 </main>
-
 
 <!-- FOOTER -->
 <footer id="footer" class="site-footer" role="contentinfo">
