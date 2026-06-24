@@ -108,7 +108,6 @@
 const express      = require("express");
 const rateLimit    = require("express-rate-limit");
 
-const sessionLoyaltyCtrl  = require("../controllers/loyalty/sessionLoyaltyController");
 const adminCtrl           = require("../controllers/loyalty/adminLoyaltyController");
 const customerCtrl        = require("../controllers/loyalty/customerLoyaltyController");
 const passwordCtrl        = require("../controllers/loyalty/passwordResetLoyaltyController");
@@ -318,18 +317,6 @@ function requireIdempotency(
 
     next();
 }
-
-/* ──────────────────────────────────────────────
-   SESSION REQUEST ROUTER
-────────────────────────────────────────────── */
-
-const sessionLoyaltyRouter =
-express.Router();
-
-sessionLoyaltyRouter.get(
-    "/",
-    sessionLoyaltyCtrl.getLoyaltySession
-);
 
 /* ──────────────────────────────────────────────
    PARTNER REQUEST ROUTER
@@ -624,13 +611,36 @@ adminRouter.post(
     adminCtrl.adminRejectPartnerRequest
 );
 
+/* ── NEWSLETTERS — paginated list ──
+   GET /admin/newsletters?page=&limit=&search=&sortBy=&sortOrder=&subscribed=&verified=
+*/
+adminRouter.get(
+    "/newsletters",
+    paginate,
+    adminCtrl.adminGetNewslettersPaginated
+);
+
+/* ── SIMULATOR LEADS — paginated list ──
+   GET /admin/simulator?page=&limit=&search=&sortBy=&sortOrder=&energySource=
+*/
+adminRouter.get(
+    "/simulator",
+    paginate,
+    adminCtrl.adminGetSimulationsPaginated
+);
+
+/* ── CONTACT REQUESTS — paginated list ──
+   GET /admin/contacts?page=&limit=&search=&sortBy=&sortOrder=&verified=&source=&category=
+*/
+adminRouter.get(
+    "/contacts",
+    paginate,
+    adminCtrl.adminGetContactsPaginated
+);
+
 /* ──────────────────────────────────────────────
    MOUNT
 ────────────────────────────────────────────── */
-router.use(
-    "/session",
-    sessionLoyaltyRouter
-);
 
 router.use(
     "/customer",

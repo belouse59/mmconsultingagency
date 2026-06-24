@@ -3,6 +3,7 @@
 const offerRepo = require("../../repositories/loyalty/offersRepository");
 const { makeError } = require("../../utils/errorHandler");
 const crypto = require("crypto");
+const { generateUUID } = require("../../utils/generateUUID");
 
 /* ─────────────────────────────────────────────
    GET OFFERS (ALL)
@@ -39,7 +40,7 @@ async function createOffer({ title, description, partnerId }) {
     throw makeError("Il titolo dell'offerta è obbligatorio.", 400);
   }
 
-  const id = `offer-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
+  const id = generateUUID("offer");
 
   const offer = await offerRepo.createOffer({
     id,

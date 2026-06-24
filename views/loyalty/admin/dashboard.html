@@ -102,28 +102,28 @@
         <span class="adm-nav-count" id="navCountRedemptions">—</span>
       </button>
 
-      <!-- Marketing — future modules (visible but disabled) -->
+      <!-- Marketing -->
       <span class="adm-nav-section">Marketing</span>
 
-      <button class="adm-nav-item" data-module="newsletter" disabled>
+      <button class="adm-nav-item" data-module="newsletter">
         <span class="adm-nav-icon"><i class="fa fa-envelope" aria-hidden="true"></i></span>
         Newsletter
-        <span class="adm-badge adm-badge--pending" style="margin-left:auto;font-size:0.56rem;padding:2px 7px;">Soon</span>
+        <span class="adm-nav-count" id="navCountNewsletters">—</span>
       </button>
 
-      <button class="adm-nav-item" data-module="contacts" disabled>
+      <button class="adm-nav-item" data-module="contacts">
         <span class="adm-nav-icon"><i class="fa fa-inbox" aria-hidden="true"></i></span>
         Richieste
-        <span class="adm-badge adm-badge--pending" style="margin-left:auto;font-size:0.56rem;padding:2px 7px;">Soon</span>
+        <span class="adm-nav-count" id="navCountContacts">—</span>
       </button>
 
-      <!-- Simulator -->
+      <!-- Simulatore -->
       <span class="adm-nav-section">Simulatore</span>
 
-      <button class="adm-nav-item" data-module="simulator" disabled>
+      <button class="adm-nav-item" data-module="simulator">
         <span class="adm-nav-icon"><i class="fa fa-bolt" aria-hidden="true"></i></span>
         Lead
-        <span class="adm-badge adm-badge--pending" style="margin-left:auto;font-size:0.56rem;padding:2px 7px;">Soon</span>
+        <span class="adm-nav-count" id="navCountSimulator">—</span>
       </button>
 
     </nav>
@@ -743,6 +743,270 @@
 
       </div>
 
+
+      <!-- ════════════════════════════════════
+           MODULE: NEWSLETTER
+      ════════════════════════════════════ -->
+      <div id="moduleNewsletter" class="adm-module" data-module="newsletter" style="display:none;">
+
+        <div class="adm-page-header">
+          <div>
+            <h1 class="adm-page-title">Newsletter</h1>
+            <p class="adm-page-sub">Gestisci gli iscritti alla newsletter</p>
+          </div>
+        </div>
+
+        <div class="adm-toolbar" role="search" aria-label="Filtra newsletter">
+          <div class="adm-search-wrap">
+            <i class="fa fa-search adm-search-icon" aria-hidden="true"></i>
+            <input
+              type="search"
+              class="adm-search"
+              id="newsletterSearch"
+              placeholder="Cerca per email…"
+              aria-label="Cerca newsletter"
+              autocomplete="off"
+            >
+          </div>
+
+          <select class="adm-filter-select" id="newsletterVerifiedFilter" aria-label="Filtra per stato verifica">
+            <option value="">Tutti</option>
+            <option value="true">Verificati</option>
+            <option value="false">In attesa</option>
+          </select>
+
+          <select class="adm-filter-select" id="newsletterSubscribedFilter" aria-label="Filtra per iscrizione">
+            <option value="">Tutti</option>
+            <option value="true">Iscritti</option>
+            <option value="false">Discritti</option>
+          </select>
+
+          <span class="adm-toolbar-count" id="newsletterCount" aria-live="polite"></span>
+        </div>
+
+        <div class="adm-table-card">
+          <div class="adm-table-scroll">
+            <table class="adm-table" aria-label="Lista iscritti newsletter">
+              <thead>
+                <tr>
+                  <th scope="col" class="adm-th-sortable" data-sort="email">
+                    Email <span class="adm-th-sort-icon" aria-hidden="true">↕</span>
+                  </th>
+                  <th scope="col" class="adm-th-sortable" data-sort="verified">
+                    Verifica <span class="adm-th-sort-icon" aria-hidden="true">↕</span>
+                  </th>
+                  <th scope="col">Iscrizione</th>
+                  <th scope="col" class="adm-th-sortable sorted" data-sort="createdAt">
+                    Data <span class="adm-th-sort-icon" aria-hidden="true">↓</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="newsletterTableBody">
+                <tr>
+                  <td colspan="4" style="padding:0;">
+                    <div class="adm-empty">
+                      <span class="adm-empty-icon">📧</span>
+                      <span class="adm-empty-sub">Caricamento iscritti…</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="adm-pagination" id="newsletterPagination" aria-label="Paginazione newsletter">
+            <span class="adm-pagination-info" id="newsletterPaginationInfo"></span>
+            <div class="adm-pagination-controls" id="newsletterPaginationControls" role="navigation" aria-label="Pagine"></div>
+            <div class="adm-pagination-size">
+              <label for="newsletterPageSize">Righe:</label>
+              <select id="newsletterPageSize" aria-label="Righe per pagina">
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ════════════════════════════════════
+           MODULE: CONTACTS (Contact Requests)
+      ════════════════════════════════════ -->
+      <div id="moduleContacts" class="adm-module" data-module="contacts" style="display:none;">
+
+        <div class="adm-page-header">
+          <div>
+            <h1 class="adm-page-title">Richieste di contatto</h1>
+            <p class="adm-page-sub">Lead dal modulo contatti della homepage e della pagina loyalty</p>
+          </div>
+        </div>
+
+        <div class="adm-toolbar" role="search" aria-label="Filtra richieste contatto">
+          <div class="adm-search-wrap">
+            <i class="fa fa-search adm-search-icon" aria-hidden="true"></i>
+            <input
+              type="search"
+              class="adm-search"
+              id="contactsSearch"
+              placeholder="Cerca per nome, email o telefono…"
+              aria-label="Cerca contatti"
+              autocomplete="off"
+            >
+          </div>
+
+          <select class="adm-filter-select" id="contactsVerifiedFilter" aria-label="Filtra per verifica">
+            <option value="">Tutti</option>
+            <option value="true">Verificati</option>
+            <option value="false">In attesa</option>
+          </select>
+
+          <select class="adm-filter-select" id="contactsSourceFilter" aria-label="Filtra per origine">
+            <option value="">Tutte le origini</option>
+            <option value="home">Homepage</option>
+            <option value="loyalty">Loyalty</option>
+          </select>
+
+          <span class="adm-toolbar-count" id="contactsCount" aria-live="polite"></span>
+        </div>
+
+        <div class="adm-table-card">
+          <div class="adm-table-scroll">
+            <table class="adm-table" aria-label="Lista richieste di contatto">
+              <thead>
+                <tr>
+                  <th scope="col" class="adm-th-sortable" data-sort="lastName">
+                    Nome <span class="adm-th-sort-icon" aria-hidden="true">↕</span>
+                  </th>
+                  <th scope="col" class="adm-th-sortable" data-sort="email">
+                    Email <span class="adm-th-sort-icon" aria-hidden="true">↕</span>
+                  </th>
+                  <th scope="col">Telefono</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col">Origine</th>
+                  <th scope="col" class="adm-th-sortable" data-sort="verified">
+                    Verifica <span class="adm-th-sort-icon" aria-hidden="true">↕</span>
+                  </th>
+                  <th scope="col" class="adm-th-sortable sorted" data-sort="createdAt">
+                    Data <span class="adm-th-sort-icon" aria-hidden="true">↓</span>
+                  </th>
+                  <th scope="col" class="adm-td-actions">Dettagli</th>
+                </tr>
+              </thead>
+              <tbody id="contactsTableBody">
+                <tr>
+                  <td colspan="8" style="padding:0;">
+                    <div class="adm-empty">
+                      <span class="adm-empty-icon">📥</span>
+                      <span class="adm-empty-sub">Caricamento richieste…</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="adm-pagination" id="contactsPagination" aria-label="Paginazione contatti">
+            <span class="adm-pagination-info" id="contactsPaginationInfo"></span>
+            <div class="adm-pagination-controls" id="contactsPaginationControls" role="navigation" aria-label="Pagine"></div>
+            <div class="adm-pagination-size">
+              <label for="contactsPageSize">Righe:</label>
+              <select id="contactsPageSize" aria-label="Righe per pagina">
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- ════════════════════════════════════
+           MODULE: SIMULATOR LEADS
+      ════════════════════════════════════ -->
+      <div id="moduleSimulator" class="adm-module" data-module="simulator" style="display:none;">
+
+        <div class="adm-page-header">
+          <div>
+            <h1 class="adm-page-title">Lead Simulatore</h1>
+            <p class="adm-page-sub">Simulazioni energetiche generate dal simulatore online</p>
+          </div>
+        </div>
+
+        <div class="adm-toolbar" role="search" aria-label="Filtra lead simulatore">
+          <div class="adm-search-wrap">
+            <i class="fa fa-search adm-search-icon" aria-hidden="true"></i>
+            <input
+              type="search"
+              class="adm-search"
+              id="simulatorSearch"
+              placeholder="Cerca per email, provider o location…"
+              aria-label="Cerca lead simulatore"
+              autocomplete="off"
+            >
+          </div>
+
+          <select class="adm-filter-select" id="simulatorEnergyFilter" aria-label="Filtra per fonte energetica">
+            <option value="">Tutte le fonti</option>
+            <option value="gas">Gas</option>
+            <option value="electricity">Elettricità</option>
+            <option value="both">Entrambi</option>
+          </select>
+
+          <span class="adm-toolbar-count" id="simulatorCount" aria-live="polite"></span>
+        </div>
+
+        <div class="adm-table-card">
+          <div class="adm-table-scroll">
+            <table class="adm-table" aria-label="Lista lead simulatore">
+              <thead>
+                <tr>
+                  <th scope="col">Email</th>
+                  <th scope="col">Provider</th>
+                  <th scope="col">Fonte</th>
+                  <th scope="col" class="adm-th-sortable" data-sort="estimatedMonthlySavings">
+                    Risparmio/mese <span class="adm-th-sort-icon" aria-hidden="true">↕</span>
+                  </th>
+                  <th scope="col" class="adm-th-sortable" data-sort="annualBill">
+                    Bolletta annua <span class="adm-th-sort-icon" aria-hidden="true">↕</span>
+                  </th>
+                  <th scope="col">Verifica</th>
+                  <th scope="col" class="adm-th-sortable sorted" data-sort="createdAt">
+                    Data <span class="adm-th-sort-icon" aria-hidden="true">↓</span>
+                  </th>
+                  <th scope="col" class="adm-td-actions">Dettagli</th>
+                </tr>
+              </thead>
+              <tbody id="simulatorTableBody">
+                <tr>
+                  <td colspan="8" style="padding:0;">
+                    <div class="adm-empty">
+                      <span class="adm-empty-icon">⚡</span>
+                      <span class="adm-empty-sub">Caricamento lead simulatore…</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="adm-pagination" id="simulatorPagination" aria-label="Paginazione simulatore">
+            <span class="adm-pagination-info" id="simulatorPaginationInfo"></span>
+            <div class="adm-pagination-controls" id="simulatorPaginationControls" role="navigation" aria-label="Pagine"></div>
+            <div class="adm-pagination-size">
+              <label for="simulatorPageSize">Righe:</label>
+              <select id="simulatorPageSize" aria-label="Righe per pagina">
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     </main><!-- /adm-content -->
   </div><!-- /adm-column -->
 
@@ -1094,6 +1358,41 @@
     </div>
 
   </aside>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     CONTACT REQUEST DETAIL MODAL
+     Read-only view of a contact request's full details.
+     Opened by clicking "Dettagli" in the contacts table.
+═══════════════════════════════════════════════════ -->
+<div class="adm-modal-backdrop" id="admContactDetailModal" role="dialog" aria-modal="true" aria-labelledby="admContactDetailTitle">
+  <div class="adm-modal" style="max-width:520px;">
+    <p class="adm-modal-title" id="admContactDetailTitle">Richiesta di contatto</p>
+    <div id="admContactDetailBody" style="font-size:0.88rem;line-height:1.7;">
+      <!-- populated by JS -->
+    </div>
+    <div class="adm-modal-actions" style="margin-top:20px;">
+      <button class="adm-btn adm-btn--secondary" id="admContactDetailClose">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SIMULATOR LEAD DETAIL MODAL
+     Read-only view of a simulator submission's full data.
+     Opened by clicking "Dettagli" in the simulator table.
+═══════════════════════════════════════════════════ -->
+<div class="adm-modal-backdrop" id="admSimulatorDetailModal" role="dialog" aria-modal="true" aria-labelledby="admSimulatorDetailTitle">
+  <div class="adm-modal" style="max-width:560px;">
+    <p class="adm-modal-title" id="admSimulatorDetailTitle">Dettaglio simulazione</p>
+    <div id="admSimulatorDetailBody" style="font-size:0.88rem;line-height:1.7;">
+      <!-- populated by JS -->
+    </div>
+    <div class="adm-modal-actions" style="margin-top:20px;">
+      <button class="adm-btn adm-btn--secondary" id="admSimulatorDetailClose">Chiudi</button>
+    </div>
+  </div>
 </div>
 
 <script type="module" src="/js/features/loyalty/admin/admin.js"></script>

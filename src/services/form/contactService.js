@@ -19,6 +19,7 @@ const {
     sendVerificationEmail,
     notifyNewLead,
 } = require("../../services/emailService");
+const { generateUUID } = require("../../utils/generateUUID");
 
 /**
  * Handles both the homepage energy form and the loyalty
@@ -103,6 +104,7 @@ async function submit(data = {}) {
 
     if (!contact) {
         contact = await contactRepo.createContact({
+            id: generateUUID("contact"),
             email,
             firstName,
             lastName,
@@ -118,6 +120,7 @@ async function submit(data = {}) {
     ----------------------------- */
 
     await contactRequestRepo.createContactRequest({
+        id:                    generateUUID("contact-request"),
         contactId:             contact.id,
         energyType:            energyType,
         source:                source,

@@ -156,7 +156,7 @@ async function createPartner({
   passwordHash = await hashPassword(tempPassword);
 
   while (attempts < 3) {
-    partnerId = generateUUID('p');
+    partnerId = generateUUID("partner");
     try {
       await partnerRepo.createPartner({
         id:               partnerId,

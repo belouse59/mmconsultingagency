@@ -28,6 +28,7 @@ function mapContactRequest(row) {
 ───────────────────────────────────────────── */
 
 async function createContactRequest({
+  id,
   contactId,
   energyType,
   source,
@@ -36,8 +37,6 @@ async function createContactRequest({
   message,
   consent,
 }) {
-  const id =
-    `request-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
 
   const result = await query(
     `

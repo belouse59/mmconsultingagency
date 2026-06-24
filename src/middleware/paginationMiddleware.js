@@ -52,6 +52,9 @@ const KNOWN_FILTER_KEYS = new Set([
   "category",
   "offerId",
   "verified",
+  "subscribed",      // newsletters
+  "energySource",    // simulator
+  "source",          // contacts
 ]);
 
 /* ─────────────────────────────────────────────

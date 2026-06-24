@@ -65,6 +65,29 @@ const SORT_COLUMNS = {
     category:     "category",
   },
 
+  newsletters: {
+    createdAt:    "created_at",
+    email:        "email",
+    subscribed:   "subscribed",
+    verified:     "verified",
+    subscribedAt: "subscribed_at",
+  },
+
+  simulatorRequests: {
+    createdAt:    "sr.created_at",
+    energySource: "sr.energy_source",
+    provider:     "sr.provider",
+    estimatedMonthlySavings: "sr.estimated_monthly_savings",
+    annualBill:   "sr.annual_bill",
+  },
+
+  contacts: {
+    createdAt:  "c.created_at",
+    email:      "c.email",
+    lastName:   "c.last_name",
+    verified:   "c.verified",
+  },
+
 };
 
 /* ─────────────────────────────────────────────

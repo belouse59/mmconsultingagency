@@ -481,6 +481,48 @@ const adminGetRedemptionsPaginated = asyncHandler(async (req, res) => {
    EXPORTS
 ───────────────────────────────────────────── */
 
+/* ── NEWSLETTERS — PAGINATED  ← NEW
+   GET /admin/newsletters?page=&limit=&search=&sortBy=&sortOrder=&subscribed=&verified=
+───────────────────────────────────────────── */
+
+const adminGetNewslettersPaginated = asyncHandler(async (req, res) => {
+  const result = await adminLoyaltyService.getNewslettersPaginated(req.pagination);
+
+  return res.json({
+    success:    true,
+    data:       result.data,
+    pagination: result.pagination,
+  });
+});
+
+/* ── SIMULATOR LEADS — PAGINATED  ← NEW
+   GET /admin/simulator?page=&limit=&search=&sortBy=&sortOrder=&energySource=
+───────────────────────────────────────────── */
+
+const adminGetSimulationsPaginated = asyncHandler(async (req, res) => {
+  const result = await adminLoyaltyService.getSimulationsPaginated(req.pagination);
+
+  return res.json({
+    success:    true,
+    data:       result.data,
+    pagination: result.pagination,
+  });
+});
+
+/* ── CONTACT REQUESTS — PAGINATED  ← NEW
+   GET /admin/contacts?page=&limit=&search=&sortBy=&sortOrder=&verified=&source=&category=
+───────────────────────────────────────────── */
+
+const adminGetContactsPaginated = asyncHandler(async (req, res) => {
+  const result = await adminLoyaltyService.getContactsPaginated(req.pagination);
+
+  return res.json({
+    success:    true,
+    data:       result.data,
+    pagination: result.pagination,
+  });
+});
+
 module.exports = {
   // Auth
   loginAdmin,
@@ -494,15 +536,15 @@ module.exports = {
   // Partners
   adminGetPartners,
   adminGetPartnersPaginated,
-  adminGetPartnerById,        // ← new
+  adminGetPartnerById,
   adminCreatePartner,
-  adminUpdatePartner,         // ← new
+  adminUpdatePartner,
   adminSetPartnerActive,
 
   // Partner Requests
-  adminGetPartnerRequestsPaginated,   // ← new
-  adminApprovePartnerRequest,         // ← new
-  adminRejectPartnerRequest,          // ← new
+  adminGetPartnerRequestsPaginated,
+  adminApprovePartnerRequest,
+  adminRejectPartnerRequest,
 
   // Offers
   adminGetOffers,
@@ -512,4 +554,13 @@ module.exports = {
   // Redemptions
   adminGetRedemptions,
   adminGetRedemptionsPaginated,
+
+  // Newsletters
+  adminGetNewslettersPaginated,     // ← new
+
+  // Simulator Leads
+  adminGetSimulationsPaginated,     // ← new
+
+  // Contact Requests
+  adminGetContactsPaginated,        // ← new
 };

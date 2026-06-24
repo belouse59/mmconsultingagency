@@ -15,6 +15,7 @@ const {
 } = require("../../utils/sanitizer");
 
 const { sendVerificationEmail } = require("../../services/emailService");
+const { generateUUID } = require("../../utils/generateUUID");
 
 async function subscribe(data = {}) {
 
@@ -33,8 +34,9 @@ async function subscribe(data = {}) {
             .trim()
             .toLowerCase();
 
-
+    const id = generateUUID("newsletter");
     const contactNewsletters = await newsletterRepo.subscribe(
+        id,
         email
     );
     const contact =

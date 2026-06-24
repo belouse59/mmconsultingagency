@@ -17,6 +17,9 @@ const offerRepo          = require("../../repositories/loyalty/offersRepository"
 const redemptionRepo     = require("../../repositories/loyalty/redemptionsRepository");
 const partnerRepo        = require("../../repositories/loyalty/partnersRepository");
 const partnerRequestRepo = require("../../repositories/loyalty/partnerRequestsRepository");
+const newsletterRepo     = require("../../repositories/form/newslettersRepository");
+const simulatorRepo      = require("../../repositories/form/simulatorRepository");
+const contactRepo        = require("../../repositories/form/contactsRepository");
 
 const { buildPaginationMeta } = require("../../utils/paginate");
 
@@ -153,6 +156,60 @@ async function getPartnerRequestsPaginated(pagination) {
 }
 
 /* ─────────────────────────────────────────────
+   NEWSLETTERS — PAGINATED  ← NEW
+───────────────────────────────────────────── */
+
+async function getNewslettersPaginated(pagination) {
+  const { rows, total } = await newsletterRepo.findNewslettersPaginated(pagination);
+
+  return {
+    data:       rows,
+    pagination: buildPaginationMeta({
+      page:  pagination.page,
+      limit: pagination.limit,
+      total,
+    }),
+  };
+}
+
+/* ─────────────────────────────────────────────
+   SIMULATOR LEADS — PAGINATED  ← NEW
+───────────────────────────────────────────── */
+
+async function getSimulationsPaginated(pagination) {
+  const { rows, total } = await simulatorRepo.findSimulationsPaginated(pagination);
+
+  return {
+    data:       rows,
+    pagination: buildPaginationMeta({
+      page:  pagination.page,
+      limit: pagination.limit,
+      total,
+    }),
+  };
+}
+
+/* ─────────────────────────────────────────────
+   CONTACT REQUESTS — PAGINATED  ← NEW
+   Returns contacts joined with their latest
+   contact_request (category, source, message)
+   for the admin contact requests view.
+───────────────────────────────────────────── */
+
+async function getContactsPaginated(pagination) {
+  const { rows, total } = await contactRepo.findContactsPaginated(pagination);
+
+  return {
+    data:       rows,
+    pagination: buildPaginationMeta({
+      page:  pagination.page,
+      limit: pagination.limit,
+      total,
+    }),
+  };
+}
+
+/* ─────────────────────────────────────────────
    EXPORTS
 ───────────────────────────────────────────── */
 
@@ -164,12 +221,15 @@ module.exports = {
   getRedemptions,
 
   // Single record
-  getPartnerById,          // ← new
+  getPartnerById,
 
   // Paginated
   getCustomersPaginated,
   getPartnersPaginated,
   getOffersPaginated,
   getRedemptionsPaginated,
-  getPartnerRequestsPaginated,   // ← new
+  getPartnerRequestsPaginated,
+  getNewslettersPaginated,       // ← new
+  getSimulationsPaginated,       // ← new
+  getContactsPaginated,          // ← new
 };

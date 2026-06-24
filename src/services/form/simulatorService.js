@@ -6,6 +6,7 @@ const simulationRepo =
 const {
     notifySimulator,
 } = require("../../services/emailService");
+const { generateUUID } = require("../../utils/generateUUID");
 
 const {
     clean,
@@ -15,6 +16,9 @@ async function submit(data = {}) {
 
     const simulation =
         await simulationRepo.createSimulationRequest({
+
+            id:
+            generateUUID("simulation"),
 
             contactId:
                 data.contactId || null,

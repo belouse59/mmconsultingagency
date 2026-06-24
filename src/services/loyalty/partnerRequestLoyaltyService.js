@@ -99,7 +99,7 @@ async function submitRequest({
   validateCategory(category);
 
   const request = await partnerRequestRepo.createPartnerRequest({
-    id:           generateUUID('pr'),
+    id:           generateUUID("partner-request"),
     businessName: clean(businessName).trim(),
     vatNumber:    normalizeOptional(vatNumber),
     email:        clean(email).toLowerCase().trim(),
