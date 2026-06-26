@@ -2,6 +2,11 @@
 
 const crypto = require("crypto");
 const { query } = require("../../db");
+const {
+  buildOrderClause,
+  buildSearchClause,
+  buildFilterClause,
+} = require("../../utils/queryBuilder");
 
 function mapContact(row) {
   if (!row) return null;

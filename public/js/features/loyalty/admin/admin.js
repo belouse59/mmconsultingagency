@@ -294,6 +294,9 @@ const State = {
   partnerRequests: makeState({ sortBy: "createdAt", filters: { status: "pending" } }),
   offers:          makeState(),
   redemptions:     makeState({ sortBy: "redeemedAt" }),
+  newsletter:      makeState({ sortBy: "createdAt" }),
+  contacts:        makeState({ sortBy: "createdAt" }),
+  simulator:       makeState({ sortBy: "createdAt" }),
 };
 
 
@@ -313,6 +316,9 @@ const MODULE_LABELS = {
   partnerRequests: "Richieste Partner",
   offers:          "Offerte",
   redemptions:     "Utilizzi",
+  newsletter:      "Newsletter",
+  contacts:        "Richieste di Contatto",
+  simulator:       "Lead Simulatore",
 };
 
 let _activeModule = "dashboard";
@@ -358,6 +364,12 @@ function switchModule(key) {
     loadOffers();
   } else if (key === "redemptions") {
     loadRedemptions();
+  } else if (key === "newsletter") {
+    loadNewsletter();
+  } else if (key === "contacts") {
+    loadContacts();
+  } else if (key === "simulator") {
+    loadSimulator();
   }
 }
 
@@ -470,19 +482,25 @@ async function loadStats() {
     .forEach((el) => { if (el) el.textContent = "—"; });
 
   try {
-    const [cData, pData, oData, rData, prData] = await Promise.all([
+    const [cData, pData, oData, rData, prData, nlData, ctData, simData] = await Promise.all([
       Api.getPaginated("/customers",        { limit: 1 }),
       Api.getPaginated("/partners",         { limit: 1, filters: { active: "true" } }),
       Api.getPaginated("/offers",           { limit: 1, filters: { active: "true" } }),
       Api.getPaginated("/redemptions",      { limit: 1 }),
       Api.getPaginated("/partner-requests", { limit: 1, filters: { status: "pending" } }),
+      Api.getPaginated("/newsletters",      { limit: 1, filters: { subscribed: "true" } }),
+      Api.getPaginated("/contacts",         { limit: 1 }),
+      Api.getPaginated("/simulator",        { limit: 1 }),
     ]);
 
-    const cTotal  = cData?.pagination?.totalItems  ?? "—";
-    const pTotal  = pData?.pagination?.totalItems  ?? "—";
-    const oTotal  = oData?.pagination?.totalItems  ?? "—";
-    const rTotal  = rData?.pagination?.totalItems  ?? "—";
-    const prTotal = prData?.pagination?.totalItems ?? "—";
+    const cTotal   = cData?.pagination?.totalItems   ?? "—";
+    const pTotal   = pData?.pagination?.totalItems   ?? "—";
+    const oTotal   = oData?.pagination?.totalItems   ?? "—";
+    const rTotal   = rData?.pagination?.totalItems   ?? "—";
+    const prTotal  = prData?.pagination?.totalItems  ?? "—";
+    const nlTotal  = nlData?.pagination?.totalItems  ?? "—";
+    const ctTotal  = ctData?.pagination?.totalItems  ?? "—";
+    const simTotal = simData?.pagination?.totalItems ?? "—";
 
     if (statCustomers)   statCustomers.textContent   = cTotal;
     if (statPartners)    statPartners.textContent     = pTotal;
@@ -490,16 +508,24 @@ async function loadStats() {
     if (statRedemptions) statRedemptions.textContent  = rTotal;
 
     // Sidebar counts
-    const nc  = $("#navCountCustomers");
-    const np  = $("#navCountPartners");
-    const no  = $("#navCountOffers");
-    const nr  = $("#navCountRedemptions");
-    const npr = $("#navCountPartnerRequests");
-    if (nc)  nc.textContent  = cTotal;
-    if (np)  np.textContent  = pTotal;
-    if (no)  no.textContent  = oTotal;
-    if (nr)  nr.textContent  = rTotal;
-    // Show pending count on the nav badge — highlight if > 0
+    const nc   = $("#navCountCustomers");
+    const np   = $("#navCountPartners");
+    const no   = $("#navCountOffers");
+    const nr   = $("#navCountRedemptions");
+    const npr  = $("#navCountPartnerRequests");
+    const nnl  = $("#navCountNewsletters");
+    const nct  = $("#navCountContacts");
+    const nsim = $("#navCountSimulator");
+
+    if (nc)   nc.textContent   = cTotal;
+    if (np)   np.textContent   = pTotal;
+    if (no)   no.textContent   = oTotal;
+    if (nr)   nr.textContent   = rTotal;
+    if (nnl)  nnl.textContent  = nlTotal;
+    if (nct)  nct.textContent  = ctTotal;
+    if (nsim) nsim.textContent = simTotal;
+
+    // Highlight pending partner requests badge if > 0
     if (npr) {
       npr.textContent = prTotal;
       if (prTotal > 0) {
@@ -1603,6 +1629,448 @@ $("#redemptionsPageSize")?.addEventListener("change", function () {
 
 // Sort
 initSortableHeaders(redemptionsTable, State.redemptions, loadRedemptions);
+
+
+// Sort
+initSortableHeaders(redemptionsTable, State.redemptions, loadRedemptions);
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 12B — NEWSLETTER MODULE
+═══════════════════════════════════════════════════════════ */
+
+const newsletterTable = $("#moduleNewsletter .adm-table");
+const newsletterBody  = $("#newsletterTableBody");
+const newsletterCount = $("#newsletterCount");
+
+async function loadNewsletter() {
+  if (!newsletterBody) return;
+  newsletterBody.innerHTML = skeletonRows(4);
+
+  try {
+    const data = await Api.getPaginated("/newsletters", State.newsletter);
+    if (!data) return;
+
+    const rows = data.data || [];
+    const meta = data.pagination;
+
+    if (newsletterCount && meta) {
+      newsletterCount.textContent = `${meta.totalItems.toLocaleString("it-IT")} iscritti`;
+    }
+
+    if (!rows.length) {
+      newsletterBody.innerHTML = emptyRow(4, State.newsletter.search
+        ? `Nessun iscritto trovato per "${State.newsletter.search}".`
+        : "Nessun iscritto registrato.");
+    } else {
+      newsletterBody.innerHTML = rows.map((n) => `
+        <tr>
+          <td class="adm-td-name">${esc(n.email)}</td>
+          <td>
+            ${n.verified
+              ? `<span class="adm-badge adm-badge--active">Verificato</span>`
+              : `<span class="adm-badge adm-badge--pending">In attesa</span>`}
+          </td>
+          <td>
+            ${n.subscribed
+              ? `<span class="adm-badge adm-badge--active">Iscritto</span>`
+              : `<span class="adm-badge adm-badge--inactive">Discritto</span>`}
+          </td>
+          <td class="adm-td-date">${fmtDate(n.createdAt)}</td>
+        </tr>`).join("");
+    }
+
+    renderPagination(
+      $("#newsletterPaginationControls"),
+      $("#newsletterPaginationInfo"),
+      meta,
+      (p) => { State.newsletter.page = p; loadNewsletter(); }
+    );
+
+  } catch {
+    newsletterBody.innerHTML = emptyRow(4, "Errore nel caricamento newsletter. Riprova.");
+  }
+}
+
+// Search
+const newsletterSearchInput = $("#newsletterSearch");
+newsletterSearchInput?.addEventListener("input", debounce(() => {
+  State.newsletter.search = newsletterSearchInput.value.trim();
+  State.newsletter.page   = 1;
+  loadNewsletter();
+}, 380));
+
+// Verified filter
+$("#newsletterVerifiedFilter")?.addEventListener("change", function () {
+  State.newsletter.filters.verified = this.value;
+  State.newsletter.page = 1;
+  loadNewsletter();
+});
+
+// Subscribed filter
+$("#newsletterSubscribedFilter")?.addEventListener("change", function () {
+  State.newsletter.filters.subscribed = this.value;
+  State.newsletter.page = 1;
+  loadNewsletter();
+});
+
+// Page size
+$("#newsletterPageSize")?.addEventListener("change", function () {
+  State.newsletter.limit = parseInt(this.value, 10);
+  State.newsletter.page  = 1;
+  loadNewsletter();
+});
+
+// Sort
+initSortableHeaders(newsletterTable, State.newsletter, loadNewsletter);
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 12C — CONTACTS MODULE (Contact Requests)
+═══════════════════════════════════════════════════════════ */
+
+const contactsTable = $("#moduleContacts .adm-table");
+const contactsBody  = $("#contactsTableBody");
+const contactsCount = $("#contactsCount");
+
+// In-memory cache for the detail modal (same pattern as partner requests)
+const _contactsCache = new Map();
+
+const SOURCE_LABELS = {
+  home:    "Homepage",
+  loyalty: "Loyalty",
+};
+
+const CATEGORY_LABEL_MAP = {
+  Gas:          "Gas",
+  Electricity:  "Elettricità",
+  Both:         "Entrambi",
+  Cliente:      "Cliente",
+  Partner:      "Partner",
+  Info:         "Info",
+};
+
+async function loadContacts() {
+  if (!contactsBody) return;
+  contactsBody.innerHTML = skeletonRows(8);
+
+  try {
+    const data = await Api.getPaginated("/contacts", State.contacts);
+    if (!data) return;
+
+    const rows = data.data || [];
+    const meta = data.pagination;
+
+    _contactsCache.clear();
+    rows.forEach((r) => _contactsCache.set(r.id, r));
+
+    if (contactsCount && meta) {
+      contactsCount.textContent = `${meta.totalItems.toLocaleString("it-IT")} contatti`;
+    }
+
+    if (!rows.length) {
+      contactsBody.innerHTML = emptyRow(8, State.contacts.search
+        ? `Nessun contatto trovato per "${State.contacts.search}".`
+        : "Nessun contatto registrato.");
+    } else {
+      contactsBody.innerHTML = rows.map((c) => `
+        <tr>
+          <td class="adm-td-name">${esc(c.lastName || "")} ${esc(c.firstName || "")}</td>
+          <td class="adm-td-secondary">${esc(c.email)}</td>
+          <td class="adm-td-secondary">${esc(c.phone || "—")}</td>
+          <td>
+            ${c.category
+              ? `<span class="adm-badge adm-badge--neutral">${esc(CATEGORY_LABEL_MAP[c.category] || c.category)}</span>`
+              : `<span class="adm-td-secondary">—</span>`}
+          </td>
+          <td>
+            ${c.source
+              ? `<span class="adm-badge adm-badge--neutral">${esc(SOURCE_LABELS[c.source] || c.source)}</span>`
+              : `<span class="adm-td-secondary">—</span>`}
+          </td>
+          <td>
+            ${c.verified
+              ? `<span class="adm-badge adm-badge--active">Verificato</span>`
+              : `<span class="adm-badge adm-badge--pending">In attesa</span>`}
+          </td>
+          <td class="adm-td-date">${fmtDate(c.createdAt)}</td>
+          <td class="adm-td-actions">
+            ${c.requestId
+              ? `<button class="adm-btn adm-btn--secondary adm-btn--sm" data-contact-detail="${esc(c.id)}">
+                   Dettagli
+                 </button>`
+              : "—"}
+          </td>
+        </tr>`).join("");
+    }
+
+    renderPagination(
+      $("#contactsPaginationControls"),
+      $("#contactsPaginationInfo"),
+      meta,
+      (p) => { State.contacts.page = p; loadContacts(); }
+    );
+
+    // Wire detail buttons
+    contactsBody.querySelectorAll("[data-contact-detail]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const c = _contactsCache.get(btn.dataset.contactDetail);
+        if (c) openContactDetailModal(c);
+      });
+    });
+
+  } catch {
+    contactsBody.innerHTML = emptyRow(8, "Errore nel caricamento contatti. Riprova.");
+  }
+}
+
+// Search
+const contactsSearchInput = $("#contactsSearch");
+contactsSearchInput?.addEventListener("input", debounce(() => {
+  State.contacts.search = contactsSearchInput.value.trim();
+  State.contacts.page   = 1;
+  loadContacts();
+}, 380));
+
+// Verified filter
+$("#contactsVerifiedFilter")?.addEventListener("change", function () {
+  State.contacts.filters.verified = this.value;
+  State.contacts.page = 1;
+  loadContacts();
+});
+
+// Source filter
+$("#contactsSourceFilter")?.addEventListener("change", function () {
+  State.contacts.filters.source = this.value;
+  State.contacts.page = 1;
+  loadContacts();
+});
+
+// Page size
+$("#contactsPageSize")?.addEventListener("change", function () {
+  State.contacts.limit = parseInt(this.value, 10);
+  State.contacts.page  = 1;
+  loadContacts();
+});
+
+// Sort
+initSortableHeaders(contactsTable, State.contacts, loadContacts);
+
+// Contact detail modal
+const admContactDetailModal = $("#admContactDetailModal");
+const admContactDetailBody  = $("#admContactDetailBody");
+const admContactDetailClose = $("#admContactDetailClose");
+
+function openContactDetailModal(c) {
+  if (!admContactDetailModal) return;
+
+  const rows = [
+    ["Nome",           `${esc(c.firstName || "")} ${esc(c.lastName || "")}`],
+    ["Email",          `<a href="mailto:${esc(c.email)}" style="color:var(--loy-gold-dark);">${esc(c.email)}</a>`],
+    ["Telefono",       esc(c.phone || "Non fornito")],
+    ["Tipo richiesta", esc(CATEGORY_LABEL_MAP[c.category] || c.category || "—")],
+    ["Origine",        esc(SOURCE_LABELS[c.source] || c.source || "—")],
+    ["Verifica",       c.verified ? "✅ Verificato" : "⏳ In attesa"],
+    ["Orario pref.",   esc(c.preferredContactTime || "Non specificato")],
+    ["Messaggio",      `<span style="white-space:pre-wrap;">${esc(c.message || "Nessun messaggio")}</span>`],
+    ["Data richiesta", fmtDate(c.requestCreatedAt || c.createdAt)],
+  ];
+
+  if (admContactDetailBody) {
+    admContactDetailBody.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;">
+        ${rows.map(([key, val]) => `
+          <tr style="border-bottom:1px solid var(--loy-border);">
+            <td style="padding:8px 0;width:120px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--loy-text-sec);vertical-align:top;">${key}</td>
+            <td style="padding:8px 0;color:var(--loy-text);">${val}</td>
+          </tr>`).join("")}
+      </table>`;
+  }
+
+  admContactDetailModal.classList.add("open");
+  admContactDetailClose?.focus();
+}
+
+admContactDetailClose?.addEventListener("click", () => admContactDetailModal?.classList.remove("open"));
+admContactDetailModal?.addEventListener("click", (e) => {
+  if (e.target === admContactDetailModal) admContactDetailModal.classList.remove("open");
+});
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 12D — SIMULATOR MODULE
+═══════════════════════════════════════════════════════════ */
+
+const simulatorTable = $("#moduleSimulator .adm-table");
+const simulatorBody  = $("#simulatorTableBody");
+const simulatorCount = $("#simulatorCount");
+
+const _simulatorCache = new Map();
+
+const ENERGY_SOURCE_LABELS = {
+  gas:         "Gas",
+  electricity: "Elettricità",
+  both:        "Entrambi",
+};
+
+async function loadSimulator() {
+  if (!simulatorBody) return;
+  simulatorBody.innerHTML = skeletonRows(8);
+
+  try {
+    const data = await Api.getPaginated("/simulator", State.simulator);
+    if (!data) return;
+
+    const rows = data.data || [];
+    const meta = data.pagination;
+
+    _simulatorCache.clear();
+    rows.forEach((r) => _simulatorCache.set(r.id, r));
+
+    if (simulatorCount && meta) {
+      simulatorCount.textContent = `${meta.totalItems.toLocaleString("it-IT")} simulazioni`;
+    }
+
+    if (!rows.length) {
+      simulatorBody.innerHTML = emptyRow(8, State.simulator.search
+        ? `Nessun lead trovato per "${State.simulator.search}".`
+        : "Nessuna simulazione registrata.");
+    } else {
+      simulatorBody.innerHTML = rows.map((s) => `
+        <tr>
+          <td class="adm-td-secondary">${esc(s.contactEmail || "Anonimo")}</td>
+          <td class="adm-td-secondary">${esc(s.provider || "—")}</td>
+          <td>
+            <span class="adm-badge adm-badge--neutral">
+              ${esc(ENERGY_SOURCE_LABELS[s.energySource] || s.energySource || "—")}
+            </span>
+          </td>
+          <td class="adm-td-secondary">
+            ${s.estimatedMonthlySavings
+              ? `<strong>€${Number(s.estimatedMonthlySavings).toLocaleString("it-IT")}/mese</strong>`
+              : "—"}
+          </td>
+          <td class="adm-td-secondary">
+            ${s.annualBill
+              ? `€${Number(s.annualBill).toLocaleString("it-IT")}`
+              : "—"}
+          </td>
+          <td>
+            ${s.contactId
+              ? s.contactVerified
+                ? `<span class="adm-badge adm-badge--active">Verificato</span>`
+                : `<span class="adm-badge adm-badge--pending">In attesa</span>`
+              : `<span class="adm-badge adm-badge--neutral">Anonimo</span>`}
+          </td>
+          <td class="adm-td-date">${fmtDate(s.createdAt)}</td>
+          <td class="adm-td-actions">
+            <button class="adm-btn adm-btn--secondary adm-btn--sm" data-simulator-detail="${esc(s.id)}">
+              Dettagli
+            </button>
+          </td>
+        </tr>`).join("");
+    }
+
+    renderPagination(
+      $("#simulatorPaginationControls"),
+      $("#simulatorPaginationInfo"),
+      meta,
+      (p) => { State.simulator.page = p; loadSimulator(); }
+    );
+
+    // Wire detail buttons
+    simulatorBody.querySelectorAll("[data-simulator-detail]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const s = _simulatorCache.get(btn.dataset.simulatorDetail);
+        if (s) openSimulatorDetailModal(s);
+      });
+    });
+
+  } catch {
+    simulatorBody.innerHTML = emptyRow(8, "Errore nel caricamento simulazioni. Riprova.");
+  }
+}
+
+// Search
+const simulatorSearchInput = $("#simulatorSearch");
+simulatorSearchInput?.addEventListener("input", debounce(() => {
+  State.simulator.search = simulatorSearchInput.value.trim();
+  State.simulator.page   = 1;
+  loadSimulator();
+}, 380));
+
+// Energy source filter
+$("#simulatorEnergyFilter")?.addEventListener("change", function () {
+  State.simulator.filters.energySource = this.value;
+  State.simulator.page = 1;
+  loadSimulator();
+});
+
+// Page size
+$("#simulatorPageSize")?.addEventListener("change", function () {
+  State.simulator.limit = parseInt(this.value, 10);
+  State.simulator.page  = 1;
+  loadSimulator();
+});
+
+// Sort
+initSortableHeaders(simulatorTable, State.simulator, loadSimulator);
+
+// Simulator detail modal
+const admSimulatorDetailModal = $("#admSimulatorDetailModal");
+const admSimulatorDetailBody  = $("#admSimulatorDetailBody");
+const admSimulatorDetailClose = $("#admSimulatorDetailClose");
+
+function openSimulatorDetailModal(s) {
+  if (!admSimulatorDetailModal) return;
+
+  const rows = [
+    ["Email",        esc(s.contactEmail || "Anonimo")],
+    ["Telefono",     esc(s.contactPhone || "Non fornito")],
+    ["Verifica",     s.contactId
+                       ? s.contactVerified ? "✅ Verificato" : "⏳ In attesa"
+                       : "— Anonimo"],
+    ["Fonte",        esc(ENERGY_SOURCE_LABELS[s.energySource] || s.energySource || "—")],
+    ["Tipo abitaz.", esc(s.housingType || "—")],
+    ["Superficie",   s.surface ? `${s.surface} m²` : "—"],
+    ["Persone",      esc(String(s.peopleCount || "—"))],
+    ["Zona",         esc(s.location || "—")],
+    ["Provider att.",esc(s.provider || "—")],
+    ["Bolletta ann.",s.annualBill ? `€${Number(s.annualBill).toLocaleString("it-IT")}` : "—"],
+    ["kWh elettr.",  s.electricityKwh ? `${Number(s.electricityKwh).toLocaleString("it-IT")} kWh` : "—"],
+    ["kWh gas",      s.gasKwh ? `${Number(s.gasKwh).toLocaleString("it-IT")} kWh` : "—"],
+    ["Risparmio/mese", s.estimatedMonthlySavings
+                         ? `<strong>€${Number(s.estimatedMonthlySavings).toLocaleString("it-IT")}</strong>`
+                         : "—"],
+    ["Data",         fmtDate(s.createdAt)],
+  ];
+
+  if (admSimulatorDetailBody) {
+    admSimulatorDetailBody.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;">
+        ${rows.map(([key, val]) => `
+          <tr style="border-bottom:1px solid var(--loy-border);">
+            <td style="padding:8px 0;width:130px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--loy-text-sec);vertical-align:top;">${key}</td>
+            <td style="padding:8px 0;color:var(--loy-text);">${val}</td>
+          </tr>`).join("")}
+      </table>`;
+  }
+
+  admSimulatorDetailModal.classList.add("open");
+  admSimulatorDetailClose?.focus();
+}
+
+admSimulatorDetailClose?.addEventListener("click", () => admSimulatorDetailModal?.classList.remove("open"));
+admSimulatorDetailModal?.addEventListener("click", (e) => {
+  if (e.target === admSimulatorDetailModal) admSimulatorDetailModal.classList.remove("open");
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    admContactDetailModal?.classList.remove("open");
+    admSimulatorDetailModal?.classList.remove("open");
+  }
+});
 
 
 /* ═══════════════════════════════════════════════════════════

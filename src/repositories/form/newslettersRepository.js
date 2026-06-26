@@ -3,6 +3,12 @@
 const { query } = require("../../db");
 const crypto = require("crypto");
 
+const {
+  buildOrderClause,
+  buildSearchClause,
+  buildFilterClause,
+} = require("../../utils/queryBuilder");
+
 function mapNewsletter(row) {
   if (!row) return null;
  
