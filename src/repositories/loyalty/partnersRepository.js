@@ -16,25 +16,25 @@ function mapPartner(row) {
   if (!row) return null;
 
   return {
-    id: row.id,
-    name: row.name,
-    legalName: row.legal_name,
-    vatNumber: row.vat_number,
-    email: row.email,
-    phone: row.phone,
-    website: row.website,
-    category: row.category,
-    address: row.address,
-    city: row.city,
-    postalCode: row.postal_code,
-    description: row.description,
-    offerDescription: row.offer_description,
-    notes: row.notes,
-    passwordHash: row.password_hash,
+    id:                 row.id,
+    name:               row.name,
+    legalName:          row.legal_name,
+    vatNumber:          row.vat_number,
+    email:              row.email,
+    phone:              row.phone,
+    website:            row.website,
+    category:           row.category,
+    address:            row.address,
+    city:               row.city,
+    postalCode:         row.postal_code,
+    description:        row.description,
+    offerDescription:   row.offer_description,
+    notes:              row.notes,
+    passwordHash:       row.password_hash,
     mustChangePassword: Boolean(row.must_change_password),
-    active: Boolean(row.active),
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    active:             Boolean(row.active),
+    createdAt:          row.created_at,
+    updatedAt:          row.updated_at,
   };
 }
 
@@ -71,9 +71,9 @@ const PARTNER_COLUMNS = `
 ───────────────────────────────────────────── */
 
 const PARTNER_FILTER_COLUMNS = {
-  active: "active",
+  active:   "active",
   category: "category",
-  city: "city",
+  city:     "city",
 };
 
 /* ─────────────────────────────────────────────
@@ -85,28 +85,24 @@ const PARTNER_FILTER_COLUMNS = {
 ───────────────────────────────────────────── */
 
 const PARTNER_UPDATABLE_FIELDS = {
-  name: "name",
-  legalName: "legal_name",
-  vatNumber: "vat_number",
-  email: "email",
-  phone: "phone",
-  website: "website",
-  category: "category",
-  address: "address",
-  city: "city",
-  postalCode: "postal_code",
-  description: "description",
+  name:             "name",
+  legalName:        "legal_name",
+  vatNumber:        "vat_number",
+  email:            "email",
+  phone:            "phone",
+  website:          "website",
+  category:         "category",
+  address:          "address",
+  city:             "city",
+  postalCode:       "postal_code",
+  description:      "description",
   offerDescription: "offer_description",
-  notes: "notes",
-  active: "active",
+  notes:            "notes",
+  active:           "active",
 };
 
 /* ─────────────────────────────────────────────
    CREATE
-   Previously left NULL, which broke loginPartner()
-   (findPartnerByIdentifier returned nothing for any
-   partner created via the admin form). Existing rows
-   are backfilled by the accompanying migration.
 ───────────────────────────────────────────── */
 
 async function createPartner({
@@ -152,7 +148,8 @@ async function createPartner({
     VALUES (
       $1,  $2,  $3,  $4,  $5,  $6,  $7,
       $8,  $9,
-      $10, $11, $12, $13, $14, $15,
+      $10, $11, $12, $13, $14, $15, $16,
+      $17,
       TRUE, TRUE, NOW(), NOW()
     )
     RETURNING ${PARTNER_COLUMNS}
@@ -160,18 +157,19 @@ async function createPartner({
     [
       id,
       name,
-      legalName || null,
-      vatNumber || null,
-      email || null,
-      phone || null,
-      website || null,
+      legalName  || null,
+      vatNumber  || null,
+      email      || null,
+      phone      || null,
+      website    || null,
+      id,         
       category,
-      address || null,
-      city || null,
-      postalCode || null,
+      address     || null,
+      city        || null,
+      postalCode  || null,
       description || null,
       offerDescription || null,
-      notes || null,
+      notes       || null,
       passwordHash,
     ]
   );
@@ -191,8 +189,8 @@ async function createPartner({
 
 async function updatePartner(partnerId, fields = {}) {
   const setClauses = [];
-  const params = [];
-  let idx = 1;
+  const params     = [];
+  let   idx        = 1;
 
   for (const [key, column] of Object.entries(PARTNER_UPDATABLE_FIELDS)) {
     if (fields[key] === undefined) continue;
@@ -256,15 +254,15 @@ async function findPartners() {
 ───────────────────────────────────────────── */
 
 async function findPartnersPaginated({
-  offset = 0,
-  limit = 20,
-  search = "",
+  offset    = 0,
+  limit     = 20,
+  search    = "",
   sortBy,
   sortOrder = "desc",
-  filters = {},
+  filters   = {},
 } = {}) {
   const params = [];
-  let idx = 1;
+  let   idx    = 1;
 
   const { clause: searchClause, nextIdx: afterSearch } =
     buildSearchClause(
@@ -306,7 +304,7 @@ async function findPartnersPaginated({
     : 0;
 
   return {
-    rows: result.rows.map(mapPartner),
+    rows:  result.rows.map(mapPartner),
     total,
   };
 }
@@ -314,7 +312,7 @@ async function findPartnersPaginated({
 /* ─────────────────────────────────────────────
    FIND ONE
    Returns the full record — used by:
-     - loginPartner (via findPartnerByIdentifier)
+     - loginPartner (via findPartnerByEmail)
      - admin edit drawer (via findPartnerById)
 ───────────────────────────────────────────── */
 
@@ -331,7 +329,7 @@ async function findPartnerById(id) {
   return mapPartner(result.rows[0]);
 }
 
-async function findPartnerByIdentifier(identifier) {
+async function findPartnerByEmail(identifier) {
   const result = await query(
     `
     SELECT ${PARTNER_COLUMNS}
@@ -410,14 +408,45 @@ async function setPartnerActive(partnerId, active) {
    EXPORTS
 ───────────────────────────────────────────── */
 
+/* ─────────────────────────────────────────────
+   FORCE PASSWORD RESET  ← NEW
+   Sets must_change_password = true without
+   touching the existing password hash — the
+   partner can still log in with their current
+   password, but is forced to change it
+   immediately after. Used when an admin
+   suspects compromised credentials.
+───────────────────────────────────────────── */
+
+async function forcePasswordReset(partnerId) {
+  const result = await query(
+    `
+    UPDATE partners
+    SET
+      must_change_password = true,
+      updated_at            = NOW()
+    WHERE id = $1
+    RETURNING ${PARTNER_COLUMNS}
+    `,
+    [partnerId]
+  );
+
+  return mapPartner(result.rows[0]);
+}
+
+/* ─────────────────────────────────────────────
+   EXPORTS
+───────────────────────────────────────────── */
+
 module.exports = {
   createPartner,
-  updatePartner,           // ← new
+  updatePartner,
   findPartners,
   findPartnersPaginated,
   findPartnerById,
-  findPartnerByIdentifier,
+  findPartnerByEmail,
   updatePartnerPassword,
   setPartnerActive,
   updatePassword,
+  forcePasswordReset,   // ← new
 };

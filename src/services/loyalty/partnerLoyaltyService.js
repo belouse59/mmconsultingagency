@@ -288,7 +288,7 @@ async function loginPartner({ email, password }) {
     ? clean(email).toLowerCase().trim()
     : null;
     
-  const partner = await partnerRepo.findPartnerByIdentifier(
+  const partner = await partnerRepo.findPartnerByEmail(
     normalizedEmail
   );
 

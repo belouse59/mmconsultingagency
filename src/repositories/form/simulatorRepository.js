@@ -19,12 +19,9 @@ function mapSimulation(row) {
   return {
     id:                      row.id,
     contactId:               row.contact_id,
-    // Contact fields (populated via JOIN in paginated query;
-    // null when simulation was submitted without a contact form)
     contactEmail:            row.contact_email    || null,
     contactPhone:            row.contact_phone    || null,
     contactVerified:         row.contact_verified ?? null,
-    // Simulation fields
     housingType:             row.housing_type,
     location:                row.location,
     surface:                 row.surface,
@@ -36,6 +33,10 @@ function mapSimulation(row) {
     gasKwh:                  row.gas_kwh,
     estimatedMonthlySavings: row.estimated_monthly_savings,
     createdAt:               row.created_at,
+    status:                  row.status       || "new",   // ← new
+    contactedAt:             row.contacted_at || null,      // ← new
+    contactedBy:             row.contacted_by || null,       // ← new
+    archived:                Boolean(row.archived),            // ← new
   };
 }
 
@@ -53,7 +54,6 @@ const SIMULATOR_FILTER_COLUMNS = {
 ───────────────────────────────────────────── */
 
 async function createSimulationRequest({
-  id,  
   contactId,
   housingType,
   location,
@@ -66,7 +66,9 @@ async function createSimulationRequest({
   gasKwh,
   estimatedMonthlySavings,
 }) {
-    
+  const id =
+    `simulator-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
+
   const result = await query(
     `
     INSERT INTO simulation_requests (
@@ -173,6 +175,17 @@ async function findSimulationsPaginated({
     idx++;
   }
 
+  // Archived — default-excluded from the list unless explicitly
+  // requested via ?archived=true. Mirrors the newsletter
+  // subscribed=false soft-delete pattern: hidden by default,
+  // visible on demand, never hard-deleted.
+  let archivedClause = "AND sr.archived = false";
+  if (filters.archived === "true") {
+    archivedClause = "AND sr.archived = true";
+  } else if (filters.archived === "all") {
+    archivedClause = "";
+  }
+
   const orderClause = buildOrderClause(sortBy, sortOrder, "simulatorRequests");
 
   params.push(limit);
@@ -198,12 +211,17 @@ async function findSimulationsPaginated({
       sr.gas_kwh,
       sr.estimated_monthly_savings,
       sr.created_at,
+      sr.status,
+      sr.contacted_at,
+      sr.contacted_by,
+      sr.archived,
       COUNT(*) OVER()      AS _total
     FROM simulation_requests sr
     LEFT JOIN contacts c ON c.id = sr.contact_id
     WHERE 1=1
       ${searchClause}
       ${energyFilterClause}
+      ${archivedClause}
     ${orderClause}
     LIMIT  $${limitIdx}
     OFFSET $${offsetIdx}
@@ -222,11 +240,54 @@ async function findSimulationsPaginated({
 }
 
 /* ─────────────────────────────────────────────
+   MARK CONTACTED  ← NEW
+───────────────────────────────────────────── */
+
+async function markContacted(id, adminEmail) {
+  const result = await query(
+    `
+    UPDATE simulation_requests
+    SET
+      status       = 'contacted',
+      contacted_at = NOW(),
+      contacted_by = $2
+    WHERE id = $1
+    RETURNING *
+    `,
+    [id, adminEmail || null]
+  );
+
+  return mapSimulation(result.rows[0]);
+}
+
+/* ─────────────────────────────────────────────
+   ARCHIVE (soft delete)  ← NEW
+   Sets archived = true. Default list view
+   excludes archived rows; never hard-deleted.
+───────────────────────────────────────────── */
+
+async function archiveSimulation(id) {
+  const result = await query(
+    `
+    UPDATE simulation_requests
+    SET archived = true
+    WHERE id = $1
+    RETURNING *
+    `,
+    [id]
+  );
+
+  return mapSimulation(result.rows[0]);
+}
+
+/* ─────────────────────────────────────────────
    EXPORTS
 ───────────────────────────────────────────── */
 
 module.exports = {
   createSimulationRequest,
   getSimulations,
-  findSimulationsPaginated,   // ← new
+  findSimulationsPaginated,
+  markContacted,         // ← new
+  archiveSimulation,      // ← new
 };

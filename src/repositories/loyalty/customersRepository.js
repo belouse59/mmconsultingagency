@@ -355,13 +355,62 @@ function syncCustomerToSheets(customer) {
    EXPORTS
 ───────────────────────────────────────────── */
 
+/* ─────────────────────────────────────────────
+   UPDATE CUSTOMER  ← NEW
+   Editable fields: full_name only for now.
+   identifier is intentionally NOT editable via
+   this route — changing a login identifier is a
+   separate, higher-risk operation (would need
+   email/phone verification of the new value).
+───────────────────────────────────────────── */
+
+async function updateCustomer(id, { full_name }) {
+  const result = await query(
+    `
+    UPDATE customers
+    SET
+      full_name  = $1,
+      updated_at = NOW()
+    WHERE id = $2
+    RETURNING *
+    `,
+    [full_name, id]
+  );
+
+  return mapCustomer(result.rows[0]);
+}
+
+/* ─────────────────────────────────────────────
+   SET ACTIVE  (existing — unchanged)
+───────────────────────────────────────────── */
+
+async function setCustomerActive(customerId, active) {
+  const result = await query(
+    `
+    UPDATE customers
+    SET
+      active     = $1,
+      updated_at = NOW()
+    WHERE id = $2
+    RETURNING *
+    `,
+    [active, customerId]
+  );
+
+  return mapCustomer(result.rows[0]);
+}
+
+/* ───────────────────────────────────────────── */
+
 module.exports = {
   createCustomer,
   markVerified,
   updatePassword,
   findCustomers,
-  findCustomersPaginated,       // ← new
+  findCustomersPaginated,
   findCustomerByIdentifier,
   findCustomerById,
   findActiveCustomers,
+  setCustomerActive,
+  updateCustomer,   // ← new
 };

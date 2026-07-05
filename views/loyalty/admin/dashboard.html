@@ -310,11 +310,12 @@
                     Registrato
                     <span class="adm-th-sort-icon" aria-hidden="true">↓</span>
                   </th>
+                  <th scope="col" class="adm-td-actions">Azioni</th>
                 </tr>
               </thead>
               <tbody id="customersTableBody">
                 <tr>
-                  <td colspan="5" style="text-align:center;padding:32px;">
+                  <td colspan="6" style="text-align:center;padding:32px;">
                     <div class="adm-empty">
                       <span class="adm-empty-icon">👥</span>
                       <span class="adm-empty-sub">Caricamento clienti…</span>
@@ -553,11 +554,12 @@
                   <th scope="col" class="adm-th-sortable sorted" data-sort="createdAt">
                     Creata <span class="adm-th-sort-icon" aria-hidden="true">↓</span>
                   </th>
+                  <th scope="col" class="adm-td-actions">Azioni</th>
                 </tr>
               </thead>
               <tbody id="offersTableBody">
                 <tr>
-                  <td colspan="5" style="text-align:center;padding:32px;">
+                  <td colspan="6" style="text-align:center;padding:32px;">
                     <div class="adm-empty">
                       <span class="adm-empty-icon">🎁</span>
                       <span class="adm-empty-sub">Caricamento offerte…</span>
@@ -799,11 +801,12 @@
                   <th scope="col" class="adm-th-sortable sorted" data-sort="createdAt">
                     Data <span class="adm-th-sort-icon" aria-hidden="true">↓</span>
                   </th>
+                  <th scope="col" class="adm-td-actions">Azioni</th>
                 </tr>
               </thead>
               <tbody id="newsletterTableBody">
                 <tr>
-                  <td colspan="4" style="padding:0;">
+                  <td colspan="5" style="padding:0;">
                     <div class="adm-empty">
                       <span class="adm-empty-icon">📧</span>
                       <span class="adm-empty-sub">Caricamento iscritti…</span>
@@ -1014,7 +1017,7 @@
 
 <!-- Confirm modal -->
 <div class="adm-modal-backdrop" id="admConfirmModal" role="dialog" aria-modal="true" aria-labelledby="admConfirmTitle">
-  <div class="adm-modal">
+  <div class="adm-modal adm-modal--simple">
     <p class="adm-modal-title" id="admConfirmTitle">Conferma azione</p>
     <p class="adm-modal-body" id="admConfirmBody"></p>
     <div class="adm-modal-actions">
@@ -1032,7 +1035,7 @@
      is stored as review_notes on the request record.
 ═══════════════════════════════════════════════════ -->
 <div class="adm-modal-backdrop" id="admRejectModal" role="dialog" aria-modal="true" aria-labelledby="admRejectTitle">
-  <div class="adm-modal">
+  <div class="adm-modal adm-modal--simple">
     <p class="adm-modal-title" id="admRejectTitle">Rifiuta richiesta</p>
     <p class="adm-modal-body" id="admRejectBody">
       La richiesta verrà contrassegnata come rifiutata. Puoi aggiungere una nota interna.
@@ -1066,7 +1069,7 @@
      Opened by clicking "Dettagli" in the Proposta column.
 ═══════════════════════════════════════════════════ -->
 <div class="adm-modal-backdrop" id="admProposalModal" role="dialog" aria-modal="true" aria-labelledby="admProposalTitle">
-  <div class="adm-modal" style="max-width:520px;">
+  <div class="adm-modal adm-modal--simple" style="max-width:520px;">
     <p class="adm-modal-title" id="admProposalTitle">Proposta partner</p>
     <p class="adm-modal-body" id="admProposalMeta" style="font-size:0.78rem;color:var(--loy-text-sec);margin-bottom:12px;"></p>
     <div
@@ -1367,12 +1370,16 @@
 ═══════════════════════════════════════════════════ -->
 <div class="adm-modal-backdrop" id="admContactDetailModal" role="dialog" aria-modal="true" aria-labelledby="admContactDetailTitle">
   <div class="adm-modal" style="max-width:520px;">
-    <p class="adm-modal-title" id="admContactDetailTitle">Richiesta di contatto</p>
-    <div id="admContactDetailBody" style="font-size:0.88rem;line-height:1.7;">
+    <div class="adm-modal-header">
+      <p class="adm-modal-title" id="admContactDetailTitle">Richiesta di contatto</p>
+    </div>
+    <div class="adm-modal-scroll" id="admContactDetailBody">
       <!-- populated by JS -->
     </div>
-    <div class="adm-modal-actions" style="margin-top:20px;">
-      <button class="adm-btn adm-btn--secondary" id="admContactDetailClose">Chiudi</button>
+    <div class="adm-modal-footer">
+      <div class="adm-modal-actions">
+        <button class="adm-btn adm-btn--secondary" id="admContactDetailClose">Chiudi</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1385,14 +1392,219 @@
 ═══════════════════════════════════════════════════ -->
 <div class="adm-modal-backdrop" id="admSimulatorDetailModal" role="dialog" aria-modal="true" aria-labelledby="admSimulatorDetailTitle">
   <div class="adm-modal" style="max-width:560px;">
-    <p class="adm-modal-title" id="admSimulatorDetailTitle">Dettaglio simulazione</p>
-    <div id="admSimulatorDetailBody" style="font-size:0.88rem;line-height:1.7;">
+    <div class="adm-modal-header">
+      <p class="adm-modal-title" id="admSimulatorDetailTitle">Dettaglio simulazione</p>
+    </div>
+    <div class="adm-modal-scroll" id="admSimulatorDetailBody">
       <!-- populated by JS -->
     </div>
-    <div class="adm-modal-actions" style="margin-top:20px;">
-      <button class="adm-btn adm-btn--secondary" id="admSimulatorDetailClose">Chiudi</button>
+    <div class="adm-modal-footer">
+      <div class="adm-modal-actions">
+        <button class="adm-btn adm-btn--secondary" id="admSimulatorDetailClose">Chiudi</button>
+      </div>
     </div>
   </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     CUSTOMER EDIT DRAWER
+     Reuses the same .adm-drawer-* CSS component as the
+     partner drawer — one CSS component, separate HTML
+     instances for each entity's distinct field set.
+═══════════════════════════════════════════════════ -->
+<div class="adm-drawer-backdrop" id="admCustomerDrawerBackdrop">
+  <aside
+    class="adm-drawer"
+    id="admCustomerDrawer"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="admCustomerDrawerTitle"
+  >
+    <div class="adm-drawer-header">
+      <div>
+        <p class="adm-drawer-title" id="admCustomerDrawerTitle">Modifica cliente</p>
+        <p class="adm-drawer-sub" id="admCustomerDrawerSub"></p>
+      </div>
+      <button class="adm-drawer-close" id="admCustomerDrawerClose" aria-label="Chiudi">
+        <i class="fa fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="adm-drawer-body">
+
+      <div class="adm-feedback adm-feedback--error" id="customerFormError" role="alert" aria-live="polite">
+        <i class="fa fa-triangle-exclamation" aria-hidden="true"></i>
+        <span id="customerFormErrorMsg"></span>
+      </div>
+      <div class="adm-feedback adm-feedback--success" id="customerFormSuccess" role="status" aria-live="polite">
+        <i class="fa fa-circle-check" aria-hidden="true"></i>
+        <span id="customerFormSuccessMsg"></span>
+      </div>
+
+      <form id="customerForm" novalidate>
+
+        <div class="adm-drawer-section">
+          <p class="adm-drawer-section-title">Informazioni cliente</p>
+          <div class="adm-form-grid">
+
+            <div class="adm-form-field adm-form-field--full">
+              <label class="adm-form-label adm-form-label--required" for="cfName">Nome completo</label>
+              <input
+                type="text"
+                id="cfName"
+                name="full_name"
+                class="adm-form-input"
+                placeholder="Mario Rossi"
+                autocomplete="off"
+                required
+              >
+            </div>
+
+            <!-- Identifier is shown read-only — changing a login
+                 credential requires its own verified flow -->
+            <div class="adm-form-field adm-form-field--full">
+              <label class="adm-form-label">Email / Telefono</label>
+              <input
+                type="text"
+                id="cfIdentifier"
+                class="adm-form-input"
+                disabled
+                style="opacity:0.6;cursor:not-allowed;"
+              >
+              <p class="adm-form-hint">L'identificatore di accesso non è modificabile da qui.</p>
+            </div>
+
+          </div>
+        </div>
+
+      </form>
+
+    </div><!-- /adm-drawer-body -->
+
+    <div class="adm-drawer-footer">
+      <button class="adm-btn adm-btn--secondary" id="cfCancelBtn">Annulla</button>
+      <button class="adm-btn adm-btn--primary" id="cfSubmitBtn" form="customerForm" type="submit">
+        <span class="adm-btn-spinner" aria-hidden="true"></span>
+        <span id="cfSubmitLabel">Salva modifiche</span>
+      </button>
+    </div>
+
+  </aside>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     OFFER EDIT DRAWER
+═══════════════════════════════════════════════════ -->
+<div class="adm-drawer-backdrop" id="admOfferDrawerBackdrop">
+  <aside
+    class="adm-drawer"
+    id="admOfferDrawer"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="admOfferDrawerTitle"
+  >
+    <div class="adm-drawer-header">
+      <div>
+        <p class="adm-drawer-title" id="admOfferDrawerTitle">Modifica offerta</p>
+        <p class="adm-drawer-sub" id="admOfferDrawerSub"></p>
+      </div>
+      <button class="adm-drawer-close" id="admOfferDrawerClose" aria-label="Chiudi">
+        <i class="fa fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div class="adm-drawer-body">
+
+      <div class="adm-feedback adm-feedback--error" id="offerFormError" role="alert" aria-live="polite">
+        <i class="fa fa-triangle-exclamation" aria-hidden="true"></i>
+        <span id="offerFormErrorMsg"></span>
+      </div>
+      <div class="adm-feedback adm-feedback--success" id="offerFormSuccess" role="status" aria-live="polite">
+        <i class="fa fa-circle-check" aria-hidden="true"></i>
+        <span id="offerFormSuccessMsg"></span>
+      </div>
+
+      <form id="offerForm" novalidate>
+
+        <div class="adm-drawer-section">
+          <p class="adm-drawer-section-title">Dettagli offerta</p>
+          <div class="adm-form-grid">
+
+            <div class="adm-form-field adm-form-field--full">
+              <label class="adm-form-label adm-form-label--required" for="ofTitle">Titolo</label>
+              <input
+                type="text"
+                id="ofTitle"
+                name="title"
+                class="adm-form-input"
+                placeholder="es. Sconto 10% su tutti i prodotti"
+                autocomplete="off"
+                required
+              >
+            </div>
+
+            <div class="adm-form-field adm-form-field--full">
+              <label class="adm-form-label" for="ofDescription">Descrizione</label>
+              <textarea
+                id="ofDescription"
+                name="description"
+                class="adm-form-textarea"
+                rows="3"
+                placeholder="Dettagli dell'offerta riservata ai clienti M&M Energy Club…"
+              ></textarea>
+            </div>
+
+            <!-- Partner shown read-only — reassigning an offer
+                 to a different partner requires its own flow -->
+            <div class="adm-form-field adm-form-field--full">
+              <label class="adm-form-label">Partner</label>
+              <input
+                type="text"
+                id="ofPartner"
+                class="adm-form-input"
+                disabled
+                style="opacity:0.6;cursor:not-allowed;"
+              >
+              <p class="adm-form-hint">Il partner non è modificabile. Elimina e ricrea l'offerta per cambiarla.</p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Stato -->
+        <div class="adm-drawer-section" id="ofStatusField">
+          <p class="adm-drawer-section-title">Stato</p>
+          <div class="adm-form-field">
+            <div class="adm-toggle-row">
+              <span class="adm-form-label" style="margin-bottom:0;">Offerta attiva</span>
+              <button
+                type="button"
+                class="adm-toggle"
+                id="ofStatusToggle"
+                role="switch"
+                aria-checked="true"
+              >
+                <span class="adm-toggle-thumb"></span>
+              </button>
+              <span class="adm-toggle-label" id="ofStatusLabel">Attiva</span>
+            </div>
+          </div>
+        </div>
+
+      </form>
+
+    </div><!-- /adm-drawer-body -->
+
+    <div class="adm-drawer-footer">
+      <button class="adm-btn adm-btn--secondary" id="ofCancelBtn">Annulla</button>
+      <button class="adm-btn adm-btn--primary" id="ofSubmitBtn" form="offerForm" type="submit">
+        <span class="adm-btn-spinner" aria-hidden="true"></span>
+        <span id="ofSubmitLabel">Salva modifiche</span>
+      </button>
+    </div>
+
+  </aside>
 </div>
 
 <script type="module" src="/js/features/loyalty/admin/admin.js"></script>

@@ -239,11 +239,59 @@ async function createOffer({ id, title, description, partnerId }) {
    EXPORTS
 ───────────────────────────────────────────── */
 
+/* ─────────────────────────────────────────────
+   FIND BY ID  ← NEW
+   Used by the admin edit drawer to load the full
+   offer record (the paginated list is lean).
+───────────────────────────────────────────── */
+
+async function findOfferById(id) {
+  const result = await query(
+    `
+    SELECT id, title, description, partner_id, active, created_at
+    FROM offers
+    WHERE id = $1
+    LIMIT 1
+    `,
+    [id]
+  );
+
+  return result.rows[0] ? mapOffer(result.rows[0]) : null;
+}
+
+/* ─────────────────────────────────────────────
+   UPDATE OFFER  ← NEW
+   Editable fields: title, description, active.
+   partnerId is not editable — it would need
+   redemption history reassignment, which is a
+   separate data-migration concern.
+───────────────────────────────────────────── */
+
+async function updateOffer(id, { title, description, active }) {
+  const result = await query(
+    `
+    UPDATE offers
+    SET
+      title       = $1,
+      description = $2,
+      active      = $3,
+      updated_at  = NOW()
+    WHERE id = $4
+    RETURNING id, title, description, partner_id, active, created_at
+    `,
+    [title, description || null, active, id]
+  );
+
+  return result.rows[0] ? mapOffer(result.rows[0]) : null;
+}
+
 module.exports = {
   findOffers,
-  findOffersPaginated,          // ← new
+  findOffersPaginated,
   findActiveOffers,
   findActiveOffersByPartner,
   findActiveOfferById,
+  findOfferById,    // ← new
   createOffer,
+  updateOffer,      // ← new
 };

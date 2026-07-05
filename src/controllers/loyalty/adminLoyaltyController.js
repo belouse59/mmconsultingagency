@@ -523,6 +523,226 @@ const adminGetContactsPaginated = asyncHandler(async (req, res) => {
   });
 });
 
+/* ─────────────────────────────────────────────
+   CUSTOMER — GET BY ID  ← NEW
+   GET /admin/customers/:id
+   Returns full customer record for the edit drawer.
+───────────────────────────────────────────── */
+
+const adminGetCustomerById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const customer = await adminLoyaltyService.getCustomerById(clean(id));
+
+  if (!customer) {
+    return res.status(404).json({ success: false, message: "Cliente non trovato." });
+  }
+
+  return res.json({ success: true, data: customer });
+});
+
+/* ─────────────────────────────────────────────
+   CUSTOMER — UPDATE  ← NEW
+   PATCH /admin/customers/:id
+   Body: { full_name }
+───────────────────────────────────────────── */
+
+const adminUpdateCustomer = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { full_name } = req.body;
+
+  const result = await adminLoyaltyService.updateCustomer(clean(id), {
+    full_name: clean(full_name || ""),
+  });
+
+  return res.json(result);
+});
+
+/* ─────────────────────────────────────────────
+   OFFER — GET BY ID  ← NEW
+   GET /admin/offers/:id
+───────────────────────────────────────────── */
+
+const adminGetOfferById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const offer = await adminLoyaltyService.getOfferById(clean(id));
+
+  if (!offer) {
+    return res.status(404).json({ success: false, message: "Offerta non trovata." });
+  }
+
+  return res.json({ success: true, data: offer });
+});
+
+/* ─────────────────────────────────────────────
+   OFFER — UPDATE  ← NEW
+   PATCH /admin/offers/:id
+   Body: { title, description, active }
+───────────────────────────────────────────── */
+
+const adminUpdateOffer = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { title, description, active } = req.body;
+
+  const result = await adminLoyaltyService.updateOffer(clean(id), {
+    title:       clean(title       || ""),
+    description: clean(description || ""),
+    active:      active !== undefined ? Boolean(active) : undefined,
+  });
+
+  return res.json(result);
+});
+
+/* ─────────────────────────────────────────────
+   CUSTOMER ACTIONS  (existing — unchanged)
+───────────────────────────────────────────── */
+
+/* PATCH /admin/customers/:id/active
+   Body: { active: boolean } */
+const adminSetCustomerActive = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { active } = req.body;
+
+  if (typeof active !== "boolean") {
+    return res.status(400).json({
+      success: false,
+      message: "active must be boolean",
+    });
+  }
+
+  const result = await adminLoyaltyService.setCustomerActive(clean(id), active);
+
+  return res.json(result);
+});
+
+/* POST /admin/customers/:id/resend-verification */
+const adminResendCustomerVerification = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const result = await adminLoyaltyService.resendCustomerVerification(clean(id));
+
+  return res.json(result);
+});
+
+/* ─────────────────────────────────────────────
+   PARTNER ACTIONS  ← NEW
+───────────────────────────────────────────── */
+
+/* POST /admin/partners/:id/force-password-reset */
+const adminForcePartnerPasswordReset = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const result = await adminLoyaltyService.forcePartnerPasswordReset(clean(id));
+
+  return res.json(result);
+});
+
+/* ─────────────────────────────────────────────
+   PARTNER REQUEST ACTIONS  ← NEW
+───────────────────────────────────────────── */
+
+/* PATCH /admin/partner-requests/:id/archive */
+const adminArchivePartnerRequest = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const result = await adminLoyaltyService.archivePartnerRequest(clean(id));
+
+  return res.json(result);
+});
+
+/* ─────────────────────────────────────────────
+   CONTACT REQUEST ACTIONS  ← NEW
+   adminEmail is read from the session for
+   attribution (contacted_by column).
+───────────────────────────────────────────── */
+
+/* PATCH /admin/contacts/:requestId/mark-contacted */
+const adminMarkContactContacted = asyncHandler(async (req, res) => {
+  const { requestId } = req.params;
+  const adminEmail = req.session?.loyaltyAdmin?.email || null;
+
+  const result = await adminLoyaltyService.markContactRequestContacted(
+    clean(requestId),
+    adminEmail
+  );
+
+  return res.json(result);
+});
+
+/* PATCH /admin/contacts/:requestId/archive */
+const adminArchiveContact = asyncHandler(async (req, res) => {
+  const { requestId } = req.params;
+
+  const result = await adminLoyaltyService.archiveContactRequest(clean(requestId));
+
+  return res.json(result);
+});
+
+/* POST /admin/contacts/:contactId/resend-verification */
+const adminResendContactVerification = asyncHandler(async (req, res) => {
+  const { contactId } = req.params;
+
+  const result = await adminLoyaltyService.resendContactVerification(clean(contactId));
+
+  return res.json(result);
+});
+
+/* ─────────────────────────────────────────────
+   NEWSLETTER ACTIONS  ← NEW
+   Identified by email (no surrogate id route
+   param) since the repository's natural key for
+   these operations is the email address.
+───────────────────────────────────────────── */
+
+/* DELETE /admin/newsletters/:email
+   Soft-delete — see adminLoyaltyService.deleteNewsletterSubscription. */
+const adminDeleteNewsletter = asyncHandler(async (req, res) => {
+  const { email } = req.params;
+
+  const result = await adminLoyaltyService.deleteNewsletterSubscription(
+    clean(decodeURIComponent(email)).toLowerCase()
+  );
+
+  return res.json(result);
+});
+
+/* POST /admin/newsletters/:email/resend-verification */
+const adminResendNewsletterVerification = asyncHandler(async (req, res) => {
+  const { email } = req.params;
+
+  const result = await adminLoyaltyService.resendNewsletterVerification(
+    clean(decodeURIComponent(email)).toLowerCase()
+  );
+
+  return res.json(result);
+});
+
+/* ─────────────────────────────────────────────
+   SIMULATOR ACTIONS  ← NEW
+───────────────────────────────────────────── */
+
+/* PATCH /admin/simulator/:id/mark-contacted */
+const adminMarkSimulationContacted = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const adminEmail = req.session?.loyaltyAdmin?.email || null;
+
+  const result = await adminLoyaltyService.markSimulationContacted(clean(id), adminEmail);
+
+  return res.json(result);
+});
+
+/* PATCH /admin/simulator/:id/archive */
+const adminArchiveSimulation = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const result = await adminLoyaltyService.archiveSimulation(clean(id));
+
+  return res.json(result);
+});
+
+/* ─────────────────────────────────────────────
+   EXPORTS
+───────────────────────────────────────────── */
+
 module.exports = {
   // Auth
   loginAdmin,
@@ -532,6 +752,10 @@ module.exports = {
   // Customers
   adminGetCustomers,
   adminGetCustomersPaginated,
+  adminGetCustomerById,            // ← new
+  adminUpdateCustomer,             // ← new
+  adminSetCustomerActive,
+  adminResendCustomerVerification,
 
   // Partners
   adminGetPartners,
@@ -540,27 +764,38 @@ module.exports = {
   adminCreatePartner,
   adminUpdatePartner,
   adminSetPartnerActive,
+  adminForcePartnerPasswordReset,
 
   // Partner Requests
   adminGetPartnerRequestsPaginated,
   adminApprovePartnerRequest,
   adminRejectPartnerRequest,
+  adminArchivePartnerRequest,
 
   // Offers
   adminGetOffers,
   adminGetOffersPaginated,
+  adminGetOfferById,    // ← new
   adminCreateOffer,
+  adminUpdateOffer,     // ← new
 
   // Redemptions
   adminGetRedemptions,
   adminGetRedemptionsPaginated,
 
   // Newsletters
-  adminGetNewslettersPaginated,     // ← new
+  adminGetNewslettersPaginated,
+  adminDeleteNewsletter,                    // ← new
+  adminResendNewsletterVerification,        // ← new
 
   // Simulator Leads
-  adminGetSimulationsPaginated,     // ← new
+  adminGetSimulationsPaginated,
+  adminMarkSimulationContacted,             // ← new
+  adminArchiveSimulation,                   // ← new
 
   // Contact Requests
-  adminGetContactsPaginated,        // ← new
+  adminGetContactsPaginated,
+  adminMarkContactContacted,                // ← new
+  adminArchiveContact,                      // ← new
+  adminResendContactVerification,           // ← new
 };

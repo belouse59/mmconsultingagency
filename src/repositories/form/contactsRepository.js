@@ -2,25 +2,30 @@
 
 const crypto = require("crypto");
 const { query } = require("../../db");
+
 const {
   buildOrderClause,
   buildSearchClause,
   buildFilterClause,
 } = require("../../utils/queryBuilder");
 
+/* ─────────────────────────────────────────────
+   MAPPER
+───────────────────────────────────────────── */
+
 function mapContact(row) {
   if (!row) return null;
 
   return {
-    id: row.id,
-    email: row.email,
-    firstName: row.first_name,
-    lastName: row.last_name,
-    phone: row.phone,
-    verified: row.verified,
+    id:         row.id,
+    email:      row.email,
+    firstName:  row.first_name,
+    lastName:   row.last_name,
+    phone:      row.phone,
+    verified:   row.verified,
     verifiedAt: row.verified_at,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt:  row.created_at,
+    updatedAt:  row.updated_at,
   };
 }
 
@@ -31,10 +36,10 @@ function mapContact(row) {
    message) directly in the admin list view without
    a second query per row.
 ───────────────────────────────────────────── */
- 
+
 function mapContactWithRequest(row) {
   if (!row) return null;
- 
+
   return {
     ...mapContact(row),
     // Latest contact_request fields (null when no request exists)
@@ -44,18 +49,26 @@ function mapContactWithRequest(row) {
     message:               row.message      || null,
     preferredContactTime:  row.preferred_contact_time || null,
     requestCreatedAt:      row.request_created_at || null,
+    status:                row.status       || "new",   // ← new
+    contactedAt:           row.contacted_at || null,      // ← new
+    contactedBy:           row.contacted_by || null,       // ← new
   };
 }
- 
+
 /* ─────────────────────────────────────────────
    FILTER COLUMN MAP
 ───────────────────────────────────────────── */
- 
+
 const CONTACT_FILTER_COLUMNS = {
   verified: "c.verified",
   source:   "cr.source",
   category: "cr.category",
+  status:   "cr.status",
 };
+
+/* ─────────────────────────────────────────────
+   EXISTING METHODS (unchanged)
+───────────────────────────────────────────── */
 
 async function findById(id) {
   const result = await query(
@@ -86,13 +99,14 @@ async function findByEmail(email) {
 }
 
 async function createContact({
-  id,
   email,
   firstName,
   lastName,
   phone,
 }) {
-  
+  const id =
+    `contact-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
+
   const result = await query(
     `
     INSERT INTO contacts (
@@ -108,13 +122,7 @@ async function createContact({
     )
     RETURNING *
     `,
-    [
-      id,
-      email,
-      firstName,
-      lastName,
-      phone,
-    ]
+    [id, email, firstName, lastName, phone]
   );
 
   return mapContact(result.rows[0]);
@@ -125,9 +133,9 @@ async function markVerified(id) {
     `
     UPDATE contacts
     SET
-      verified = true,
+      verified    = true,
       verified_at = NOW(),
-      updated_at = NOW()
+      updated_at  = NOW()
     WHERE id = $1
     RETURNING *
     `,
@@ -155,11 +163,11 @@ async function getContacts() {
    contact_request per contact (via DISTINCT ON)
    so category/source/message appear inline in
    the admin list without a second round-trip.
- 
+
    Search: email, first_name, last_name, phone.
    Filters: verified (contact level),
             source / category (request level).
- 
+
    @param {{
      offset:    number,
      limit:     number,
@@ -169,7 +177,7 @@ async function getContacts() {
      filters:   { verified?: string, source?: string, category?: string }
    }} opts
 ───────────────────────────────────────────── */
- 
+
 async function findContactsPaginated({
   offset    = 0,
   limit     = 20,
@@ -180,7 +188,7 @@ async function findContactsPaginated({
 } = {}) {
   const params = [];
   let   idx    = 1;
- 
+
   const { clause: searchClause, nextIdx: afterSearch } =
     buildSearchClause(
       search,
@@ -189,18 +197,18 @@ async function findContactsPaginated({
       idx
     );
   idx = afterSearch;
- 
+
   const { clause: filterClause, nextIdx: afterFilter } =
     buildFilterClause(filters, CONTACT_FILTER_COLUMNS, params, idx);
   idx = afterFilter;
- 
+
   const orderClause = buildOrderClause(sortBy, sortOrder, "contacts");
- 
+
   params.push(limit);
   const limitIdx = idx++;
   params.push(offset);
   const offsetIdx = idx;
- 
+
   // DISTINCT ON contact_requests picks only the latest request per
   // contact (ORDER BY contact_id, created_at DESC inside the subquery).
   const sql = `
@@ -220,6 +228,9 @@ async function findContactsPaginated({
       cr.message,
       cr.preferred_contact_time,
       cr.created_at   AS request_created_at,
+      cr.status,
+      cr.contacted_at,
+      cr.contacted_by,
       COUNT(*) OVER() AS _total
     FROM contacts c
     LEFT JOIN LATERAL (
@@ -236,23 +247,23 @@ async function findContactsPaginated({
     LIMIT  $${limitIdx}
     OFFSET $${offsetIdx}
   `;
- 
+
   const result = await query(sql, params);
- 
+
   const total = result.rows.length > 0
     ? parseInt(result.rows[0]._total, 10)
     : 0;
- 
+
   return {
     rows:  result.rows.map(mapContactWithRequest),
     total,
   };
 }
- 
+
 /* ─────────────────────────────────────────────
    EXPORTS
 ───────────────────────────────────────────── */
- 
+
 module.exports = {
   findById,
   findByEmail,

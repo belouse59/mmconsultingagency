@@ -520,6 +520,43 @@ adminRouter.get(
     adminCtrl.adminGetCustomersPaginated
 );
 
+/* ── CUSTOMERS — get one (full record for edit drawer) ──
+   GET /admin/customers/:id
+*/
+adminRouter.get(
+    "/customers/:id",
+    adminCtrl.adminGetCustomerById
+);
+
+/* ── CUSTOMERS — update ──
+   PATCH /admin/customers/:id
+   Body: { full_name }
+*/
+adminRouter.patch(
+    "/customers/:id",
+    requireXHR,
+    adminCtrl.adminUpdateCustomer
+);
+
+/* ── CUSTOMERS — activate/suspend ──
+   PATCH /admin/customers/:id/active
+   Body: { active: boolean }
+*/
+adminRouter.patch(
+    "/customers/:id/active",
+    requireXHR,
+    adminCtrl.adminSetCustomerActive
+);
+
+/* ── CUSTOMERS — resend verification ──
+   POST /admin/customers/:id/resend-verification
+*/
+adminRouter.post(
+    "/customers/:id/resend-verification",
+    requireXHR,
+    adminCtrl.adminResendCustomerVerification
+);
+
 /* ── REDEMPTIONS — paginated list ──
    GET /admin/redemptions?page=&limit=&search=&sortBy=&sortOrder=&partnerId=&offerId=
 */
@@ -542,6 +579,24 @@ adminRouter.post(
     "/offers",
     requireXHR,
     adminCtrl.adminCreateOffer
+);
+
+/* ── OFFERS — get one (full record for edit drawer) ──
+   GET /admin/offers/:id
+*/
+adminRouter.get(
+    "/offers/:id",
+    adminCtrl.adminGetOfferById
+);
+
+/* ── OFFERS — update ──
+   PATCH /admin/offers/:id
+   Body: { title, description, active }
+*/
+adminRouter.patch(
+    "/offers/:id",
+    requireXHR,
+    adminCtrl.adminUpdateOffer
 );
 
 /* ── PARTNERS — paginated list ──
@@ -582,6 +637,15 @@ adminRouter.patch(
     adminCtrl.adminSetPartnerActive
 );
 
+/* ── PARTNERS — force password reset ──
+   POST /admin/partners/:id/force-password-reset
+*/
+adminRouter.post(
+    "/partners/:id/force-password-reset",
+    requireXHR,
+    adminCtrl.adminForcePartnerPasswordReset
+);
+
 /* ── PARTNER REQUESTS — paginated list ──
    GET /admin/partner-requests?page=&limit=&search=&sortBy=&sortOrder=&status=&category=
 */
@@ -611,6 +675,15 @@ adminRouter.post(
     adminCtrl.adminRejectPartnerRequest
 );
 
+/* ── PARTNER REQUESTS — archive ──
+   PATCH /admin/partner-requests/:id/archive
+*/
+adminRouter.patch(
+    "/partner-requests/:id/archive",
+    requireXHR,
+    adminCtrl.adminArchivePartnerRequest
+);
+
 /* ── NEWSLETTERS — paginated list ──
    GET /admin/newsletters?page=&limit=&search=&sortBy=&sortOrder=&subscribed=&verified=
 */
@@ -620,8 +693,28 @@ adminRouter.get(
     adminCtrl.adminGetNewslettersPaginated
 );
 
+/* ── NEWSLETTERS — delete (soft) ──
+   DELETE /admin/newsletters/:email
+   Sets subscribed=false + unsubscribed_at=NOW() —
+   see adminLoyaltyService.deleteNewsletterSubscription.
+*/
+adminRouter.delete(
+    "/newsletters/:email",
+    requireXHR,
+    adminCtrl.adminDeleteNewsletter
+);
+
+/* ── NEWSLETTERS — resend verification ──
+   POST /admin/newsletters/:email/resend-verification
+*/
+adminRouter.post(
+    "/newsletters/:email/resend-verification",
+    requireXHR,
+    adminCtrl.adminResendNewsletterVerification
+);
+
 /* ── SIMULATOR LEADS — paginated list ──
-   GET /admin/simulator?page=&limit=&search=&sortBy=&sortOrder=&energySource=
+   GET /admin/simulator?page=&limit=&search=&sortBy=&sortOrder=&energySource=&archived=
 */
 adminRouter.get(
     "/simulator",
@@ -629,13 +722,60 @@ adminRouter.get(
     adminCtrl.adminGetSimulationsPaginated
 );
 
+/* ── SIMULATOR LEADS — mark contacted ──
+   PATCH /admin/simulator/:id/mark-contacted
+*/
+adminRouter.patch(
+    "/simulator/:id/mark-contacted",
+    requireXHR,
+    adminCtrl.adminMarkSimulationContacted
+);
+
+/* ── SIMULATOR LEADS — archive (soft delete) ──
+   PATCH /admin/simulator/:id/archive
+*/
+adminRouter.patch(
+    "/simulator/:id/archive",
+    requireXHR,
+    adminCtrl.adminArchiveSimulation
+);
+
 /* ── CONTACT REQUESTS — paginated list ──
-   GET /admin/contacts?page=&limit=&search=&sortBy=&sortOrder=&verified=&source=&category=
+   GET /admin/contacts?page=&limit=&search=&sortBy=&sortOrder=&verified=&source=&category=&status=
 */
 adminRouter.get(
     "/contacts",
     paginate,
     adminCtrl.adminGetContactsPaginated
+);
+
+/* ── CONTACT REQUESTS — mark contacted ──
+   PATCH /admin/contacts/:requestId/mark-contacted
+*/
+adminRouter.patch(
+    "/contacts/:requestId/mark-contacted",
+    requireXHR,
+    adminCtrl.adminMarkContactContacted
+);
+
+/* ── CONTACT REQUESTS — archive ──
+   PATCH /admin/contacts/:requestId/archive
+*/
+adminRouter.patch(
+    "/contacts/:requestId/archive",
+    requireXHR,
+    adminCtrl.adminArchiveContact
+);
+
+/* ── CONTACT REQUESTS — resend verification ──
+   POST /admin/contacts/:contactId/resend-verification
+   Note: contactId, not requestId — the verification
+   email is tied to the contact record, not the request.
+*/
+adminRouter.post(
+    "/contacts/:contactId/resend-verification",
+    requireXHR,
+    adminCtrl.adminResendContactVerification
 );
 
 /* ──────────────────────────────────────────────

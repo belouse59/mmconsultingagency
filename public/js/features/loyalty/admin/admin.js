@@ -110,6 +110,196 @@ function showFeedback(errorEl, successEl, type, msg = "") {
   }
 }
 
+/**
+ * Lightweight toast — used by all new action handlers
+ * (mark contacted, archive, resend verification, delete, etc.)
+ * that don't have a dedicated form error/success pair to
+ * target via showFeedback(). Self-removing, no dependencies.
+ */
+function showToast(message, type = "success") {
+  const toast = document.createElement("div");
+  toast.textContent = message;
+  toast.style.cssText = `
+    position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+    background: ${type === "error" ? "#C0392B" : "var(--loy-navy)"};
+    color: #fff; padding: 11px 18px; border-radius: 8px;
+    font-family: var(--loy-font-display); font-size: 0.82rem; font-weight: 600;
+    box-shadow: var(--loy-shadow-lg); opacity: 0; transform: translateY(8px);
+    transition: opacity 0.2s, transform 0.2s; max-width: 320px;
+  `;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateY(0)";
+  });
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(8px)";
+    setTimeout(() => toast.remove(), 200);
+  }, 3200);
+}
+
+/**
+ * Builds the markup for a row's action cell: one optional
+ * primary inline button + a "⋮" overflow menu. Used identically
+ * by every module (customers, partners, partner requests,
+ * contacts, newsletters, simulator) so the pattern never drifts.
+ *
+ * @param {string}  rowId      — unique id for this row, embedded
+ *                                in data attributes for click delegation
+ * @param {string}  primaryBtn — full HTML for the one inline button,
+ *                                or "" to show only the overflow menu
+ * @param {Array<{label, icon, action, danger?}>} menuItems
+ *   action becomes a data-action value the caller listens for
+ *   via delegated click handling — see wireActionMenus().
+ */
+function renderActionCell(rowId, primaryBtn, menuItems) {
+  if (!menuItems.length) {
+    return `<div class="adm-row-actions">${primaryBtn}</div>`;
+  }
+
+  const items = menuItems.map((item) => `
+    <button
+      class="adm-action-menu-item${item.danger ? " adm-action-menu-item--danger" : ""}"
+      data-action="${esc(item.action)}"
+      data-row-id="${esc(rowId)}"
+    >
+      <i class="fa ${esc(item.icon)}" aria-hidden="true"></i>
+      ${esc(item.label)}
+    </button>`).join("");
+
+  return `
+    <div class="adm-row-actions">
+      ${primaryBtn}
+      <button class="adm-action-menu-btn" data-menu-toggle="${esc(rowId)}" aria-label="Altre azioni" aria-haspopup="true">
+        <i class="fa fa-ellipsis-vertical" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="adm-action-menu" data-menu="${esc(rowId)}" role="menu" style="display:none;">
+      ${items}
+    </div>`;
+}
+
+/* ── Shared action menu portal ─────────────────────────────────
+   One floating menu element sits at the bottom of <body> and
+   is repositioned on every open. This means the menu is never
+   clipped by a scrollable table container, an overflow:hidden
+   ancestor, or a row at the bottom of the viewport — it always
+   renders above or below the button in the visible viewport.
+─────────────────────────────────────────────────────────────── */
+
+const _menuPortal = (() => {
+  const el = document.createElement("div");
+  el.className = "adm-action-menu";
+  el.id        = "admActionMenuPortal";
+  el.setAttribute("role", "menu");
+  el.style.cssText = "position:fixed;display:none;z-index:9999;min-width:200px;";
+  document.body.appendChild(el);
+  return el;
+})();
+
+let _menuPortalRowId   = null;
+let _menuPortalOnAction = null;
+
+function _openMenuPortal(toggleBtn, rowId, menuMarkup, onAction) {
+  _menuPortal.innerHTML     = menuMarkup;
+  _menuPortalRowId          = rowId;
+  _menuPortalOnAction       = onAction;
+  _menuPortal.style.display = "block";
+
+  // Wire item clicks
+  _menuPortal.querySelectorAll("[data-action]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      _closeMenuPortal();
+      if (_menuPortalOnAction) _menuPortalOnAction(btn.dataset.action, btn.dataset.rowId);
+    });
+  });
+
+  // Position — prefer below the toggle button; flip upward if too close to bottom
+  const rect      = toggleBtn.getBoundingClientRect();
+  const menuH     = 220; // conservative estimate before paint
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const spaceAbove = rect.top;
+
+  _menuPortal.style.right = "";
+  _menuPortal.style.left  = "";
+
+  const rightEdge = window.innerWidth - rect.right;
+  _menuPortal.style.right = `${rightEdge}px`;
+
+  if (spaceBelow >= menuH || spaceBelow >= spaceAbove) {
+    _menuPortal.style.top    = `${rect.bottom + 4}px`;
+    _menuPortal.style.bottom = "";
+  } else {
+    _menuPortal.style.bottom = `${window.innerHeight - rect.top + 4}px`;
+    _menuPortal.style.top    = "";
+  }
+
+  toggleBtn.classList.add("open");
+  toggleBtn.setAttribute("aria-expanded", "true");
+}
+
+function _closeMenuPortal() {
+  _menuPortal.style.display = "none";
+  _menuPortal.innerHTML     = "";
+  _menuPortalRowId          = null;
+
+  // Remove open state from any toggle button
+  document.querySelectorAll(".adm-action-menu-btn.open").forEach((b) => {
+    b.classList.remove("open");
+    b.setAttribute("aria-expanded", "false");
+  });
+}
+
+// Close on outside click
+document.addEventListener("click", (e) => {
+  if (!_menuPortal.contains(e.target) && !e.target.closest("[data-menu-toggle]")) {
+    _closeMenuPortal();
+  }
+});
+
+// Close on Escape
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") _closeMenuPortal();
+});
+
+// Close on scroll (table or window — keeps menu anchored correctly)
+window.addEventListener("scroll", _closeMenuPortal, { passive: true });
+document.querySelector(".adm-content")?.addEventListener("scroll", _closeMenuPortal, { passive: true });
+
+/**
+ * Delegated click handling for every action menu rendered by
+ * renderActionCell() inside `container`. Call once per table
+ * body after innerHTML is set.
+ *
+ * @param {Element} container  — the tbody holding the rows
+ * @param {(action: string, rowId: string) => void} onAction
+ */
+function wireActionMenus(container, onAction) {
+  if (!container) return;
+
+  container.querySelectorAll("[data-menu-toggle]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+
+      const rowId = btn.dataset.menuToggle;
+
+      // Toggle: clicking same button again closes
+      if (_menuPortalRowId === rowId && _menuPortal.style.display !== "none") {
+        _closeMenuPortal();
+        return;
+      }
+
+      // Find the matching hidden menu markup in the DOM
+      const menuEl = container.querySelector(`[data-menu="${rowId}"]`);
+      if (!menuEl) return;
+
+      _openMenuPortal(btn, rowId, menuEl.innerHTML, onAction);
+    });
+  });
+}
+
 
 /* ═══════════════════════════════════════════════════════════
    SECTION 2 — API CLIENT
@@ -163,6 +353,15 @@ const Api = {
       method: "PATCH",
       headers: this._headers(true),
       body: JSON.stringify(body),
+    });
+    if (!res) return null;
+    return res.json();
+  },
+
+  async delete(path) {
+    const res = await this._fetch(path, {
+      method: "DELETE",
+      headers: this._headers(true),
     });
     if (!res) return null;
     return res.json();
@@ -582,9 +781,11 @@ const customersTable = $("#moduleCustomers .adm-table");
 const customersBody  = $("#customersTableBody");
 const customersCount = $("#customersCount");
 
+const _customersCache = new Map();
+
 async function loadCustomers() {
   if (!customersBody) return;
-  customersBody.innerHTML = skeletonRows(5);
+  customersBody.innerHTML = skeletonRows(6);
 
   try {
     const data = await Api.getPaginated("/customers", State.customers);
@@ -593,13 +794,16 @@ async function loadCustomers() {
     const rows  = data.data || [];
     const meta  = data.pagination;
 
+    _customersCache.clear();
+    rows.forEach((c) => _customersCache.set(c.id, c));
+
     // Update count label
     if (customersCount && meta) {
       customersCount.textContent = `${meta.totalItems.toLocaleString("it-IT")} clienti`;
     }
 
     if (!rows.length) {
-      customersBody.innerHTML = emptyRow(5, State.customers.search
+      customersBody.innerHTML = emptyRow(6, State.customers.search
         ? `Nessun cliente trovato per "${State.customers.search}".`
         : "Nessun cliente registrato.");
     } else {
@@ -616,6 +820,17 @@ async function loadCustomers() {
           </td>
           <td>${badgeActive(c.active)}</td>
           <td class="adm-td-date">${fmtDate(c.createdAt)}</td>
+          <td class="adm-td-actions">
+            ${renderActionCell(c.id,
+              `<button class="adm-btn adm-btn--secondary adm-btn--sm" data-edit-customer="${esc(c.id)}">
+                 Modifica
+               </button>`,
+              [
+                { label: c.active ? "Sospendi" : "Attiva", icon: c.active ? "fa-ban" : "fa-check", action: "toggle-active", danger: c.active },
+                ...(c.verified ? [] : [{ label: "Invia verifica", icon: "fa-envelope", action: "resend-verification" }]),
+              ]
+            )}
+          </td>
         </tr>`).join("");
     }
 
@@ -627,8 +842,50 @@ async function loadCustomers() {
       (p) => { State.customers.page = p; loadCustomers(); }
     );
 
+    // Wire "Modifica" buttons → open customer edit drawer
+    customersBody.querySelectorAll("[data-edit-customer]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        openEditCustomerDrawer(btn.dataset.editCustomer);
+      });
+    });
+
+    wireActionMenus(customersBody, async (action, rowId) => {
+      const c = _customersCache.get(rowId);
+      if (!c) return;
+
+      if (action === "toggle-active") {
+        const nextActive = !c.active;
+        showConfirm(
+          nextActive ? `Attivare il cliente "${c.full_name}"?` : `Sospendere il cliente "${c.full_name}"?`,
+          nextActive ? "Il cliente potrà nuovamente accedere al suo account." : "Il cliente non potrà accedere fino alla riattivazione.",
+          async () => {
+            try {
+              const res = await Api.patch(`/customers/${encodeURIComponent(rowId)}/active`, { active: nextActive });
+              if (res?.success) {
+                showToast(nextActive ? "Cliente attivato." : "Cliente sospeso.");
+                await Promise.all([loadCustomers(), loadStats()]);
+              } else {
+                showToast(res?.message || "Errore durante l'operazione.", "error");
+              }
+            } catch {
+              showToast("Errore di connessione.", "error");
+            }
+          }
+        );
+      }
+
+      if (action === "resend-verification") {
+        try {
+          const res = await Api.post(`/customers/${encodeURIComponent(rowId)}/resend-verification`, {});
+          showToast(res?.message || "Email di verifica inviata.", res?.success === false ? "error" : "success");
+        } catch {
+          showToast("Errore di connessione.", "error");
+        }
+      }
+    });
+
   } catch {
-    customersBody.innerHTML = emptyRow(5, "Errore nel caricamento clienti. Riprova.");
+    customersBody.innerHTML = emptyRow(6, "Errore nel caricamento clienti. Riprova.");
   }
 }
 
@@ -667,6 +924,8 @@ const partnersTable = $("#modulePartners .adm-table");
 const partnersBody  = $("#partnersTableBody");
 const partnersCount = $("#partnersCount");
 
+const _partnersCache = new Map();
+
 async function loadPartners() {
   if (!partnersBody) return;
   partnersBody.innerHTML = skeletonRows(7);
@@ -677,6 +936,9 @@ async function loadPartners() {
 
     const rows = data.data || [];
     const meta = data.pagination;
+
+    _partnersCache.clear();
+    rows.forEach((p) => _partnersCache.set(p.id, p));
 
     if (partnersCount && meta) {
       partnersCount.textContent = `${meta.totalItems.toLocaleString("it-IT")} partner`;
@@ -704,13 +966,10 @@ async function loadPartners() {
               <button class="adm-btn adm-btn--secondary adm-btn--sm" data-edit-partner="${esc(p.id)}">
                 Modifica
               </button>
-              ${p.active
-                ? `<button class="adm-btn adm-btn--danger adm-btn--sm" data-toggle-partner="${esc(p.id)}" data-active="false">
-                     Sospendi
-                   </button>`
-                : `<button class="adm-btn adm-btn--success adm-btn--sm" data-toggle-partner="${esc(p.id)}" data-active="true">
-                     Attiva
-                   </button>`}
+              ${renderActionCell(p.id, "", [
+                { label: p.active ? "Sospendi" : "Attiva", icon: p.active ? "fa-ban" : "fa-check", action: "toggle-active", danger: p.active },
+                { label: "Reimposta password", icon: "fa-key", action: "force-password-reset" },
+              ])}
             </div>
           </td>
         </tr>`).join("");
@@ -730,17 +989,34 @@ async function loadPartners() {
       });
     });
 
-    // Wire activate/suspend toggle buttons
-    partnersBody.querySelectorAll("[data-toggle-partner]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id     = btn.dataset.togglePartner;
-        const active = btn.dataset.active === "true";
+    wireActionMenus(partnersBody, async (action, rowId) => {
+      const p = _partnersCache.get(rowId);
+      if (!p) return;
+
+      if (action === "toggle-active") {
+        const nextActive = !p.active;
         showConfirm(
-          active ? `Attivare il partner "${id}"?` : `Sospendere il partner "${id}"?`,
-          active ? "Il partner potrà nuovamente accedere alla dashboard." : "Il partner non potrà accedere fino alla riattivazione.",
-          async () => togglePartnerActive(id, active)
+          nextActive ? `Attivare il partner "${p.name}"?` : `Sospendere il partner "${p.name}"?`,
+          nextActive ? "Il partner potrà nuovamente accedere alla dashboard." : "Il partner non potrà accedere fino alla riattivazione.",
+          async () => togglePartnerActive(rowId, nextActive)
         );
-      });
+      }
+
+      if (action === "force-password-reset") {
+        showConfirm(
+          `Forzare il reset password per "${p.name}"?`,
+          "Il partner dovrà impostare una nuova password al prossimo accesso.",
+          async () => {
+            try {
+              const res = await Api.post(`/partners/${encodeURIComponent(rowId)}/force-password-reset`, {});
+              showToast(res?.message || "Reset password forzato.", res?.success === false ? "error" : "success");
+              if (res?.success) await loadPartners();
+            } catch {
+              showToast("Errore di connessione.", "error");
+            }
+          }
+        );
+      }
     });
 
   } catch {
@@ -1235,6 +1511,12 @@ async function loadPartnerRequests() {
                          data-nav="partners"
                        >Partner →</button>`
                     : ""}
+                ${renderActionCell(r.id, "", [
+                  { label: "Contatta", icon: "fa-envelope", action: "contact" },
+                  ...(r.status !== "archived"
+                    ? [{ label: "Archivia", icon: "fa-box-archive", action: "archive", danger: true }]
+                    : []),
+                ])}
               </div>
             </td>
           </tr>`;
@@ -1275,6 +1557,35 @@ async function loadPartnerRequests() {
         const requestObj = _partnerRequestsCache.get(btn.dataset.proposalId);
         if (requestObj) openProposalModal(requestObj);
       });
+    });
+
+    wireActionMenus(partnerRequestsBody, async (action, rowId) => {
+      const r = _partnerRequestsCache.get(rowId);
+      if (!r) return;
+
+      if (action === "contact") {
+        window.location.href = `mailto:${r.email}`;
+      }
+
+      if (action === "archive") {
+        showConfirm(
+          `Archiviare la richiesta di "${r.businessName}"?`,
+          "La richiesta verrà nascosta dalla vista predefinita ma resterà consultabile dal database.",
+          async () => {
+            try {
+              const res = await Api.patch(`/partner-requests/${encodeURIComponent(rowId)}/archive`, {});
+              if (res?.success) {
+                showToast("Richiesta archiviata.");
+                await Promise.all([loadPartnerRequests(), loadStats()]);
+              } else {
+                showToast(res?.message || "Errore durante l'archiviazione.", "error");
+              }
+            } catch {
+              showToast("Errore di connessione.", "error");
+            }
+          }
+        );
+      }
     });
 
   } catch {
@@ -1416,6 +1727,261 @@ admRejectOk?.addEventListener("click", async () => {
 });
 
 
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 9D — CUSTOMER EDIT DRAWER
+   Same .adm-drawer-* CSS shell as the partner drawer.
+   Edit-only (no create mode — customers self-register).
+   Fields: full_name only; identifier shown read-only.
+═══════════════════════════════════════════════════════════ */
+
+const cfDrawerBackdrop = $("#admCustomerDrawerBackdrop");
+const cfClose          = $("#admCustomerDrawerClose");
+const cfCancelBtn      = $("#cfCancelBtn");
+const cfForm           = $("#customerForm");
+const cfSubmitBtn      = $("#cfSubmitBtn");
+const cfTitle          = $("#admCustomerDrawerTitle");
+const cfSub            = $("#admCustomerDrawerSub");
+const cfErrorEl        = $("#customerFormError");
+const cfSuccessEl      = $("#customerFormSuccess");
+const cfNameInput      = $("#cfName");
+const cfIdentifier     = $("#cfIdentifier");
+
+let _cfEditingId = null;
+
+function openCustomerDrawer() {
+  cfDrawerBackdrop?.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeCustomerDrawer() {
+  cfDrawerBackdrop?.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+cfClose?.addEventListener("click", closeCustomerDrawer);
+cfCancelBtn?.addEventListener("click", closeCustomerDrawer);
+cfDrawerBackdrop?.addEventListener("click", (e) => {
+  if (e.target === cfDrawerBackdrop) closeCustomerDrawer();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && cfDrawerBackdrop?.classList.contains("open")) {
+    closeCustomerDrawer();
+  }
+});
+
+/**
+ * Open the customer edit drawer for a given customer ID.
+ * Fetches the full record via GET /admin/customers/:id
+ * then pre-fills the form.
+ *
+ * @param {string} customerId
+ */
+async function openEditCustomerDrawer(customerId) {
+  _cfEditingId = customerId;
+
+  if (cfTitle) cfTitle.textContent = "Modifica cliente";
+  if (cfSub)   cfSub.textContent   = "";
+  showFeedback(cfErrorEl, cfSuccessEl, "none");
+  cfForm?.reset();
+
+  openCustomerDrawer();
+  setLoading(cfSubmitBtn, true);
+  if (cfSubmitBtn) cfSubmitBtn.disabled = true;
+
+  try {
+    const res = await Api.get(`/customers/${encodeURIComponent(customerId)}`);
+    const c   = res?.data;
+
+    if (!c) {
+      showFeedback(cfErrorEl, cfSuccessEl, "error", "Impossibile caricare il cliente.");
+      return;
+    }
+
+    if (cfNameInput)   cfNameInput.value   = c.full_name   || "";
+    if (cfIdentifier)  cfIdentifier.value  = c.identifier  || "";
+    if (cfSub)         cfSub.textContent   = c.identifier  || "";
+
+  } catch {
+    showFeedback(cfErrorEl, cfSuccessEl, "error", "Errore di connessione. Riprova.");
+  } finally {
+    setLoading(cfSubmitBtn, false);
+    if (cfSubmitBtn) cfSubmitBtn.disabled = false;
+    cfNameInput?.focus();
+  }
+}
+
+cfForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  showFeedback(cfErrorEl, cfSuccessEl, "none");
+
+  const full_name = cfNameInput?.value.trim();
+  if (!full_name) {
+    showFeedback(cfErrorEl, cfSuccessEl, "error", "Il nome è obbligatorio.");
+    cfNameInput?.focus();
+    return;
+  }
+
+  setLoading(cfSubmitBtn, true);
+
+  try {
+    const data = await Api.patch(
+      `/customers/${encodeURIComponent(_cfEditingId)}`,
+      { full_name }
+    );
+
+    if (data?.success) {
+      showFeedback(cfErrorEl, cfSuccessEl, "success", "Modifiche salvate con successo.");
+      await loadCustomers();
+      setTimeout(closeCustomerDrawer, 900);
+    } else {
+      showFeedback(cfErrorEl, cfSuccessEl, "error", data?.message || "Errore durante il salvataggio.");
+    }
+  } catch {
+    showFeedback(cfErrorEl, cfSuccessEl, "error", "Errore di connessione. Riprova.");
+  } finally {
+    setLoading(cfSubmitBtn, false);
+  }
+});
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 9E — OFFER EDIT DRAWER
+   Edit-only (create has its own existing modal).
+   Fields: title, description, active toggle.
+   Partner shown read-only.
+═══════════════════════════════════════════════════════════ */
+
+const ofDrawerBackdrop = $("#admOfferDrawerBackdrop");
+const ofClose          = $("#admOfferDrawerClose");
+const ofCancelBtn      = $("#ofCancelBtn");
+const ofForm           = $("#offerForm");
+const ofSubmitBtn      = $("#ofSubmitBtn");
+const ofTitle          = $("#admOfferDrawerTitle");
+const ofSub            = $("#admOfferDrawerSub");
+const ofErrorEl        = $("#offerFormError");
+const ofSuccessEl      = $("#offerFormSuccess");
+const ofTitleInput     = $("#ofTitle");
+const ofDescInput      = $("#ofDescription");
+const ofPartnerInput   = $("#ofPartner");
+const ofStatusToggle   = $("#ofStatusToggle");
+const ofStatusLabel    = $("#ofStatusLabel");
+
+let _ofEditingId  = null;
+let _ofActiveState = true;
+
+function setOfferToggle(active) {
+  _ofActiveState = active;
+  ofStatusToggle?.setAttribute("aria-checked", String(active));
+  ofStatusToggle?.classList.toggle("on", active);
+  if (ofStatusLabel) ofStatusLabel.textContent = active ? "Attiva" : "Disattivata";
+}
+
+ofStatusToggle?.addEventListener("click", () => setOfferToggle(!_ofActiveState));
+
+function openOfferDrawer() {
+  ofDrawerBackdrop?.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeOfferDrawer() {
+  ofDrawerBackdrop?.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+ofClose?.addEventListener("click", closeOfferDrawer);
+ofCancelBtn?.addEventListener("click", closeOfferDrawer);
+ofDrawerBackdrop?.addEventListener("click", (e) => {
+  if (e.target === ofDrawerBackdrop) closeOfferDrawer();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && ofDrawerBackdrop?.classList.contains("open")) {
+    closeOfferDrawer();
+  }
+});
+
+/**
+ * Open the offer edit drawer for a given offer ID.
+ * Fetches the full record via GET /admin/offers/:id
+ * then pre-fills the form.
+ *
+ * @param {string} offerId
+ */
+async function openEditOfferDrawer(offerId) {
+  _ofEditingId = offerId;
+
+  if (ofTitle) ofTitle.textContent = "Modifica offerta";
+  if (ofSub)   ofSub.textContent   = "";
+  showFeedback(ofErrorEl, ofSuccessEl, "none");
+  ofForm?.reset();
+  setOfferToggle(true);
+
+  openOfferDrawer();
+  setLoading(ofSubmitBtn, true);
+  if (ofSubmitBtn) ofSubmitBtn.disabled = true;
+
+  try {
+    const res = await Api.get(`/offers/${encodeURIComponent(offerId)}`);
+    const o   = res?.data;
+
+    if (!o) {
+      showFeedback(ofErrorEl, ofSuccessEl, "error", "Impossibile caricare l'offerta.");
+      return;
+    }
+
+    if (ofTitleInput)  ofTitleInput.value  = o.title       || "";
+    if (ofDescInput)   ofDescInput.value   = o.description || "";
+    if (ofPartnerInput) ofPartnerInput.value = o.partnerId  || "";
+    if (ofSub)         ofSub.textContent   = o.title       || "";
+    setOfferToggle(Boolean(o.active));
+
+  } catch {
+    showFeedback(ofErrorEl, ofSuccessEl, "error", "Errore di connessione. Riprova.");
+  } finally {
+    setLoading(ofSubmitBtn, false);
+    if (ofSubmitBtn) ofSubmitBtn.disabled = false;
+    ofTitleInput?.focus();
+  }
+}
+
+ofForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  showFeedback(ofErrorEl, ofSuccessEl, "none");
+
+  const title = ofTitleInput?.value.trim();
+  if (!title) {
+    showFeedback(ofErrorEl, ofSuccessEl, "error", "Il titolo è obbligatorio.");
+    ofTitleInput?.focus();
+    return;
+  }
+
+  setLoading(ofSubmitBtn, true);
+
+  try {
+    const data = await Api.patch(
+      `/offers/${encodeURIComponent(_ofEditingId)}`,
+      {
+        title,
+        description: ofDescInput?.value.trim() || "",
+        active:      _ofActiveState,
+      }
+    );
+
+    if (data?.success) {
+      showFeedback(ofErrorEl, ofSuccessEl, "success", "Offerta aggiornata con successo.");
+      await Promise.all([loadOffers(), loadStats()]);
+      setTimeout(closeOfferDrawer, 900);
+    } else {
+      showFeedback(ofErrorEl, ofSuccessEl, "error", data?.message || "Errore durante il salvataggio.");
+    }
+  } catch {
+    showFeedback(ofErrorEl, ofSuccessEl, "error", "Errore di connessione. Riprova.");
+  } finally {
+    setLoading(ofSubmitBtn, false);
+  }
+});
+
+
 /* ═══════════════════════════════════════════════════════════
    SECTION 10 — OFFERS MODULE
 ═══════════════════════════════════════════════════════════ */
@@ -1423,10 +1989,11 @@ admRejectOk?.addEventListener("click", async () => {
 const offersTable = $("#moduleOffers .adm-table");
 const offersBody  = $("#offersTableBody");
 const offersCount = $("#offersCount");
+const _offersCache = new Map();
 
 async function loadOffers() {
   if (!offersBody) return;
-  offersBody.innerHTML = skeletonRows(5);
+  offersBody.innerHTML = skeletonRows(6);
 
   try {
     const data = await Api.getPaginated("/offers", State.offers);
@@ -1435,12 +2002,15 @@ async function loadOffers() {
     const rows = data.data || [];
     const meta = data.pagination;
 
+    _offersCache.clear();
+    rows.forEach((o) => _offersCache.set(o.id, o));
+
     if (offersCount && meta) {
       offersCount.textContent = `${meta.totalItems.toLocaleString("it-IT")} offerte`;
     }
 
     if (!rows.length) {
-      offersBody.innerHTML = emptyRow(5, State.offers.search
+      offersBody.innerHTML = emptyRow(6, State.offers.search
         ? `Nessuna offerta trovata per "${State.offers.search}".`
         : "Nessuna offerta creata.");
     } else {
@@ -1455,6 +2025,12 @@ async function loadOffers() {
           </td>
           <td>${badgeActive(o.active)}</td>
           <td class="adm-td-date">${fmtDate(o.createdAt)}</td>
+          <td class="adm-td-actions">
+            <button
+              class="adm-btn adm-btn--secondary adm-btn--sm"
+              data-edit-offer="${esc(o.id)}"
+            >Modifica</button>
+          </td>
         </tr>`).join("");
     }
 
@@ -1465,8 +2041,15 @@ async function loadOffers() {
       (p) => { State.offers.page = p; loadOffers(); }
     );
 
+    // Wire "Modifica" buttons → open offer edit drawer
+    offersBody.querySelectorAll("[data-edit-offer]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        openEditOfferDrawer(btn.dataset.editOffer);
+      });
+    });
+
   } catch {
-    offersBody.innerHTML = emptyRow(5, "Errore nel caricamento offerte. Riprova.");
+    offersBody.innerHTML = emptyRow(6, "Errore nel caricamento offerte. Riprova.");
   }
 }
 
@@ -1645,7 +2228,7 @@ const newsletterCount = $("#newsletterCount");
 
 async function loadNewsletter() {
   if (!newsletterBody) return;
-  newsletterBody.innerHTML = skeletonRows(4);
+  newsletterBody.innerHTML = skeletonRows(5);
 
   try {
     const data = await Api.getPaginated("/newsletters", State.newsletter);
@@ -1659,7 +2242,7 @@ async function loadNewsletter() {
     }
 
     if (!rows.length) {
-      newsletterBody.innerHTML = emptyRow(4, State.newsletter.search
+      newsletterBody.innerHTML = emptyRow(5, State.newsletter.search
         ? `Nessun iscritto trovato per "${State.newsletter.search}".`
         : "Nessun iscritto registrato.");
     } else {
@@ -1677,6 +2260,12 @@ async function loadNewsletter() {
               : `<span class="adm-badge adm-badge--inactive">Discritto</span>`}
           </td>
           <td class="adm-td-date">${fmtDate(n.createdAt)}</td>
+          <td class="adm-td-actions">
+            ${renderActionCell(n.email, "", [
+              ...(n.verified ? [] : [{ label: "Invia verifica", icon: "fa-envelope", action: "resend-verification" }]),
+              ...(n.subscribed ? [{ label: "Elimina iscrizione", icon: "fa-trash", action: "delete", danger: true }] : []),
+            ])}
+          </td>
         </tr>`).join("");
     }
 
@@ -1687,8 +2276,39 @@ async function loadNewsletter() {
       (p) => { State.newsletter.page = p; loadNewsletter(); }
     );
 
+    wireActionMenus(newsletterBody, async (action, email) => {
+      if (action === "resend-verification") {
+        try {
+          const res = await Api.post(`/newsletters/${encodeURIComponent(email)}/resend-verification`, {});
+          showToast(res?.message || "Email di verifica inviata.", res?.success === false ? "error" : "success");
+        } catch {
+          showToast("Errore di connessione.", "error");
+        }
+      }
+
+      if (action === "delete") {
+        showConfirm(
+          `Eliminare l'iscrizione di "${email}"?`,
+          "L'iscritto verrà contrassegnato come disiscritto. I dati restano nel database e potranno essere rimossi definitivamente in un secondo momento per conformità GDPR.",
+          async () => {
+            try {
+              const res = await Api.delete(`/newsletters/${encodeURIComponent(email)}`);
+              if (res?.success) {
+                showToast("Iscrizione rimossa.");
+                await Promise.all([loadNewsletter(), loadStats()]);
+              } else {
+                showToast(res?.message || "Errore durante la rimozione.", "error");
+              }
+            } catch {
+              showToast("Errore di connessione.", "error");
+            }
+          }
+        );
+      }
+    });
+
   } catch {
-    newsletterBody.innerHTML = emptyRow(4, "Errore nel caricamento newsletter. Riprova.");
+    newsletterBody.innerHTML = emptyRow(5, "Errore nel caricamento newsletter. Riprova.");
   }
 }
 
@@ -1792,14 +2412,28 @@ async function loadContacts() {
             ${c.verified
               ? `<span class="adm-badge adm-badge--active">Verificato</span>`
               : `<span class="adm-badge adm-badge--pending">In attesa</span>`}
+            ${c.status === "contacted"
+              ? `<div style="margin-top:3px;"><span class="adm-badge adm-badge--navy" style="font-size:0.6rem;">Contattato</span></div>`
+              : c.status === "archived"
+                ? `<div style="margin-top:3px;"><span class="adm-badge adm-badge--neutral" style="font-size:0.6rem;">Archiviato</span></div>`
+                : ""}
           </td>
           <td class="adm-td-date">${fmtDate(c.createdAt)}</td>
           <td class="adm-td-actions">
-            ${c.requestId
-              ? `<button class="adm-btn adm-btn--secondary adm-btn--sm" data-contact-detail="${esc(c.id)}">
-                   Dettagli
-                 </button>`
-              : "—"}
+            <div class="adm-row-actions">
+              ${c.requestId
+                ? `<button class="adm-btn adm-btn--secondary adm-btn--sm" data-contact-detail="${esc(c.id)}">
+                     Dettagli
+                   </button>`
+                : ""}
+              ${c.requestId
+                ? renderActionCell(c.id, "", [
+                    ...(c.status === "new" ? [{ label: "Segna come contattato", icon: "fa-check", action: "mark-contacted" }] : []),
+                    ...(c.verified ? [] : [{ label: "Invia verifica", icon: "fa-envelope", action: "resend-verification" }]),
+                    ...(c.status !== "archived" ? [{ label: "Archivia", icon: "fa-box-archive", action: "archive", danger: true }] : []),
+                  ])
+                : ""}
+            </div>
           </td>
         </tr>`).join("");
     }
@@ -1817,6 +2451,54 @@ async function loadContacts() {
         const c = _contactsCache.get(btn.dataset.contactDetail);
         if (c) openContactDetailModal(c);
       });
+    });
+
+    wireActionMenus(contactsBody, async (action, rowId) => {
+      const c = _contactsCache.get(rowId);
+      if (!c) return;
+
+      if (action === "mark-contacted") {
+        try {
+          const res = await Api.patch(`/contacts/${encodeURIComponent(c.requestId)}/mark-contacted`, {});
+          if (res?.success) {
+            showToast("Contatto segnato come contattato.");
+            await loadContacts();
+          } else {
+            showToast(res?.message || "Errore durante l'operazione.", "error");
+          }
+        } catch {
+          showToast("Errore di connessione.", "error");
+        }
+      }
+
+      if (action === "resend-verification") {
+        try {
+          const res = await Api.post(`/contacts/${encodeURIComponent(c.id)}/resend-verification`, {});
+          showToast(res?.message || "Email di verifica inviata.", res?.success === false ? "error" : "success");
+        } catch {
+          showToast("Errore di connessione.", "error");
+        }
+      }
+
+      if (action === "archive") {
+        showConfirm(
+          `Archiviare la richiesta di "${c.firstName || c.email}"?`,
+          "La richiesta verrà nascosta dalla vista predefinita ma resterà consultabile dal database.",
+          async () => {
+            try {
+              const res = await Api.patch(`/contacts/${encodeURIComponent(c.requestId)}/archive`, {});
+              if (res?.success) {
+                showToast("Richiesta archiviata.");
+                await loadContacts();
+              } else {
+                showToast(res?.message || "Errore durante l'archiviazione.", "error");
+              }
+            } catch {
+              showToast("Errore di connessione.", "error");
+            }
+          }
+        );
+      }
     });
 
   } catch {
@@ -1961,12 +2643,21 @@ async function loadSimulator() {
                 ? `<span class="adm-badge adm-badge--active">Verificato</span>`
                 : `<span class="adm-badge adm-badge--pending">In attesa</span>`
               : `<span class="adm-badge adm-badge--neutral">Anonimo</span>`}
+            ${s.status === "contacted"
+              ? `<div style="margin-top:3px;"><span class="adm-badge adm-badge--navy" style="font-size:0.6rem;">Contattato</span></div>`
+              : ""}
           </td>
           <td class="adm-td-date">${fmtDate(s.createdAt)}</td>
           <td class="adm-td-actions">
-            <button class="adm-btn adm-btn--secondary adm-btn--sm" data-simulator-detail="${esc(s.id)}">
-              Dettagli
-            </button>
+            <div class="adm-row-actions">
+              <button class="adm-btn adm-btn--secondary adm-btn--sm" data-simulator-detail="${esc(s.id)}">
+                Dettagli
+              </button>
+              ${renderActionCell(s.id, "", [
+                ...(s.status === "new" ? [{ label: "Segna come contattato", icon: "fa-check", action: "mark-contacted" }] : []),
+                { label: "Archivia", icon: "fa-box-archive", action: "archive", danger: true },
+              ])}
+            </div>
           </td>
         </tr>`).join("");
     }
@@ -1984,6 +2675,45 @@ async function loadSimulator() {
         const s = _simulatorCache.get(btn.dataset.simulatorDetail);
         if (s) openSimulatorDetailModal(s);
       });
+    });
+
+    wireActionMenus(simulatorBody, async (action, rowId) => {
+      const s = _simulatorCache.get(rowId);
+      if (!s) return;
+
+      if (action === "mark-contacted") {
+        try {
+          const res = await Api.patch(`/simulator/${encodeURIComponent(rowId)}/mark-contacted`, {});
+          if (res?.success) {
+            showToast("Lead segnato come contattato.");
+            await loadSimulator();
+          } else {
+            showToast(res?.message || "Errore durante l'operazione.", "error");
+          }
+        } catch {
+          showToast("Errore di connessione.", "error");
+        }
+      }
+
+      if (action === "archive") {
+        showConfirm(
+          "Archiviare questa simulazione?",
+          "La simulazione verrà nascosta dalla vista predefinita ma resterà consultabile dal database.",
+          async () => {
+            try {
+              const res = await Api.patch(`/simulator/${encodeURIComponent(rowId)}/archive`, {});
+              if (res?.success) {
+                showToast("Simulazione archiviata.");
+                await Promise.all([loadSimulator(), loadStats()]);
+              } else {
+                showToast(res?.message || "Errore durante l'archiviazione.", "error");
+              }
+            } catch {
+              showToast("Errore di connessione.", "error");
+            }
+          }
+        );
+      }
     });
 
   } catch {

@@ -55,6 +55,7 @@ const KNOWN_FILTER_KEYS = new Set([
   "subscribed",      // newsletters
   "energySource",    // simulator
   "source",          // contacts
+  "archived",        // simulator soft-delete
 ]);
 
 /* ─────────────────────────────────────────────

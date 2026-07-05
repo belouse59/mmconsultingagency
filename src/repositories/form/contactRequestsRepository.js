@@ -3,7 +3,6 @@
 const crypto = require("crypto");
 const { query } = require("../../db");
 
-
 /* ─────────────────────────────────────────────
    MAPPER
 ───────────────────────────────────────────── */
@@ -20,6 +19,9 @@ function mapContactRequest(row) {
     preferredContactTime:  row.preferred_contact_time,
     message:               row.message,
     consent:               row.consent,
+    status:                row.status      || "new",
+    contactedAt:           row.contacted_at || null,
+    contactedBy:           row.contacted_by || null,
     createdAt:             row.created_at,
   };
 }
@@ -29,7 +31,6 @@ function mapContactRequest(row) {
 ───────────────────────────────────────────── */
 
 async function createContactRequest({
-  id,
   contactId,
   energyType,
   source,
@@ -38,6 +39,8 @@ async function createContactRequest({
   message,
   consent,
 }) {
+  const id =
+    `request-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
 
   const result = await query(
     `
@@ -49,10 +52,11 @@ async function createContactRequest({
       category,
       preferred_contact_time,
       message,
-      consent
+      consent,
+      status
     )
     VALUES (
-      $1, $2, $3, $4, $5, $6, $7, $8
+      $1, $2, $3, $4, $5, $6, $7, $8, 'new'
     )
     RETURNING *
     `,
@@ -160,6 +164,46 @@ async function getContactRequests() {
 }
 
 /* ─────────────────────────────────────────────
+   MARK CONTACTED  ← NEW
+───────────────────────────────────────────── */
+
+async function markContacted(id, adminEmail) {
+  const result = await query(
+    `
+    UPDATE contact_requests
+    SET
+      status       = 'contacted',
+      contacted_at = NOW(),
+      contacted_by = $2
+    WHERE id = $1
+    RETURNING *
+    `,
+    [id, adminEmail || null]
+  );
+
+  return mapContactRequest(result.rows[0]);
+}
+
+/* ─────────────────────────────────────────────
+   ARCHIVE  ← NEW
+───────────────────────────────────────────── */
+
+async function archiveContactRequest(id) {
+  const result = await query(
+    `
+    UPDATE contact_requests
+    SET status = 'archived'
+    WHERE id = $1
+    RETURNING *
+    `,
+    [id]
+  );
+
+  return mapContactRequest(result.rows[0]);
+}
+
+
+/* ─────────────────────────────────────────────
    EXPORTS
 ───────────────────────────────────────────── */
 
@@ -167,6 +211,8 @@ module.exports = {
   createContactRequest,
   findById,
   findByContactId,
-  findLatestByContactId,   // ← new
+  findLatestByContactId,
   getContactRequests,
+  markContacted,           // ← new
+  archiveContactRequest,   // ← new
 };

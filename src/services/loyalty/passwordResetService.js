@@ -82,7 +82,7 @@ async function forgotPassword({
   } else {
     user =
     await partnerRepo
-    .findPartnerByIdentifier(
+    .findPartnerByEmail(
       identifier
     );
   }
