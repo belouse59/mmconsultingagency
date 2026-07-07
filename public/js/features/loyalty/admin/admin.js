@@ -153,12 +153,33 @@ function showToast(message, type = "success") {
  *   action becomes a data-action value the caller listens for
  *   via delegated click handling — see wireActionMenus().
  */
+
+/* ── Root-cause fix: store menu item HTML in a Map, not in the DOM ──
+   Previous version rendered a hidden <div class="adm-action-menu"
+   data-menu="rowId" style="display:none"> sibling INSIDE each <td>.
+   Even with display:none, position:absolute elements still create
+   paint boxes in the browser's stacking layer and intercept pointer
+   events on elements beneath them. With the default page size of 20
+   rows, the hidden menu divs from rows 1-N stacked up and covered the
+   ⋮ buttons of rows N+1 onward — clicks registered on the invisible
+   div, not the button. This is why rows 1-5 worked and everything
+   after silently failed: the accumulated stack of hidden absolute-
+   position divs grew tall enough to cover the later rows' buttons.
+
+   Fix: _menuItemStore is a JS Map<rowId, itemsHtml>. renderActionCell()
+   writes the HTML string into the Map instead of the DOM. wireActionMenus()
+   reads it back when the ⋮ button is clicked and injects it into the
+   fixed-position portal just-in-time. Zero hidden DOM nodes, zero
+   position:absolute pollution, zero pointer-event interception.      */
+const _menuItemStore = new Map();
+
 function renderActionCell(rowId, primaryBtn, menuItems) {
   if (!menuItems.length) {
     return `<div class="adm-row-actions">${primaryBtn}</div>`;
   }
 
-  const items = menuItems.map((item) => `
+  /* Build item markup and store it — NOT injected into the DOM. */
+  const itemsHtml = menuItems.map((item) => `
     <button
       class="adm-action-menu-item${item.danger ? " adm-action-menu-item--danger" : ""}"
       data-action="${esc(item.action)}"
@@ -168,24 +189,28 @@ function renderActionCell(rowId, primaryBtn, menuItems) {
       ${esc(item.label)}
     </button>`).join("");
 
+  _menuItemStore.set(rowId, itemsHtml);
+
+  /* Only the ⋮ toggle button goes into the DOM — no hidden menu div. */
   return `
     <div class="adm-row-actions">
       ${primaryBtn}
-      <button class="adm-action-menu-btn" data-menu-toggle="${esc(rowId)}" aria-label="Altre azioni" aria-haspopup="true">
+      <button
+        class="adm-action-menu-btn"
+        data-menu-toggle="${esc(rowId)}"
+        aria-label="Altre azioni"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
         <i class="fa fa-ellipsis-vertical" aria-hidden="true"></i>
       </button>
-    </div>
-    <div class="adm-action-menu" data-menu="${esc(rowId)}" role="menu" style="display:none;">
-      ${items}
     </div>`;
 }
 
 /* ── Shared action menu portal ─────────────────────────────────
-   One floating menu element sits at the bottom of <body> and
-   is repositioned on every open. This means the menu is never
-   clipped by a scrollable table container, an overflow:hidden
-   ancestor, or a row at the bottom of the viewport — it always
-   renders above or below the button in the visible viewport.
+   One fixed-position element appended once to <body>.
+   Repositioned via getBoundingClientRect() on every open so it
+   is never clipped by overflow:hidden table containers.
 ─────────────────────────────────────────────────────────────── */
 
 const _menuPortal = (() => {
@@ -198,42 +223,43 @@ const _menuPortal = (() => {
   return el;
 })();
 
-let _menuPortalRowId   = null;
+let _menuPortalRowId    = null;
 let _menuPortalOnAction = null;
 
-function _openMenuPortal(toggleBtn, rowId, menuMarkup, onAction) {
-  _menuPortal.innerHTML     = menuMarkup;
+function _openMenuPortal(toggleBtn, rowId, itemsHtml, onAction) {
+  _menuPortal.innerHTML     = itemsHtml;
   _menuPortalRowId          = rowId;
   _menuPortalOnAction       = onAction;
   _menuPortal.style.display = "block";
 
-  // Wire item clicks
+  /* Wire item clicks on the portal. stopPropagation prevents the
+     document-level click handler from closing the menu on the same
+     event tick as the item click. */
   _menuPortal.querySelectorAll("[data-action]").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
       _closeMenuPortal();
-      if (_menuPortalOnAction) _menuPortalOnAction(btn.dataset.action, btn.dataset.rowId);
+      if (_menuPortalOnAction) {
+        _menuPortalOnAction(btn.dataset.action, btn.dataset.rowId);
+      }
     });
   });
 
-  // Position — prefer below the toggle button; flip upward if too close to bottom
-  const rect      = toggleBtn.getBoundingClientRect();
-  const menuH     = 220; // conservative estimate before paint
+  /* Position: prefer below the button; flip upward near the bottom. */
+  const rect       = toggleBtn.getBoundingClientRect();
   const spaceBelow = window.innerHeight - rect.bottom;
   const spaceAbove = rect.top;
+  const menuH      = 220;
 
-  _menuPortal.style.right = "";
   _menuPortal.style.left  = "";
-
-  const rightEdge = window.innerWidth - rect.right;
-  _menuPortal.style.right = `${rightEdge}px`;
+  _menuPortal.style.right = `${window.innerWidth - rect.right}px`;
 
   if (spaceBelow >= menuH || spaceBelow >= spaceAbove) {
     _menuPortal.style.top    = `${rect.bottom + 4}px`;
     _menuPortal.style.bottom = "";
   } else {
-    _menuPortal.style.bottom = `${window.innerHeight - rect.top + 4}px`;
     _menuPortal.style.top    = "";
+    _menuPortal.style.bottom = `${window.innerHeight - rect.top + 4}px`;
   }
 
   toggleBtn.classList.add("open");
@@ -245,33 +271,40 @@ function _closeMenuPortal() {
   _menuPortal.innerHTML     = "";
   _menuPortalRowId          = null;
 
-  // Remove open state from any toggle button
   document.querySelectorAll(".adm-action-menu-btn.open").forEach((b) => {
     b.classList.remove("open");
     b.setAttribute("aria-expanded", "false");
   });
 }
 
-// Close on outside click
+/* Close on outside click — the guard prevents closing the menu
+   immediately on the same tick the ⋮ button opened it. */
 document.addEventListener("click", (e) => {
-  if (!_menuPortal.contains(e.target) && !e.target.closest("[data-menu-toggle]")) {
+  if (
+    !_menuPortal.contains(e.target) &&
+    !e.target.closest("[data-menu-toggle]")
+  ) {
     _closeMenuPortal();
   }
 });
 
-// Close on Escape
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") _closeMenuPortal();
 });
 
-// Close on scroll (table or window — keeps menu anchored correctly)
+/* Close on scroll — stale position after the user scrolls. */
 window.addEventListener("scroll", _closeMenuPortal, { passive: true });
-document.querySelector(".adm-content")?.addEventListener("scroll", _closeMenuPortal, { passive: true });
+document.querySelector(".adm-content")
+  ?.addEventListener("scroll", _closeMenuPortal, { passive: true });
 
 /**
- * Delegated click handling for every action menu rendered by
- * renderActionCell() inside `container`. Call once per table
- * body after innerHTML is set.
+ * Wire ⋮ toggle buttons rendered by renderActionCell() inside
+ * `container`. Call once per table body after innerHTML is set.
+ *
+ * On each table refresh the tbody is replaced entirely, so the
+ * old buttons are discarded. Re-calling wireActionMenus() on the
+ * fresh tbody attaches exactly one listener per button — correct
+ * by construction, no duplicate listeners possible.
  *
  * @param {Element} container  — the tbody holding the rows
  * @param {(action: string, rowId: string) => void} onAction
@@ -283,19 +316,20 @@ function wireActionMenus(container, onAction) {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
 
-      const rowId = btn.dataset.menuToggle;
+      const rowId    = btn.dataset.menuToggle;
+      const itemsHtml = _menuItemStore.get(rowId);
 
-      // Toggle: clicking same button again closes
+      /* Guard: no item HTML registered for this rowId (shouldn't
+         happen in normal operation, but defensive is correct here). */
+      if (!itemsHtml) return;
+
+      /* Toggle: clicking the same ⋮ button again closes the menu. */
       if (_menuPortalRowId === rowId && _menuPortal.style.display !== "none") {
         _closeMenuPortal();
         return;
       }
 
-      // Find the matching hidden menu markup in the DOM
-      const menuEl = container.querySelector(`[data-menu="${rowId}"]`);
-      if (!menuEl) return;
-
-      _openMenuPortal(btn, rowId, menuEl.innerHTML, onAction);
+      _openMenuPortal(btn, rowId, itemsHtml, onAction);
     });
   });
 }
@@ -1727,26 +1761,36 @@ admRejectOk?.addEventListener("click", async () => {
 });
 
 
+  }
+});
+
 
 /* ═══════════════════════════════════════════════════════════
-   SECTION 9D — CUSTOMER EDIT DRAWER
+   SECTION 9D — CUSTOMER DRAWER (CREATE + EDIT)
    Same .adm-drawer-* CSS shell as the partner drawer.
-   Edit-only (no create mode — customers self-register).
-   Fields: full_name only; identifier shown read-only.
+   Supports two modes via _cfMode:
+     "create" — form empty, identifier editable, password required
+     "edit"   — pre-filled from GET /admin/customers/:id,
+                identifier read-only, password hidden
 ═══════════════════════════════════════════════════════════ */
 
-const cfDrawerBackdrop = $("#admCustomerDrawerBackdrop");
-const cfClose          = $("#admCustomerDrawerClose");
-const cfCancelBtn      = $("#cfCancelBtn");
-const cfForm           = $("#customerForm");
-const cfSubmitBtn      = $("#cfSubmitBtn");
-const cfTitle          = $("#admCustomerDrawerTitle");
-const cfSub            = $("#admCustomerDrawerSub");
-const cfErrorEl        = $("#customerFormError");
-const cfSuccessEl      = $("#customerFormSuccess");
-const cfNameInput      = $("#cfName");
-const cfIdentifier     = $("#cfIdentifier");
+const cfDrawerBackdrop  = $("#admCustomerDrawerBackdrop");
+const cfClose           = $("#admCustomerDrawerClose");
+const cfCancelBtn       = $("#cfCancelBtn");
+const cfForm            = $("#customerForm");
+const cfSubmitBtn       = $("#cfSubmitBtn");
+const cfSubmitLabel     = $("#cfSubmitLabel");
+const cfTitle           = $("#admCustomerDrawerTitle");
+const cfSub             = $("#admCustomerDrawerSub");
+const cfErrorEl         = $("#customerFormError");
+const cfSuccessEl       = $("#customerFormSuccess");
+const cfNameInput       = $("#cfName");
+const cfIdentifier      = $("#cfIdentifier");
+const cfIdentifierHint  = $("#cfIdentifierHint");
+const cfPasswordField   = $("#cfPasswordField");
+const cfPasswordInput   = $("#cfPassword");
 
+let _cfMode      = "edit";  // "create" | "edit"
 let _cfEditingId = null;
 
 function openCustomerDrawer() {
@@ -1770,20 +1814,62 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+/** Wire "Nuovo Cliente" button */
+$("#admNewCustomerBtn")?.addEventListener("click", openCreateCustomerDrawer);
+
 /**
- * Open the customer edit drawer for a given customer ID.
- * Fetches the full record via GET /admin/customers/:id
- * then pre-fills the form.
+ * Open the drawer in CREATE mode.
+ * Identifier editable + required; password field visible.
+ */
+function openCreateCustomerDrawer() {
+  _cfMode      = "create";
+  _cfEditingId = null;
+  cfForm?.reset();
+  showFeedback(cfErrorEl, cfSuccessEl, "none");
+
+  if (cfTitle)       cfTitle.textContent       = "Nuovo cliente";
+  if (cfSub)         cfSub.textContent         = "Crea un nuovo cliente per l'Energy Club";
+  if (cfSubmitLabel) cfSubmitLabel.textContent = "Crea cliente";
+
+  // Show password field + editable identifier
+  if (cfPasswordField) cfPasswordField.style.display = "";
+  if (cfIdentifier) {
+    cfIdentifier.disabled = false;
+    cfIdentifier.style.opacity = "";
+    cfIdentifier.style.cursor  = "";
+    cfIdentifier.value = "";
+  }
+  if (cfIdentifierHint) cfIdentifierHint.style.display = "none";
+
+  openCustomerDrawer();
+  cfNameInput?.focus();
+}
+
+/**
+ * Open the drawer in EDIT mode for an existing customer.
+ * Fetches the full record via GET /admin/customers/:id.
+ * Identifier shown read-only; password field hidden.
  *
  * @param {string} customerId
  */
 async function openEditCustomerDrawer(customerId) {
+  _cfMode      = "edit";
   _cfEditingId = customerId;
-
-  if (cfTitle) cfTitle.textContent = "Modifica cliente";
-  if (cfSub)   cfSub.textContent   = "";
-  showFeedback(cfErrorEl, cfSuccessEl, "none");
   cfForm?.reset();
+  showFeedback(cfErrorEl, cfSuccessEl, "none");
+
+  if (cfTitle)       cfTitle.textContent       = "Modifica cliente";
+  if (cfSub)         cfSub.textContent         = "";
+  if (cfSubmitLabel) cfSubmitLabel.textContent = "Salva modifiche";
+
+  // Hide password field + lock identifier
+  if (cfPasswordField) cfPasswordField.style.display = "none";
+  if (cfIdentifier) {
+    cfIdentifier.disabled      = true;
+    cfIdentifier.style.opacity = "0.6";
+    cfIdentifier.style.cursor  = "not-allowed";
+  }
+  if (cfIdentifierHint) cfIdentifierHint.style.display = "";
 
   openCustomerDrawer();
   setLoading(cfSubmitBtn, true);
@@ -1798,9 +1884,9 @@ async function openEditCustomerDrawer(customerId) {
       return;
     }
 
-    if (cfNameInput)   cfNameInput.value   = c.full_name   || "";
-    if (cfIdentifier)  cfIdentifier.value  = c.identifier  || "";
-    if (cfSub)         cfSub.textContent   = c.identifier  || "";
+    if (cfNameInput)   cfNameInput.value  = c.full_name  || "";
+    if (cfIdentifier)  cfIdentifier.value = c.identifier || "";
+    if (cfSub)         cfSub.textContent  = c.identifier || "";
 
   } catch {
     showFeedback(cfErrorEl, cfSuccessEl, "error", "Errore di connessione. Riprova.");
@@ -1825,14 +1911,38 @@ cfForm?.addEventListener("submit", async (e) => {
   setLoading(cfSubmitBtn, true);
 
   try {
-    const data = await Api.patch(
-      `/customers/${encodeURIComponent(_cfEditingId)}`,
-      { full_name }
-    );
+    let data;
+
+    if (_cfMode === "create") {
+      const identifier = cfIdentifier?.value.trim();
+      const password   = cfPasswordInput?.value;
+
+      if (!identifier) {
+        showFeedback(cfErrorEl, cfSuccessEl, "error", "Email o numero di telefono obbligatorio.");
+        cfIdentifier?.focus();
+        return;
+      }
+      if (!password || password.length < 8) {
+        showFeedback(cfErrorEl, cfSuccessEl, "error", "La password deve avere almeno 8 caratteri.");
+        cfPasswordInput?.focus();
+        return;
+      }
+
+      data = await Api.post("/customers", { full_name, identifier, password });
+
+    } else {
+      data = await Api.patch(
+        `/customers/${encodeURIComponent(_cfEditingId)}`,
+        { full_name }
+      );
+    }
 
     if (data?.success) {
-      showFeedback(cfErrorEl, cfSuccessEl, "success", "Modifiche salvate con successo.");
-      await loadCustomers();
+      const msg = _cfMode === "create"
+        ? `Cliente "${esc(full_name)}" creato con successo.`
+        : "Modifiche salvate con successo.";
+      showFeedback(cfErrorEl, cfSuccessEl, "success", msg);
+      await Promise.all([loadCustomers(), loadStats()]);
       setTimeout(closeCustomerDrawer, 900);
     } else {
       showFeedback(cfErrorEl, cfSuccessEl, "error", data?.message || "Errore durante il salvataggio.");
@@ -1848,8 +1958,11 @@ cfForm?.addEventListener("submit", async (e) => {
 /* ═══════════════════════════════════════════════════════════
    SECTION 9E — OFFER EDIT DRAWER
    Edit-only (create has its own existing modal).
-   Fields: title, description, active toggle.
+   Fields: title, description, status segmented control.
    Partner shown read-only.
+   Status uses a segmented control (Attiva / Sospesa) —
+   more explicit than a toggle, scales if a third status
+   (e.g. Archiviata) is added later without UI restructuring.
 ═══════════════════════════════════════════════════════════ */
 
 const ofDrawerBackdrop = $("#admOfferDrawerBackdrop");
@@ -1864,20 +1977,41 @@ const ofSuccessEl      = $("#offerFormSuccess");
 const ofTitleInput     = $("#ofTitle");
 const ofDescInput      = $("#ofDescription");
 const ofPartnerInput   = $("#ofPartner");
-const ofStatusToggle   = $("#ofStatusToggle");
-const ofStatusLabel    = $("#ofStatusLabel");
+const ofStatusSegment  = $("#ofStatusSegment");
 
-let _ofEditingId  = null;
-let _ofActiveState = true;
+let _ofEditingId = null;
 
-function setOfferToggle(active) {
-  _ofActiveState = active;
-  ofStatusToggle?.setAttribute("aria-checked", String(active));
-  ofStatusToggle?.classList.toggle("on", active);
-  if (ofStatusLabel) ofStatusLabel.textContent = active ? "Attiva" : "Disattivata";
+/**
+ * Get current status from the segmented control.
+ * Returns true (active) when data-value === "active".
+ */
+function getOfferActiveState() {
+  return ofStatusSegment?.dataset.value === "active";
 }
 
-ofStatusToggle?.addEventListener("click", () => setOfferToggle(!_ofActiveState));
+/**
+ * Set the segmented control to the given state.
+ * Updates data-value on the container and toggles the
+ * .adm-segment-btn--active class on the matching button.
+ */
+function setOfferSegment(active) {
+  if (!ofStatusSegment) return;
+  const value = active ? "active" : "inactive";
+  ofStatusSegment.dataset.value = value;
+
+  ofStatusSegment.querySelectorAll(".adm-segment-btn").forEach((btn) => {
+    const isSelected = btn.dataset.segmentValue === value;
+    btn.classList.toggle("adm-segment-btn--active", isSelected);
+    btn.setAttribute("aria-pressed", String(isSelected));
+  });
+}
+
+// Wire segment buttons
+ofStatusSegment?.querySelectorAll(".adm-segment-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    setOfferSegment(btn.dataset.segmentValue === "active");
+  });
+});
 
 function openOfferDrawer() {
   ofDrawerBackdrop?.classList.add("open");
@@ -1914,7 +2048,7 @@ async function openEditOfferDrawer(offerId) {
   if (ofSub)   ofSub.textContent   = "";
   showFeedback(ofErrorEl, ofSuccessEl, "none");
   ofForm?.reset();
-  setOfferToggle(true);
+  setOfferSegment(true); // default before data loads
 
   openOfferDrawer();
   setLoading(ofSubmitBtn, true);
@@ -1929,11 +2063,11 @@ async function openEditOfferDrawer(offerId) {
       return;
     }
 
-    if (ofTitleInput)  ofTitleInput.value  = o.title       || "";
-    if (ofDescInput)   ofDescInput.value   = o.description || "";
-    if (ofPartnerInput) ofPartnerInput.value = o.partnerId  || "";
-    if (ofSub)         ofSub.textContent   = o.title       || "";
-    setOfferToggle(Boolean(o.active));
+    if (ofTitleInput)   ofTitleInput.value   = o.title       || "";
+    if (ofDescInput)    ofDescInput.value    = o.description || "";
+    if (ofPartnerInput) ofPartnerInput.value = o.partnerId   || "";
+    if (ofSub)          ofSub.textContent   = o.title       || "";
+    setOfferSegment(Boolean(o.active));
 
   } catch {
     showFeedback(ofErrorEl, ofSuccessEl, "error", "Errore di connessione. Riprova.");
@@ -1963,7 +2097,7 @@ ofForm?.addEventListener("submit", async (e) => {
       {
         title,
         description: ofDescInput?.value.trim() || "",
-        active:      _ofActiveState,
+        active:      getOfferActiveState(),
       }
     );
 
@@ -2026,10 +2160,20 @@ async function loadOffers() {
           <td>${badgeActive(o.active)}</td>
           <td class="adm-td-date">${fmtDate(o.createdAt)}</td>
           <td class="adm-td-actions">
-            <button
-              class="adm-btn adm-btn--secondary adm-btn--sm"
-              data-edit-offer="${esc(o.id)}"
-            >Modifica</button>
+            ${renderActionCell(o.id,
+              `<button
+                 class="adm-btn adm-btn--secondary adm-btn--sm"
+                 data-edit-offer="${esc(o.id)}"
+               >Modifica</button>`,
+              [
+                {
+                  label:  o.active ? "Sospendi" : "Attiva",
+                  icon:   o.active ? "fa-ban"   : "fa-check",
+                  action: "toggle-active",
+                  danger: o.active,
+                },
+              ]
+            )}
           </td>
         </tr>`).join("");
     }
@@ -2046,6 +2190,39 @@ async function loadOffers() {
       btn.addEventListener("click", () => {
         openEditOfferDrawer(btn.dataset.editOffer);
       });
+    });
+
+    wireActionMenus(offersBody, async (action, rowId) => {
+      const o = _offersCache.get(rowId);
+      if (!o) return;
+
+      if (action === "toggle-active") {
+        const nextActive = !o.active;
+        showConfirm(
+          nextActive
+            ? `Attivare l'offerta "${o.title}"?`
+            : `Sospendere l'offerta "${o.title}"?`,
+          nextActive
+            ? "L'offerta sarà visibile ai clienti."
+            : "L'offerta non sarà visibile ai clienti fino alla riattivazione.",
+          async () => {
+            try {
+              const res = await Api.patch(
+                `/offers/${encodeURIComponent(rowId)}`,
+                { title: o.title, description: o.description || "", active: nextActive }
+              );
+              if (res?.success) {
+                showToast(nextActive ? "Offerta attivata." : "Offerta sospesa.");
+                await Promise.all([loadOffers(), loadStats()]);
+              } else {
+                showToast(res?.message || "Errore durante l'operazione.", "error");
+              }
+            } catch {
+              showToast("Errore di connessione.", "error");
+            }
+          }
+        );
+      }
     });
 
   } catch {

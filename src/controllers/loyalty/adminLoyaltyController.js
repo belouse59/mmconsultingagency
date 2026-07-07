@@ -524,9 +524,29 @@ const adminGetContactsPaginated = asyncHandler(async (req, res) => {
 });
 
 /* ─────────────────────────────────────────────
-   CUSTOMER — GET BY ID  ← NEW
-   GET /admin/customers/:id
-   Returns full customer record for the edit drawer.
+   CUSTOMER — CREATE  ← NEW
+   POST /admin/customers
+   Body: { full_name, identifier, password }
+
+   Reuses customerLoyaltyService.register() so
+   validation, hashing, and duplicate detection
+   all go through the same path as self-registration.
+───────────────────────────────────────────── */
+
+const adminCreateCustomer = asyncHandler(async (req, res) => {
+  const { full_name, identifier, password } = req.body;
+
+  const result = await adminLoyaltyService.createCustomer({
+    full_name:  clean(full_name  || ""),
+    identifier: clean(identifier || ""),
+    password,   // must not be cleaned — Argon2 uses verbatim
+  });
+
+  return res.status(201).json(result);
+});
+
+/* ─────────────────────────────────────────────
+   CUSTOMER — GET BY ID  (existing — unchanged)
 ───────────────────────────────────────────── */
 
 const adminGetCustomerById = asyncHandler(async (req, res) => {
@@ -752,8 +772,9 @@ module.exports = {
   // Customers
   adminGetCustomers,
   adminGetCustomersPaginated,
-  adminGetCustomerById,            // ← new
-  adminUpdateCustomer,             // ← new
+  adminCreateCustomer,             // ← new
+  adminGetCustomerById,
+  adminUpdateCustomer,
   adminSetCustomerActive,
   adminResendCustomerVerification,
 

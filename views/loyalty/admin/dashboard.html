@@ -265,6 +265,10 @@
             <h1 class="adm-page-title">Clienti</h1>
             <p class="adm-page-sub">Gestisci i membri del programma Energy Club</p>
           </div>
+          <button class="adm-btn adm-btn--primary" id="admNewCustomerBtn">
+            <i class="fa fa-plus" aria-hidden="true"></i>
+            Nuovo Cliente
+          </button>
         </div>
 
         <!-- Toolbar -->
@@ -1460,18 +1464,47 @@
               >
             </div>
 
-            <!-- Identifier is shown read-only — changing a login
-                 credential requires its own verified flow -->
-            <div class="adm-form-field adm-form-field--full">
-              <label class="adm-form-label">Email / Telefono</label>
+            <!-- Shown as editable in create mode, read-only in edit mode.
+                 The label text and disabled state are toggled by JS
+                 (openCreateCustomerDrawer / openEditCustomerDrawer). -->
+            <div class="adm-form-field adm-form-field--full" id="cfIdentifierField">
+              <label class="adm-form-label adm-form-label--required" for="cfIdentifier" id="cfIdentifierLabel">
+                Email o numero di telefono
+              </label>
               <input
                 type="text"
                 id="cfIdentifier"
+                name="identifier"
                 class="adm-form-input"
-                disabled
-                style="opacity:0.6;cursor:not-allowed;"
+                placeholder="mario@email.com oppure +39 333 000 0000"
+                autocomplete="off"
               >
-              <p class="adm-form-hint">L'identificatore di accesso non è modificabile da qui.</p>
+              <p class="adm-form-hint" id="cfIdentifierHint" style="display:none;">
+                L'identificatore di accesso non è modificabile da qui.
+              </p>
+            </div>
+
+            <!-- Create-only: password field.
+                 Hidden in edit mode (display:none toggled by JS). -->
+            <div class="adm-form-field adm-form-field--full" id="cfPasswordField">
+              <label class="adm-form-label adm-form-label--required" for="cfPassword">
+                Password temporanea
+              </label>
+              <div class="password-wrapper">
+                <input
+                  type="password"
+                  id="cfPassword"
+                  name="password"
+                  class="adm-form-input"
+                  placeholder="Minimo 8 caratteri"
+                  minlength="8"
+                  autocomplete="new-password"
+                >
+                <button type="button" class="password-toggle" data-target="cfPassword" aria-label="Mostra password">
+                  <img src="/assets/images/eye-slash-solid-full.svg" alt="" aria-hidden="true">
+                </button>
+              </div>
+              <p class="adm-form-hint">Il cliente potrà cambiarla in seguito.</p>
             </div>
 
           </div>
@@ -1572,23 +1605,43 @@
           </div>
         </div>
 
-        <!-- Stato -->
-        <div class="adm-drawer-section" id="ofStatusField">
-          <p class="adm-drawer-section-title">Stato</p>
+        <!-- Stato offerta — segmented control
+             More explicit than a toggle: state is unambiguous at a
+             glance, and a third option (e.g. Archiviata) can be added
+             later without restructuring the UI. JS reads
+             ofStatusSegment.dataset.value to get the current choice. -->
+        <div class="adm-drawer-section">
+          <p class="adm-drawer-section-title">Stato offerta</p>
           <div class="adm-form-field">
-            <div class="adm-toggle-row">
-              <span class="adm-form-label" style="margin-bottom:0;">Offerta attiva</span>
+            <div
+              class="adm-segment"
+              id="ofStatusSegment"
+              role="group"
+              aria-label="Stato offerta"
+              data-value="active"
+            >
               <button
                 type="button"
-                class="adm-toggle"
-                id="ofStatusToggle"
-                role="switch"
-                aria-checked="true"
+                class="adm-segment-btn adm-segment-btn--active"
+                data-segment-value="active"
+                aria-pressed="true"
               >
-                <span class="adm-toggle-thumb"></span>
+                <i class="fa fa-circle-check" aria-hidden="true"></i>
+                Attiva
               </button>
-              <span class="adm-toggle-label" id="ofStatusLabel">Attiva</span>
+              <button
+                type="button"
+                class="adm-segment-btn"
+                data-segment-value="inactive"
+                aria-pressed="false"
+              >
+                <i class="fa fa-ban" aria-hidden="true"></i>
+                Sospesa
+              </button>
             </div>
+            <p class="adm-form-hint" id="ofStatusHint" style="margin-top:8px;">
+              Le offerte sospese non sono visibili ai clienti.
+            </p>
           </div>
         </div>
 

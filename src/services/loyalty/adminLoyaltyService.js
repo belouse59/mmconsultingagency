@@ -22,9 +22,10 @@ const simulatorRepo       = require("../../repositories/form/simulatorRepository
 const contactRepo         = require("../../repositories/form/contactsRepository");
 const contactRequestRepo  = require("../../repositories/form/contactRequestsRepository");
 
-const { buildPaginationMeta }  = require("../../utils/paginate");
-const { sendVerificationEmail } = require("../../services/emailService");
-const { makeError }             = require("../../utils/errorHandler");
+const { buildPaginationMeta }   = require("../../utils/paginate");
+const { sendVerificationEmail }  = require("../../services/emailService");
+const { makeError }              = require("../../utils/errorHandler");
+const customerLoyaltyService     = require("./customerLoyaltyService");
 
 /* ─────────────────────────────────────────────
    INTERNAL HELPERS
@@ -217,8 +218,37 @@ async function getContactsPaginated(pagination) {
 ───────────────────────────────────────────── */
 
 /* ─────────────────────────────────────────────
-   GET CUSTOMER BY ID  ← NEW
-   Full record for the admin edit drawer.
+   CREATE CUSTOMER  ← NEW
+   Reuses customerLoyaltyService.register() so
+   password hashing, identifier normalisation,
+   duplicate detection, and identifier_type
+   derivation all go through the same path as
+   self-registration. Admin-created customers
+   are set active=true immediately (the admin's
+   act of creating the account is the approval).
+───────────────────────────────────────────── */
+
+async function createCustomer({ full_name, identifier, password }) {
+  // register() validates, hashes, and inserts.
+  const result = await customerLoyaltyService.register({
+    full_name,
+    identifier,
+    password,
+  });
+
+  // Self-registration creates inactive accounts (pending admin
+  // review). Admin creation should activate immediately.
+  await customerRepo.setCustomerActive(result.customerId, true);
+
+  return {
+    success:    true,
+    customerId: result.customerId,
+    full_name:  result.full_name,
+  };
+}
+
+/* ─────────────────────────────────────────────
+   GET CUSTOMER BY ID  (existing — unchanged)
 ───────────────────────────────────────────── */
 
 async function getCustomerById(id) {
@@ -521,9 +551,10 @@ module.exports = {
   getContactsPaginated,
 
   // Customer actions
+  createCustomer,              // ← new
   setCustomerActive,
   resendCustomerVerification,
-  updateCustomer,     // ← new
+  updateCustomer,
 
   // Partner actions
   forcePartnerPasswordReset,

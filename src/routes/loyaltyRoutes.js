@@ -520,6 +520,16 @@ adminRouter.get(
     adminCtrl.adminGetCustomersPaginated
 );
 
+/* ── CUSTOMERS — create ──
+   POST /admin/customers
+   Body: { full_name, identifier, password }
+*/
+adminRouter.post(
+    "/customers",
+    requireXHR,
+    adminCtrl.adminCreateCustomer
+);
+
 /* ── CUSTOMERS — get one (full record for edit drawer) ──
    GET /admin/customers/:id
 */

@@ -1488,6 +1488,79 @@
   color: var(--loy-text);
 }
 
+/* ── Segmented control (.adm-segment) ──────────────────────
+   Two-or-more option selector, more explicit than a toggle.
+   Used for offer status (Attiva / Sospesa) — scales cleanly
+   if a third status is added later without restructuring. */
+.adm-segment {
+  display: inline-flex;
+  gap: 0;
+  padding: 3px;
+  background: var(--loy-bg-soft);
+  border: 1px solid var(--loy-border);
+  border-radius: var(--r-lg);
+}
+
+.adm-segment-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: none;
+  border-radius: calc(var(--r-lg) - 3px);
+  background: transparent;
+  font-family: var(--loy-font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--loy-text-sec);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+}
+
+.adm-segment-btn i {
+  font-size: 0.78rem;
+  opacity: 0.6;
+}
+
+.adm-segment-btn:hover {
+  color: var(--loy-text);
+}
+
+/* Active segment — the currently selected option */
+.adm-segment-btn--active {
+  background: #fff;
+  color: var(--loy-navy);
+  box-shadow: 0 1px 4px rgba(10, 22, 40, 0.12);
+}
+
+.adm-segment-btn--active i {
+  color: var(--loy-gold);
+  opacity: 1;
+}
+
+/* "Sospesa" when selected — danger tint */
+.adm-segment-btn[data-segment-value="inactive"].adm-segment-btn--active {
+  background: rgba(192, 57, 43, 0.07);
+  color: #C0392B;
+  box-shadow: 0 1px 4px rgba(192, 57, 43, 0.10);
+}
+
+.adm-segment-btn[data-segment-value="inactive"].adm-segment-btn--active i {
+  color: #C0392B;
+}
+
+@media (prefers-color-scheme: dark) {
+  .adm-segment {
+    background: #0E1420;
+    border-color: rgba(255,255,255,0.08);
+  }
+  .adm-segment-btn--active {
+    background: #172030;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+}
+
 /* ── Responsive: full-screen drawer below 640px ── */
 @media (max-width: 640px) {
   .adm-drawer {
