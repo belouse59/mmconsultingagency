@@ -1761,10 +1761,6 @@ admRejectOk?.addEventListener("click", async () => {
 });
 
 
-  }
-});
-
-
 /* ═══════════════════════════════════════════════════════════
    SECTION 9D — CUSTOMER DRAWER (CREATE + EDIT)
    Same .adm-drawer-* CSS shell as the partner drawer.
