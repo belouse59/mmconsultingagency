@@ -230,7 +230,6 @@ function _openMenuPortal(toggleBtn, rowId, itemsHtml, onAction) {
   _menuPortal.innerHTML     = itemsHtml;
   _menuPortalRowId          = rowId;
   _menuPortalOnAction       = onAction;
-  _menuPortal.style.display = "block";
 
   /* Wire item clicks on the portal. stopPropagation prevents the
      document-level click handler from closing the menu on the same
@@ -245,22 +244,65 @@ function _openMenuPortal(toggleBtn, rowId, itemsHtml, onAction) {
     });
   });
 
-  /* Position: prefer below the button; flip upward near the bottom. */
-  const rect       = toggleBtn.getBoundingClientRect();
-  const spaceBelow = window.innerHeight - rect.bottom;
-  const spaceAbove = rect.top;
-  const menuH      = 220;
+  /* ── Measure-then-position ─────────────────────────────────────
+     Strategy: always use `top` (never `bottom`) for position:fixed
+     menus. `bottom` requires knowing the menu height before layout,
+     which forces us to guess — the root cause of the previous bug.
 
-  _menuPortal.style.left  = "";
-  _menuPortal.style.right = `${window.innerWidth - rect.right}px`;
+     Instead:
+       1. Make the portal invisible but laid-out (visibility:hidden)
+          so the browser computes its real rendered height.
+       2. Read that height via getBoundingClientRect().
+       3. Decide: open below the button or above it?
+       4. Clamp the final top value so the menu never escapes the
+          viewport on any side, regardless of screen size or content.
+       5. Make it visible.
 
-  if (spaceBelow >= menuH || spaceBelow >= spaceAbove) {
-    _menuPortal.style.top    = `${rect.bottom + 4}px`;
-    _menuPortal.style.bottom = "";
-  } else {
-    _menuPortal.style.top    = "";
-    _menuPortal.style.bottom = `${window.innerHeight - rect.top + 4}px`;
+     This is the same algorithm used by Floating UI / Popper.js.
+  ─────────────────────────────────────────────────────────────── */
+
+  // Step 1 — lay out invisibly so we can measure
+  _menuPortal.style.visibility = "hidden";
+  _menuPortal.style.display    = "block";
+  _menuPortal.style.top        = "0";
+  _menuPortal.style.bottom     = "";
+  _menuPortal.style.left       = "";
+  _menuPortal.style.right      = "";
+
+  // Step 2 — measure actual rendered height and button position
+  const menuRect = _menuPortal.getBoundingClientRect();
+  const btnRect  = toggleBtn.getBoundingClientRect();
+  const menuH    = menuRect.height;
+  const menuW    = menuRect.width;
+  const vw       = window.innerWidth;
+  const vh       = window.innerHeight;
+  const GAP      = 4; // px gap between button and menu
+
+  // Step 3 — decide vertical direction
+  const spaceBelow = vh - btnRect.bottom - GAP;
+  const spaceAbove = btnRect.top - GAP;
+  const openBelow  = spaceBelow >= menuH || spaceBelow >= spaceAbove;
+
+  let top = openBelow
+    ? btnRect.bottom + GAP
+    : btnRect.top - menuH - GAP;
+
+  // Step 4 — clamp so the menu never escapes the viewport
+  const MARGIN = 8; // minimum distance from viewport edge
+  top = Math.max(MARGIN, Math.min(top, vh - menuH - MARGIN));
+
+  // Horizontal: align right edge of menu with right edge of button.
+  // Clamp left edge so menu never overflows the left side.
+  let right = vw - btnRect.right;
+  const leftEdge = vw - right - menuW;
+  if (leftEdge < MARGIN) {
+    right = vw - menuW - MARGIN;
   }
+
+  // Step 5 — apply computed position and reveal
+  _menuPortal.style.top        = `${top}px`;
+  _menuPortal.style.right      = `${right}px`;
+  _menuPortal.style.visibility = "";
 
   toggleBtn.classList.add("open");
   toggleBtn.setAttribute("aria-expanded", "true");
@@ -1759,7 +1801,6 @@ admRejectOk?.addEventListener("click", async () => {
     setLoading(admRejectOk, false);
   }
 });
-
 
 /* ═══════════════════════════════════════════════════════════
    SECTION 9D — CUSTOMER DRAWER (CREATE + EDIT)
