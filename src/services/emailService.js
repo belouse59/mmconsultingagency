@@ -30,7 +30,7 @@ async function sendVerificationEmail(email, route, name) {
   });
 }
 
-async function sendCustomerPasswordReset({user, token, expiresAt, origin}) {
+async function sendCustomerPasswordReset({ user, token, expiresAt, origin }) {
   const resetUrl = `${process.env.APP_URL}/api/loyalty/${origin}/reset-password?token=${token}`;
 
   const html = loadTemplate(
@@ -74,7 +74,7 @@ async function notifyNewLead(data) {
     // working correctly for every lead source without hardcoding
     // "Energia" for non-energy leads.
     const CATEGORY_ROW_LABEL = source === "loyalty" ? "Richiesta" : "Energia";
-    const categoryValue      = data.category || data.energyType || "Non specificato";
+    const categoryValue = data.category || data.energyType || "Non specificato";
 
     const html = loadTemplate("new-lead-email.html", {
       DATE: getLocalTimestamp() || "",
@@ -119,10 +119,97 @@ async function notifyNewLead(data) {
   }
 }
 
+/**
+ * Send notification when simulator is completed.
+ * Fails silently.
+ */
+async function notifySimulator(data) {
+  if (!process.env.NOTIFY_TO) return;
+  try {
+    const html = loadTemplate("simulator-email.html", {
+      DATE: getLocalTimestamp() || "",
+
+      MONTHLY_SAVINGS: data.monthlySavings || 0,
+      ENERGY_TYPE: data.selectedEnergy || "Non specificato",
+      HOUSE_TYPE: data.selectedHouse || "Non specificato",
+      LOCATION: data.locationValue || "Non specificato",
+      SURFACE: data.surface || 0,
+      PEOPLE: data.selectedPeople || "Non specificato",
+      PROVIDER: data.selectedProvider || "Non specificato",
+      BILL: data.bill || 0,
+
+      ELECTRICITY_KWH: data.electricityValueKwh || 0,
+      GAS_KWH: data.gasValueKwh || 0,
+      ESTIMATION_TYPE: data.estimationType || "unknown",
+      FORM_TYPE: data.formType || "simulator",
+    }, true
+    );
+
+    await resend.emails.send({
+      from: `${process.env.BRAND_NAME} <${process.env.RESEND_FROM_EMAIL}>`,
+      to: process.env.NOTIFY_TO,
+      subject: `Nuova simulazione — risparmio ${data.monthlySavings || "?"}€/mese`,
+      html,
+    }).then(mail => console.log(mail));
+  } catch (err) {
+    console.error(
+      "[emailService] Failed to send simulator notification:",
+      err.message
+    );
+  }
+}
+
+/**
+ * Send notification when a new partner request is submitted
+ * via the loyalty landing page ("Richiedi di diventare Partner").
+ * Fails silently — never blocks the API response.
+ *
+ * @param {{
+ *   businessName: string,
+ *   vatNumber?:    string|null,
+ *   email:        string,
+ *   phone?:        string|null,
+ *   category:     string,
+ *   description?:  string|null,
+ *   submittedAt?:  string|Date,
+ * }} data — the created loyalty_partner_requests row
+ *           (camelCase, as returned by
+ *           partnerRequestsRepository.mapPartnerRequest)
+ */
+async function notifyPartnerRequest(data) {
+  if (!process.env.NOTIFY_TO) return;
+  try {
+    const html = loadTemplate("partner-request-email.html", {
+      DATE: getLocalTimestamp() || "",
+
+      BUSINESS_NAME: data.businessName || "",
+      VAT_NUMBER: data.vatNumber || "Non fornita",
+      EMAIL: data.email || "",
+      PHONE: data.phone || "Non fornito",
+      CATEGORY: data.category || "Non specificata",
+      DESCRIPTION: data.description || "Nessuna descrizione fornita",
+      FORM_TYPE: "partner-request",
+    }, true
+    );
+
+    await resend.emails.send({
+      from: `${process.env.BRAND_NAME} <${process.env.RESEND_FROM_EMAIL}>`,
+      to: process.env.NOTIFY_TO,
+      subject: `Nuova richiesta partner — ${data.businessName || "Attività"}`,
+      html,
+    }).then(mail => console.log(mail));
+  } catch (err) {
+    console.error(
+      "[emailService] Failed to send partner request notification:",
+      err.message
+    );
+  }
+}
+
 module.exports = {
   sendVerificationEmail,
   sendCustomerPasswordReset,
   notifyNewLead,
-  //notifySimulator,
-  //notifyPartnerRequest,
+  notifySimulator,
+  notifyPartnerRequest,
 };

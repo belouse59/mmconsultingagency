@@ -1,13 +1,4 @@
 add blog section to builder page
 sms pending for now
 
-think about redesign console in general to add 
-newsletter list, 
-contact request 
-simulator.
-
-check to do someting similar to all columns in the admin 32 lengths... then modal for details
-
 loyaltyRoutes may be move them to their own router
-
-remove energy_type 

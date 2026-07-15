@@ -143,7 +143,7 @@
       try {
         var res = await fetch('/api/loyalty/partner-request', {
           method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
           body: JSON.stringify({
             business_name: name,
             vat:           form.vat.value.trim(),
