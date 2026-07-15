@@ -64,9 +64,6 @@ async function sendCustomerPasswordReset({user, token, expiresAt, origin}) {
  *     "Richiesta: Partner" (loyalty) at a glance, instead of
  *     always showing a row labelled "Energia" regardless of
  *     where the lead came from.
- *   - ENERGY_TYPE kept for backward compatibility with the
- *     existing template — now only populated for source="home"
- *     leads (matches contactService.submit()'s energyType logic).
  */
 async function notifyNewLead(data) {
   if (!process.env.NOTIFY_TO) return;
@@ -87,9 +84,6 @@ async function notifyNewLead(data) {
       EMAIL: data.email || "",
 
       PHONE: data.phone || "Non fornito",
-
-      // Backward-compatible — only populated for energy (home) leads.
-      ENERGY_TYPE: data.energyType || "Non specificato",
 
       // New — works for every source. Use these two in the template
       // instead of the hardcoded "Energia" row (see updated HTML below).

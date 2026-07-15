@@ -133,11 +133,6 @@
  *   variant, add its formType string to CONTACT_FORM_TYPES in
  *   formController.js first.
  *
- * `category` is read generically by contactService.submit() and
- * replaces the old hardcoded `energyType` field. For source="home"
- * it is also mirrored into the legacy `energy_type` column for
- * backward-compatible reporting; for other sources it stays out
- * of that column.
  *
  * @module contactForm
  */

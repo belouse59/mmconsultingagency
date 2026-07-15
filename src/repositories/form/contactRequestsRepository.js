@@ -13,7 +13,6 @@ function mapContactRequest(row) {
   return {
     id:                    row.id,
     contactId:             row.contact_id,
-    energyType:            row.energy_type,
     source:                row.source,
     category:              row.category,
     preferredContactTime:  row.preferred_contact_time,
@@ -32,7 +31,6 @@ function mapContactRequest(row) {
 
 async function createContactRequest({
   contactId,
-  energyType,
   source,
   category,
   preferredContactTime,
@@ -47,7 +45,6 @@ async function createContactRequest({
     INSERT INTO contact_requests (
       id,
       contact_id,
-      energy_type,
       source,
       category,
       preferred_contact_time,
@@ -56,14 +53,13 @@ async function createContactRequest({
       status
     )
     VALUES (
-      $1, $2, $3, $4, $5, $6, $7, $8, 'new'
+      $1, $2, $3, $4, $5, $6, $7, 'new'
     )
     RETURNING *
     `,
     [
       id,
       contactId,
-      energyType  || null,
       source      || null,
       category    || null,
       preferredContactTime,
