@@ -8,28 +8,19 @@
  * Keep this file minimal: orchestration only, no business logic.
  */
 
-import { $ } from "./ui.js";
+import { $, Api } from "./ui.js";
 
 import {
-  MODULE_LABELS,
-  State,
   switchModule,
   loadStats,
-  loadDashboard,
-  loadCustomers,
   loadPartners,
   loadPartnerRequests,
+  loadCustomers,
   loadOffers,
-  loadRedemptions,
-  loadNewsletter,
-  loadContacts,
-  loadSimulator,
 } from "./modules.js";
 
 import {
   setDrawerLoaders,
-  openCreatePartnerDrawer,
-  openCreateCustomerDrawer,
 } from "./drawers.js";
 
 async function boot() {
@@ -43,16 +34,18 @@ async function boot() {
     loadStats,
   });
 
-  // Verify session — will redirect to login if 401
+  // Verify admin session — Api.get redirects to login on 401
   const session = await Api.get("/session");
-  if (!session) return; // redirect already triggered
+  if (!session) return;
 
-  // Set admin name in topbar
+  // Set admin name in topbar if present
   const nameEl = $("#admTopbarUser");
   if (nameEl && session.data?.email) {
     nameEl.textContent = session.data.email.split("@")[0];
   }
 
-  // Load default module
+  // Load default module — triggers loadStats() + loadDashboard()
   switchModule("dashboard");
 }
+
+boot();
