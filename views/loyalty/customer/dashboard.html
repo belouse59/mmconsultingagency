@@ -1,121 +1,142 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>Il tuo QR — Convenzioni M&M Consulting</title>
+  <title>Il Mio Account — M&M Energy Club</title>
   <link rel="icon" type="image/png" href="/assets/images/favicon-32.png">
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0A1628">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Convenzioni">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="/assets/css/loyalty.css">
+  <link rel="stylesheet" href="/assets/css/loyalty-customer.css">
 </head>
+
 <body>
+  <div class="lc-shell">
 
-<div class="loyalty-shell">
+    <!-- ── Topbar ─────────────────────────────────────────── -->
+    <header class="lc-topbar" role="banner">
+      <div class="lc-topbar-left">
+        <img
+          src="/assets/images/logo-light.png"
+          alt="M&M Consulting"
+          class="lc-topbar-logo"
+        >
+        <span class="lc-topbar-brand">Energy Club</span>
+      </div>
 
-  <header class="loyalty-topbar" role="banner">
-    <a href="/" class="loyalty-topbar-logo" aria-label="Torna alla homepage M&M Consulting">
-      <img src="/assets/images/logo.png" alt="M&M Consulting" width="100" height="32">
-      <span class="loyalty-topbar-brand">Convenzioni</span>
-    </a>
-    <div class="loyalty-topbar-actions">
-      <span class="loyalty-topbar-user" id="topbarUserName" aria-live="polite"></span>
-      <button class="loyalty-topbar-logout" id="logoutBtn" aria-label="Esci dall'account">Esci</button>
-    </div>
-  </header>
+      <span class="lc-topbar-greeting" id="topbarGreeting" aria-live="polite"></span>
 
-  <main class="loyalty-main" id="main-content">
-    <div class="loyalty-dashboard-grid">
+      <button
+        class="lc-topbar-logout"
+        id="logoutBtn"
+        type="button"
+        aria-label="Disconnettiti dal tuo account"
+      >
+        <i class="fa fa-right-from-bracket" aria-hidden="true"></i>
+        Esci
+      </button>
+    </header>
 
-      <!-- QR Card -->
-      <div class="loyalty-card loyalty-fade-in">
+    <!-- ── Main content ───────────────────────────────────── -->
+    <main class="lc-content" id="mainContent">
 
-        <div class="loyalty-dashboard-header">
-          <p class="loyalty-section-title">Il tuo QR personale</p>
-          <h1 class="loyalty-welcome" id="welcomeName">&nbsp;</h1>
-          <p class="loyalty-welcome-sub">
-            Mostra questo QR ai partner convenzionati per usufruire degli sconti riservati.
-          </p>
-        </div>
+      <!-- ══ QR SECTION ══════════════════════════════════════ -->
+      <section aria-labelledby="qrSectionTitle">
+        <h2 class="sr-only" id="qrSectionTitle">Il tuo QR code personale</h2>
 
-        <!-- QR display -->
-        <div class="loyalty-qr-container" role="img" aria-label="Il tuo QR code personale">
-          <span class="loyalty-qr-label">QR Code Personale</span>
+        <div class="lc-qr-card lc-fade-in" id="qrCard">
 
-          <div class="loyalty-qr-wrapper">
-            <div class="loyalty-qr-skeleton" id="qrSkeleton" aria-hidden="true"></div>
+          <span class="lc-qr-eyebrow">M&amp;M Energy Club</span>
+
+          <p class="lc-qr-name" id="qrCustomerName">&nbsp;</p>
+
+          <!-- QR image frame — skeleton shown while loading -->
+          <div class="lc-qr-frame" id="qrFrame" role="img" aria-label="QR code personale">
+            <div class="lc-qr-skeleton" id="qrSkeleton" aria-hidden="true"></div>
             <img
               id="qrImage"
               src=""
-              alt="QR code personale — mostralo al partner per applicare lo sconto"
+              alt="QR code personale M&M Energy Club"
               style="display:none;"
-              width="260"
-              height="260">
-            <div class="loyalty-qr-error" id="qrError" style="display:none;" role="alert">
-              <span class="loyalty-qr-error-icon" aria-hidden="true">⚠️</span>
-              <p class="loyalty-qr-error-text">QR non disponibile. Controlla la connessione.</p>
-              <button class="loyalty-qr-refresh-btn" id="qrRetryBtn" type="button">Riprova</button>
-            </div>
+            >
           </div>
 
-          <!-- Countdown timer -->
-          <div class="loyalty-qr-timer" id="qrTimer" aria-live="polite" aria-label="Tempo di validità QR rimanente">
-            <div class="loyalty-qr-timer-bar" aria-hidden="true">
-              <div class="loyalty-qr-timer-fill" id="timerFill"></div>
-            </div>
-            <span class="loyalty-qr-timer-text" id="timerText">--:--</span>
+          <!-- TTL countdown -->
+          <div class="lc-qr-ttl" aria-live="polite" aria-atomic="true">
+            <span class="lc-qr-ttl-dot" id="qrStatusDot" aria-hidden="true"></span>
+            <span>QR valido per&nbsp;</span>
+            <span class="lc-qr-countdown" id="qrCountdown">—</span>
+          </div>
+
+          <!-- Manual refresh -->
+          <button
+            class="lc-qr-refresh-btn"
+            id="qrRefreshBtn"
+            type="button"
+            aria-label="Aggiorna il QR code"
+          >
+            <i class="fa fa-rotate-right" aria-hidden="true"></i>
+            Aggiorna QR
+          </button>
+
+        </div>
+      </section>
+
+
+      <!-- ══ OFFERS SECTION ══════════════════════════════════ -->
+      <section aria-labelledby="offersSectionTitle">
+
+        <div class="lc-section-header">
+          <h2 class="lc-section-title" id="offersSectionTitle">
+            Convenzioni disponibili
+          </h2>
+          <span class="lc-section-count" id="offersCount" aria-live="polite"></span>
+        </div>
+
+        <div class="lc-offers-list" id="offersList" aria-label="Lista convenzioni">
+          <!-- Populated by dashboard.js -->
+          <div class="lc-empty">
+            <span class="lc-empty-icon" aria-hidden="true">🎁</span>
+            <p class="lc-empty-text">Caricamento convenzioni…</p>
           </div>
         </div>
 
-        <p style="text-align:center;font-size:0.75rem;color:var(--text-secondary,#6B7A8D);margin-top:12px;line-height:1.5;">
-          🔐 Il QR si rinnova automaticamente ogni 5 minuti per la tua sicurezza.
-        </p>
+      </section>
 
-      </div>
 
-      <!-- Offers Card -->
-      <div class="loyalty-card loyalty-fade-in" style="animation-delay:0.1s;">
-        <p class="loyalty-section-title">Offerte disponibili</p>
+      <!-- ══ HISTORY SECTION ═════════════════════════════════ -->
+      <section aria-labelledby="historySectionTitle">
 
-        <div id="offersLoading">
-          <div class="loyalty-offer-card">
-            <div class="loyalty-offer-icon loyalty-skeleton" style="border-radius:50%;"></div>
-            <div class="loyalty-offer-info">
-              <div class="loyalty-skeleton loyalty-skeleton-line" style="width:70%;"></div>
-              <div class="loyalty-skeleton loyalty-skeleton-line" style="width:90%;"></div>
-            </div>
-          </div>
-          <div class="loyalty-offer-card" style="margin-top:10px;">
-            <div class="loyalty-offer-icon loyalty-skeleton" style="border-radius:50%;"></div>
-            <div class="loyalty-offer-info">
-              <div class="loyalty-skeleton loyalty-skeleton-line" style="width:60%;"></div>
-              <div class="loyalty-skeleton loyalty-skeleton-line" style="width:80%;"></div>
-            </div>
+        <div class="lc-section-header">
+          <h2 class="lc-section-title" id="historySectionTitle">
+            Storico utilizzi
+          </h2>
+          <span class="lc-section-count" id="historyCount" aria-live="polite"></span>
+        </div>
+
+        <div class="lc-history-list" id="historyList" aria-label="Storico utilizzi convenzioni">
+          <!-- Populated by dashboard.js -->
+          <div class="lc-empty">
+            <span class="lc-empty-icon" aria-hidden="true">📋</span>
+            <p class="lc-empty-text">Caricamento storico…</p>
           </div>
         </div>
 
-        <div class="loyalty-offers-list" id="offersList" style="display:none;"></div>
+      </section>
 
-        <div class="loyalty-empty" id="offersEmpty" style="display:none;">
-          <span class="loyalty-empty-icon" aria-hidden="true">🏪</span>
-          <p class="loyalty-empty-text">
-            Nessuna offerta disponibile al momento.<br>Torna presto per le novità!
-          </p>
-        </div>
-      </div>
+    </main>
+  </div>
 
-    </div>
-  </main>
-
-</div>
-
-<script type="module" src="/js/features/loyalty/customer/dashboard.js"></script>
+  <script type="module" src="/js/features/loyalty/customer/dashboard.js"></script>
 </body>
+
 </html>
