@@ -1,0 +1,497 @@
+/* ============================================================
+   loyalty-customer.css
+   Customer dashboard — Area Clienti
+   ============================================================
+   Additive only — imports loyalty.css tokens, adds no
+   overrides. All --loy-* custom properties come from
+   loyalty.css which must be linked first.
+
+   Sections:
+     1. Shell / layout
+     2. Topbar
+     3. QR section
+     4. Offers section
+     5. History section
+     6. Empty states
+     7. Utilities / animations
+     8. Dark mode
+     9. Reduced motion
+============================================================ */
+
+/* ── 1. Shell ──────────────────────────────────────────────── */
+
+.lc-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--loy-bg-soft);
+}
+
+.lc-content {
+  flex: 1;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── 2. Topbar ─────────────────────────────────────────────── */
+
+.lc-topbar {
+  background: var(--loy-navy);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.lc-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lc-topbar-logo {
+  height: 28px;
+  width: auto;
+}
+
+.lc-topbar-brand {
+  font-family: var(--loy-font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--loy-gold);
+  opacity: 0.85;
+}
+
+.lc-topbar-greeting {
+  font-family: var(--loy-font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.lc-topbar-logout {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.65);
+  font-family: var(--loy-font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.lc-topbar-logout:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ── 3. QR Section ─────────────────────────────────────────── */
+
+.lc-qr-card {
+  background: var(--loy-navy);
+  border-radius: 20px;
+  padding: 28px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--loy-shadow-lg);
+}
+
+.lc-qr-eyebrow {
+  font-family: var(--loy-font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--loy-gold);
+  opacity: 0.9;
+}
+
+.lc-qr-name {
+  font-family: var(--loy-font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+.lc-qr-frame {
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+.lc-qr-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+/* Loading skeleton inside the QR frame */
+.lc-qr-skeleton {
+  width: 192px;
+  height: 192px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: lc-shimmer 1.4s infinite;
+}
+
+.lc-qr-ttl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--loy-font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.lc-qr-ttl-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--loy-green);
+  flex-shrink: 0;
+}
+
+.lc-qr-ttl-dot--expiring {
+  background: #F59E0B;
+  animation: lc-pulse 1s infinite;
+}
+
+.lc-qr-ttl-dot--expired {
+  background: var(--loy-red);
+}
+
+.lc-qr-countdown {
+  color: rgba(255, 255, 255, 0.75);
+  font-variant-numeric: tabular-nums;
+}
+
+.lc-qr-refresh-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--loy-font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 9px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.lc-qr-refresh-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.lc-qr-refresh-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── 4. Offers Section ─────────────────────────────────────── */
+
+.lc-section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.lc-section-title {
+  font-family: var(--loy-font-display);
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--loy-text);
+  letter-spacing: -0.01em;
+}
+
+.lc-section-count {
+  font-family: var(--loy-font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--loy-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.lc-offers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lc-offer-card {
+  background: var(--loy-bg);
+  border: 1px solid var(--loy-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.lc-offer-card:not(.lc-offer-card--used):hover {
+  border-color: var(--loy-gold-border);
+  box-shadow: var(--loy-shadow-sm);
+}
+
+.lc-offer-card--used {
+  opacity: 0.55;
+}
+
+.lc-offer-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--loy-gold-glow);
+  border: 1px solid var(--loy-gold-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+.lc-offer-icon--used {
+  background: var(--loy-bg-soft);
+  border-color: var(--loy-border);
+}
+
+.lc-offer-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.lc-offer-partner {
+  font-family: var(--loy-font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--loy-gold-dark);
+  margin-bottom: 2px;
+}
+
+.lc-offer-card--used .lc-offer-partner {
+  color: var(--loy-text-muted);
+}
+
+.lc-offer-title {
+  font-family: var(--loy-font-display);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--loy-text);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lc-offer-desc {
+  font-size: 0.78rem;
+  color: var(--loy-text-sec);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lc-offer-badge {
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.lc-offer-badge--available {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(15, 122, 60, 0.1);
+  color: var(--loy-green);
+  font-family: var(--loy-font-display);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 20px;
+  border: 1px solid rgba(15, 122, 60, 0.2);
+}
+
+.lc-offer-badge--used {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--loy-bg-soft);
+  color: var(--loy-text-muted);
+  font-family: var(--loy-font-display);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 20px;
+  border: 1px solid var(--loy-border);
+}
+
+/* ── 5. History Section ────────────────────────────────────── */
+
+.lc-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lc-history-item {
+  background: var(--loy-bg);
+  border: 1px solid var(--loy-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lc-history-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--loy-gold);
+  flex-shrink: 0;
+}
+
+.lc-history-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.lc-history-offer {
+  font-family: var(--loy-font-display);
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--loy-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lc-history-partner {
+  font-size: 0.72rem;
+  color: var(--loy-text-sec);
+}
+
+.lc-history-date {
+  font-family: var(--loy-font-display);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--loy-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── 6. Empty states ───────────────────────────────────────── */
+
+.lc-empty {
+  text-align: center;
+  padding: 28px 16px;
+  color: var(--loy-text-muted);
+}
+
+.lc-empty-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.lc-empty-text {
+  font-family: var(--loy-font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* ── 7. Utilities / animations ─────────────────────────────── */
+
+@keyframes lc-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes lc-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+@keyframes lc-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.lc-fade-in {
+  animation: lc-fade-in 0.3s ease both;
+}
+
+/* ── 8. Dark mode ──────────────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+  .lc-shell {
+    background: #0B1220;
+  }
+
+  .lc-offer-card,
+  .lc-history-item {
+    background: #0E1420;
+  }
+
+  .lc-qr-skeleton {
+    background: linear-gradient(90deg, #1a2235 25%, #243045 50%, #1a2235 75%);
+    background-size: 200% 100%;
+  }
+}
+
+/* ── 9. Reduced motion ─────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .lc-qr-skeleton,
+  .lc-qr-ttl-dot--expiring,
+  .lc-fade-in {
+    animation: none;
+  }
+}

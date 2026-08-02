@@ -1,250 +1,414 @@
 /**
- * js/features/loyalty/customer/dashboard.js
- * Customer dashboard — QR display with auto-refresh and offers list.
+ * public/js/features/loyalty/customer/dashboard.js
  *
- * Key behaviours:
- *   - Session verified server-side via httpOnly cookie (no localStorage)
- *   - QR refreshed automatically 30s before token expiry
- *   - Countdown timer shows exact remaining seconds
- *   - Timer bar turns red in the last 60 seconds
- *   - Full error state with retry button
- *   - Offers loaded in parallel with QR
- *   - Logout destroys server-side session
- *   - X-Requested-With on all state-mutating requests (CSRF)
+ * Customer dashboard — Area Clienti.
+ *
+ * Responsibilities:
+ *   1. Verify session on load → redirect to login if unauthenticated
+ *   2. Load and display the dynamic QR code with a live countdown
+ *   3. Auto-refresh the QR before it expires (with a 10s lead time)
+ *   4. Allow manual QR refresh via the "Aggiorna QR" button
+ *   5. Load and render active offers, cross-referenced with this
+ *      customer's redemption history to show which are used/available
+ *   6. Load and render the customer's redemption history
+ *   7. Handle logout
+ *
+ * API endpoints used:
+ *   GET  /api/loyalty/customer/session      → { id, full_name }
+ *   GET  /api/loyalty/customer/qr           → { qrImage, ttl, full_name }
+ *   GET  /api/loyalty/customer/offers       → Offer[]
+ *   GET  /api/loyalty/customer/redemptions  → Redemption[]
+ *   POST /api/loyalty/customer/logout
  */
 
-/* ── DOM refs ── */
-import { $ } from "../../../core/dom.js";
+"use strict";
 
-const welcomeNameEl  = $("#welcomeName");
-const topbarUserEl   = $("#topbarUserName");
-const qrSkeleton     = $("#qrSkeleton");
-const qrImage        = $("#qrImage");
-const qrError        = $("#qrError");
-const qrRetryBtn     = $("#qrRetryBtn");
-const timerFill      = $("#timerFill");
-const timerText      = $("#timerText");
-const offersList     = $("#offersList");
-const offersLoading  = $("#offersLoading");
-const offersEmpty    = $("#offersEmpty");
-const logoutBtn      = $("#logoutBtn");
+/* ─────────────────────────────────────────────
+   CONSTANTS
+───────────────────────────────────────────── */
 
-/* ── State ── */
-let _refreshTimer    = null;   // setTimeout handle for next QR refresh
-let _countdownTimer  = null;   // setInterval handle for countdown display
-let _qrExpiresAt     = null;   // ms timestamp when current token expires
-let _ttlMs           = 300000; // fallback — server overrides this
+const LOGIN_URL   = "/loyalty/login";
+const API_BASE    = "/api/loyalty/customer";
 
-/* ─────────────────────────────────────────────────────────────
-   AUTH GUARD
-   Verify session before rendering anything. Redirect if not
-   authenticated — server-side session only, no localStorage.
-───────────────────────────────────────────────────────────── */
-// async function verifySession() {
-//   try {
-//     const res  = await fetch("/api/loyalty/customer/session", {
-//       credentials: "same-origin",
-//     });
+// Refresh the QR this many seconds before it expires —
+// gives the server time to respond before the old one expires.
+const QR_REFRESH_LEAD_S = 10;
 
-//     if (!res.ok) {
-//       window.location.replace("/loyalty/customer/login.html");
-//       return null;
-//     }
+// "Expiring soon" threshold — dot turns amber when less than
+// this many seconds remain.
+const QR_EXPIRING_THRESHOLD_S = 30;
 
-//     const data = await res.json();
-//     return data;
-//   } catch {
-//     window.location.replace("/loyalty/customer/login.html");
-//     return null;
-//   }
-// }
+/* ─────────────────────────────────────────────
+   DOM REFERENCES
+───────────────────────────────────────────── */
 
-/* ─────────────────────────────────────────────────────────────
-   QR LOADING
-───────────────────────────────────────────────────────────── */
-function showQrSkeleton() {
-  qrSkeleton.style.display = "block";
-  qrImage.style.display    = "none";
-  qrError.style.display    = "none";
+const topbarGreeting  = document.getElementById("topbarGreeting");
+const logoutBtn       = document.getElementById("logoutBtn");
+const qrCustomerName  = document.getElementById("qrCustomerName");
+const qrFrame         = document.getElementById("qrFrame");
+const qrSkeleton      = document.getElementById("qrSkeleton");
+const qrImage         = document.getElementById("qrImage");
+const qrCountdown     = document.getElementById("qrCountdown");
+const qrStatusDot     = document.getElementById("qrStatusDot");
+const qrRefreshBtn    = document.getElementById("qrRefreshBtn");
+const offersList      = document.getElementById("offersList");
+const offersCount     = document.getElementById("offersCount");
+const historyList     = document.getElementById("historyList");
+const historyCount    = document.getElementById("historyCount");
+
+/* ─────────────────────────────────────────────
+   STATE
+───────────────────────────────────────────── */
+
+let _countdownInterval  = null;   // setInterval handle for TTL countdown
+let _refreshTimeout     = null;   // setTimeout handle for auto-refresh
+let _qrExpiresAt        = null;   // Date: when the current QR expires
+let _usedOfferIds       = new Set(); // offer IDs this customer has already used
+
+/* ─────────────────────────────────────────────
+   FETCH HELPERS
+───────────────────────────────────────────── */
+
+async function apiFetch(path, options = {}) {
+  const res = await fetch(API_BASE + path, {
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  return res;
 }
- 
-function showQrImage(src) {
-  qrSkeleton.style.display = "none";
-  qrError.style.display    = "none";
-  qrImage.src              = src;
-  qrImage.style.display    = "block";
-}
- 
-function showQrError() {
-  qrSkeleton.style.display = "none";
-  qrImage.style.display    = "none";
-  qrError.style.display    = "flex";
-  _clearTimers();
-  timerText.textContent  = "--:--";
-  timerFill.style.width  = "0%";
-}
- 
-/* ─────────────────────────────────────────────────────────────
-   QR LOAD
-───────────────────────────────────────────────────────────── */
-async function loadQr() {
-  showQrSkeleton();
-  _clearTimers();
- 
+
+/* ─────────────────────────────────────────────
+   1. SESSION CHECK
+───────────────────────────────────────────── */
+
+async function checkSession() {
   try {
-    const res = await fetch("/api/loyalty/customer/qr", {
-      credentials: "same-origin",
-    });
- 
-    if (res.status === 401) {
-      window.location.replace("/loyalty/customer/login.html");
-      return;
+    const res = await apiFetch("/session");
+    if (!res.ok) {
+      window.location.replace(LOGIN_URL);
+      return null;
     }
- 
-    if (!res.ok) throw new Error("QR fetch failed");
- 
-    const { data, success, message } = await res.json();
-    if (!success || !data.qrImage) throw new Error("Invalid QR response");
- 
-    _ttlMs       = data.ttl || 300000;
-    _qrExpiresAt = Date.now() + _ttlMs;
- 
-    showQrImage(data.qrImage);
-    _startCountdown();
-    _scheduleRefresh();
- 
+    const { data } = await res.json();
+    return data;
   } catch {
-    showQrError();
+    window.location.replace(LOGIN_URL);
+    return null;
   }
 }
- 
-/* ─────────────────────────────────────────────────────────────
-   COUNTDOWN
-───────────────────────────────────────────────────────────── */
-function _startCountdown() {
-  clearInterval(_countdownTimer);
- 
-  _countdownTimer = setInterval(() => {
-    const remaining = Math.max(0, _qrExpiresAt - Date.now());
-    const totalSecs = Math.ceil(remaining / 1000);
-    const mins      = Math.floor(totalSecs / 60);
-    const secs      = totalSecs % 60;
- 
-    timerText.textContent = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
- 
-    const pct = (remaining / _ttlMs) * 100;
-    timerFill.style.width = `${pct}%`;
-    timerFill.classList.toggle("expiring", remaining < 60_000);
- 
-    if (remaining <= 0) {
-      clearInterval(_countdownTimer);
-      timerText.textContent = "00:00";
+
+/* ─────────────────────────────────────────────
+   2-4. QR CODE
+───────────────────────────────────────────── */
+
+/**
+ * Fetch a fresh QR token from the API and render it.
+ * Wires up the countdown timer and schedules the next auto-refresh.
+ */
+async function loadQr() {
+  // Clear any existing timers so we never double-run
+  clearInterval(_countdownInterval);
+  clearTimeout(_refreshTimeout);
+
+  if (qrRefreshBtn) qrRefreshBtn.disabled = true;
+
+  // Show skeleton while fetching
+  if (qrSkeleton) qrSkeleton.style.display = "";
+  if (qrImage)    qrImage.style.display    = "none";
+
+  try {
+    const res  = await apiFetch("/qr");
+    if (!res.ok) throw new Error("QR fetch failed");
+
+    const { qrImage: qrDataUrl, ttl, full_name } = await res.json();
+
+    // Render QR
+    if (qrImage) {
+      qrImage.src           = qrDataUrl;
+      qrImage.style.display = "";
+    }
+    if (qrSkeleton) qrSkeleton.style.display = "none";
+
+    // Update name (belt-and-suspenders in case session load was slow)
+    if (qrCustomerName && full_name) {
+      qrCustomerName.textContent = full_name;
+    }
+
+    // Set expiry — ttl is seconds from now
+    _qrExpiresAt = new Date(Date.now() + ttl * 1000);
+
+    // Start visual countdown
+    startCountdown();
+
+    // Schedule auto-refresh QR_REFRESH_LEAD_S seconds before expiry
+    const refreshInMs = Math.max(0, (ttl - QR_REFRESH_LEAD_S) * 1000);
+    _refreshTimeout = setTimeout(loadQr, refreshInMs);
+
+  } catch {
+    if (qrSkeleton) qrSkeleton.style.display = "none";
+    if (qrCountdown) qrCountdown.textContent = "Errore";
+    if (qrStatusDot) {
+      qrStatusDot.className = "lc-qr-ttl-dot lc-qr-ttl-dot--expired";
+    }
+  } finally {
+    if (qrRefreshBtn) qrRefreshBtn.disabled = false;
+  }
+}
+
+/**
+ * Tick the countdown display every second.
+ * Changes dot colour when expiring and when expired.
+ */
+function startCountdown() {
+  clearInterval(_countdownInterval);
+
+  _countdownInterval = setInterval(() => {
+    if (!_qrExpiresAt) return;
+
+    const remainingMs = _qrExpiresAt - Date.now();
+    const remainingS  = Math.max(0, Math.floor(remainingMs / 1000));
+
+    // Format as M:SS
+    const m = Math.floor(remainingS / 60);
+    const s = String(remainingS % 60).padStart(2, "0");
+    if (qrCountdown) qrCountdown.textContent = `${m}:${s}`;
+
+    // Status dot
+    if (qrStatusDot) {
+      if (remainingS <= 0) {
+        qrStatusDot.className = "lc-qr-ttl-dot lc-qr-ttl-dot--expired";
+      } else if (remainingS <= QR_EXPIRING_THRESHOLD_S) {
+        qrStatusDot.className = "lc-qr-ttl-dot lc-qr-ttl-dot--expiring";
+      } else {
+        qrStatusDot.className = "lc-qr-ttl-dot";
+      }
     }
   }, 1000);
 }
- 
-/* ─────────────────────────────────────────────────────────────
-   AUTO-REFRESH — 30s before expiry
-───────────────────────────────────────────────────────────── */
-function _scheduleRefresh() {
-  clearTimeout(_refreshTimer);
-  const delay    = Math.max(0, _ttlMs - 30_000);
-  _refreshTimer  = setTimeout(loadQr, delay);
-}
- 
-function _clearTimers() {
-  clearTimeout(_refreshTimer);
-  clearInterval(_countdownTimer);
-}
- 
-/* ─────────────────────────────────────────────────────────────
-   OFFERS
-───────────────────────────────────────────────────────────── */
-function _esc(str) {
-  return String(str ?? "")
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}
- 
-async function loadOffers() {
-  try {
-    const res    = await fetch("/api/loyalty/customer/offers", { credentials: "same-origin" });
-    if (!res.ok) throw new Error("Offers fetch failed");
- 
-    const { data, success, message }   = await res.json();
-    const offers = data || [];
- 
-    offersLoading.style.display = "none";
- 
-    if (!offers.length) {
-      offersEmpty.style.display = "block";
-      return;
-    }
- 
-    offersList.style.display = "flex";
-    offersList.innerHTML = offers.map((o) => `
-      <div class="loyalty-offer-card">
-        <div class="loyalty-offer-icon" aria-hidden="true">🎁</div>
-        <div class="loyalty-offer-info">
-          <p class="loyalty-offer-title">${_esc(o.title)}</p>
-          ${o.description ? `<p class="loyalty-offer-desc">${_esc(o.description)}</p>` : ""}
-        </div>
-        ${o.partnerId ? `<span class="loyalty-offer-partner">${_esc(o.partnerId)}</span>` : ""}
-      </div>
-    `).join("");
- 
-  } catch {
-    offersLoading.style.display = "none";
-    offersEmpty.style.display   = "block";
-    offersEmpty.querySelector(".loyalty-empty-text").textContent =
-      "Impossibile caricare le offerte. Riprova più tardi.";
-  }
-}
- 
-/* ─────────────────────────────────────────────────────────────
-   LOGOUT
-───────────────────────────────────────────────────────────── */
-logoutBtn.addEventListener("click", async () => {
-  _clearTimers();
-  try {
-    await fetch("/api/loyalty/customer/logout", {
-      method:      "POST",
-      credentials: "same-origin",
-      headers:     { "X-Requested-With": "XMLHttpRequest" },
-    });
-  } catch { /* best-effort */ }
-  window.location.replace("/loyalty/customer/login.html");
-});
- 
-/* ─────────────────────────────────────────────────────────────
-   RETRY BUTTON
-───────────────────────────────────────────────────────────── */
-qrRetryBtn.addEventListener("click", loadQr);
- 
-/* ─────────────────────────────────────────────────────────────
-   BOOT
-   Session was already verified by the inline <script> guard in HTML.
-   We call it again here to get the full_name for the UI — the
-   previous check only confirmed auth status, didn't return data.
-───────────────────────────────────────────────────────────── */
-(async () => {
-  try {
-    const res  = await fetch("/api/loyalty/customer/session", { credentials: "same-origin" });
-    if (!res.ok) {
-      window.location.replace("/loyalty/customer/login.html");
-      return;
-    }
-    const {data, success} = await res.json();
- 
-    const name = data.full_name || "Utente";
-    welcomeNameEl.textContent = `Ciao, ${name} 👋`;
-    topbarUserEl.textContent  = name;
- 
-  } catch {
-    window.location.replace("/loyalty/customer/login.html");
+
+/* ─────────────────────────────────────────────
+   5. OFFERS
+───────────────────────────────────────────── */
+
+function renderOffers(offers) {
+  if (!offersList) return;
+
+  if (!offers.length) {
+    offersList.innerHTML = `
+      <div class="lc-empty">
+        <span class="lc-empty-icon" aria-hidden="true">🎁</span>
+        <p class="lc-empty-text">Nessuna convenzione disponibile al momento.</p>
+      </div>`;
+    if (offersCount) offersCount.textContent = "";
     return;
   }
- 
-  /* Load QR and offers in parallel */
-  await Promise.all([loadQr(), loadOffers()]);
-})();
+
+  const available = offers.filter((o) => !_usedOfferIds.has(o.id));
+  const used      = offers.filter((o) =>  _usedOfferIds.has(o.id));
+
+  // Show available first, then used
+  const sorted = [...available, ...used];
+
+  if (offersCount) {
+    offersCount.textContent = available.length > 0
+      ? `${available.length} disponibil${available.length === 1 ? "e" : "i"}`
+      : "Tutte utilizzate";
+  }
+
+  offersList.innerHTML = sorted.map((offer) => {
+    const isUsed = _usedOfferIds.has(offer.id);
+    return `
+      <article class="lc-offer-card${isUsed ? " lc-offer-card--used" : ""} lc-fade-in"
+               aria-label="${escHtml(offer.title)}${isUsed ? " — già utilizzata" : ""}">
+        <div class="lc-offer-icon${isUsed ? " lc-offer-icon--used"  : ""}" aria-hidden="true">
+          ${isUsed ? "✓" : categoryEmoji(offer.category)}
+        </div>
+        <div class="lc-offer-body">
+          <p class="lc-offer-partner">${escHtml(offer.partnerName || offer.partnerId || "")}</p>
+          <p class="lc-offer-title">${escHtml(offer.title)}</p>
+          ${offer.description
+            ? `<p class="lc-offer-desc">${escHtml(offer.description)}</p>`
+            : ""}
+        </div>
+        <div class="lc-offer-badge">
+          ${isUsed
+            ? `<span class="lc-offer-badge--used">
+                 <i class="fa fa-check" aria-hidden="true"></i>
+                 Utilizzata
+               </span>`
+            : `<span class="lc-offer-badge--available">
+                 <i class="fa fa-star" aria-hidden="true"></i>
+                 Disponibile
+               </span>`}
+        </div>
+      </article>`;
+  }).join("");
+}
+
+async function loadOffers() {
+  try {
+    const res = await apiFetch("/offers");
+    if (!res.ok) throw new Error();
+    const { data } = await res.json();
+    renderOffers(data || []);
+  } catch {
+    if (offersList) {
+      offersList.innerHTML = `
+        <div class="lc-empty">
+          <span class="lc-empty-icon" aria-hidden="true">⚠</span>
+          <p class="lc-empty-text">Impossibile caricare le convenzioni. Riprova.</p>
+        </div>`;
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────
+   6. HISTORY
+───────────────────────────────────────────── */
+
+function renderHistory(redemptions) {
+  if (!historyList) return;
+
+  if (!redemptions.length) {
+    historyList.innerHTML = `
+      <div class="lc-empty">
+        <span class="lc-empty-icon" aria-hidden="true">📋</span>
+        <p class="lc-empty-text">Non hai ancora utilizzato nessuna convenzione.</p>
+      </div>`;
+    if (historyCount) historyCount.textContent = "";
+    return;
+  }
+
+  if (historyCount) {
+    historyCount.textContent = `${redemptions.length} utilizz${redemptions.length === 1 ? "o" : "i"}`;
+  }
+
+  historyList.innerHTML = redemptions.map((r) => `
+    <div class="lc-history-item lc-fade-in">
+      <div class="lc-history-dot" aria-hidden="true"></div>
+      <div class="lc-history-body">
+        <p class="lc-history-offer">${escHtml(r.offerTitle || "Offerta")}</p>
+        <p class="lc-history-partner">${escHtml(r.partnerName || r.partnerId || "")}</p>
+      </div>
+      <time class="lc-history-date" datetime="${r.redeemedAt}">
+        ${fmtDate(r.redeemedAt)}
+      </time>
+    </div>`).join("");
+}
+
+async function loadHistory() {
+  try {
+    const res = await apiFetch("/redemptions");
+    if (!res.ok) throw new Error();
+    const { data } = await res.json();
+
+    // Populate the used-offer set BEFORE rendering offers —
+    // loadOffers() and loadHistory() run in parallel, so we
+    // store the result here and re-render offers if history
+    // loaded after offers.
+    const newUsedIds = new Set((data || []).map((r) => r.offerId));
+    const changed    = [...newUsedIds].some((id) => !_usedOfferIds.has(id))
+                    || [..._usedOfferIds].some((id) => !newUsedIds.has(id));
+
+    _usedOfferIds = newUsedIds;
+
+    // If offers already rendered, re-render them now that we know which are used
+    if (changed && offersList && !offersList.querySelector(".lc-empty p")?.textContent.includes("Caricamento")) {
+      await loadOffers();
+    }
+
+    renderHistory(data || []);
+  } catch {
+    if (historyList) {
+      historyList.innerHTML = `
+        <div class="lc-empty">
+          <span class="lc-empty-icon" aria-hidden="true">⚠</span>
+          <p class="lc-empty-text">Impossibile caricare lo storico. Riprova.</p>
+        </div>`;
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────
+   7. LOGOUT
+───────────────────────────────────────────── */
+
+async function logout() {
+  try {
+    await apiFetch("/logout", { method: "POST" });
+  } finally {
+    clearInterval(_countdownInterval);
+    clearTimeout(_refreshTimeout);
+    window.location.replace(LOGIN_URL);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   UTILITY HELPERS
+───────────────────────────────────────────── */
+
+function escHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function fmtDate(iso) {
+  if (!iso) return "—";
+  try {
+    return new Intl.DateTimeFormat("it-IT", {
+      day:   "numeric",
+      month: "short",
+      year:  "numeric",
+    }).format(new Date(iso));
+  } catch {
+    return "—";
+  }
+}
+
+function categoryEmoji(category) {
+  const map = {
+    ristorante: "🍽️",
+    bar:        "☕",
+    palestra:   "🏋️",
+    negozio:    "🛍️",
+    servizi:    "⚙️",
+    beauty:     "💆",
+    altro:      "🎁",
+  };
+  return map[category] || "🎁";
+}
+
+/* ─────────────────────────────────────────────
+   BOOT
+───────────────────────────────────────────── */
+
+async function boot() {
+  // 1. Session check — redirect to login if unauthenticated
+  const customer = await checkSession();
+  if (!customer) return;
+
+  // 2. Greet the customer
+  const firstName = customer.full_name?.split(" ")[0] || "";
+  if (topbarGreeting) topbarGreeting.textContent = `Ciao, ${firstName}`;
+  if (qrCustomerName) qrCustomerName.textContent = customer.full_name || "";
+
+  // 3. Wire logout button
+  logoutBtn?.addEventListener("click", logout);
+
+  // 4. Wire manual QR refresh
+  qrRefreshBtn?.addEventListener("click", loadQr);
+
+  // 5. Load all three sections in parallel — history runs concurrently
+  //    with offers because loadHistory() will re-render offers once it
+  //    has the used-offer set.
+  await Promise.all([
+    loadQr(),
+    loadOffers(),
+    loadHistory(),
+  ]);
+}
+
+boot();
